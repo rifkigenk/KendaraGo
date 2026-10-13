@@ -1,0 +1,457 @@
+{
+  "source": "Wikimedia Commons",
+  "generated_at": "2026-09-10 14:34:48 +0700",
+  "images": [
+    {
+      "code": "CAR-004",
+      "vehicle": "New Mitsubishi Xpander Exceed Tourer",
+      "search_query": "Mitsubishi Xpander",
+      "commons_file": "File:2022 Mitsubishi Xpander 1.5 GLS (1).jpg",
+      "source_page": "https://commons.wikimedia.org/wiki/File:2022_Mitsubishi_Xpander_1.5_GLS_(1).jpg",
+      "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/2022_Mitsubishi_Xpander_1.5_GLS_%281%29.jpg/1280px-2022_Mitsubishi_Xpander_1.5_GLS_%281%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "creator": "Ethan Llamas"
+    }
+  ],
+  "missing": [
+    {
+      "code": "CAR-001",
+      "vehicle": "Toyota Agya GR Sport",
+      "query": "Toyota Agya",
+      "error": "The read operation timed out"
+    },
+    {
+      "code": "CAR-002",
+      "vehicle": "Honda Brio S CVT",
+      "query": "Brio",
+      "error": "The read operation timed out"
+    },
+    {
+      "code": "CAR-003",
+      "vehicle": "All New Toyota Avanza 1.5 G CVT",
+      "query": "Avanza",
+      "error": "The read operation timed out"
+    },
+    {
+      "code": "CAR-005",
+      "vehicle": "New Kijang Innova Zenix Hybrid EV",
+      "query": "Toyota Innova Zenix",
+      "error": "The read operation timed out"
+    },
+    {
+      "code": "CAR-006",
+      "vehicle": "Daihatsu Ayla ADS",
+      "query": "Ayla",
+      "error": "The read operation timed out"
+    },
+    {
+      "code": "CAR-007",
+      "vehicle": "Suzuki Baleno Hatchback",
+      "query": "Baleno",
+      "error": "The read operation timed out"
+    },
+    {
+      "code": "CAR-008",
+      "vehicle": "Hyundai Stargazer",
+      "query": "Stargazer",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "CAR-009",
+      "vehicle": "Suzuki Ertiga Hybrid",
+      "query": "Ertiga",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "CAR-010",
+      "vehicle": "New Toyota Calya 1.2 G A/T",
+      "query": "Calya",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "CAR-011",
+      "vehicle": "New Daihatsu Sigra 1.2 R A/T",
+      "query": "Sigra",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "COM-001",
+      "vehicle": "Toyota Hilux Double Cabin",
+      "query": "Hilux",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "COM-002",
+      "vehicle": "Mitsubishi Triton HDX",
+      "query": "Triton",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "COM-003",
+      "vehicle": "Toyota Hiace Premio",
+      "query": "Hiace",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "COM-004",
+      "vehicle": "Daihatsu Gran Max Pick Up 1.5",
+      "query": "Daihatsu Gran Max pickup",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "COM-005",
+      "vehicle": "Suzuki New Carry Pick-Up",
+      "query": "Carry",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "COM-006",
+      "vehicle": "Mitsubishi Colt L300 Euro 4",
+      "query": "Colt L300",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "EV-001",
+      "vehicle": "BYD Atto 1 Premium",
+      "query": "BYD Seagull Atto 1",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "EV-002",
+      "vehicle": "BYD M6 Superior 7 Seater",
+      "query": "M6",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MPV-001",
+      "vehicle": "New Toyota Veloz Hybrid EV Q CVT",
+      "query": "Toyota Veloz",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-001",
+      "vehicle": "New Honda Vario 160 RoadSync",
+      "query": "Honda Vario 160",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-002",
+      "vehicle": "Yamaha NMAX Turbo",
+      "query": "Yamaha NMAX",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-003",
+      "vehicle": "New Honda Scoopy",
+      "query": "Honda Scoopy",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-004",
+      "vehicle": "Yamaha R15",
+      "query": "Yamaha YZF R15",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-005",
+      "vehicle": "Honda CBR 250RR",
+      "query": "Honda CBR250RR",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-006",
+      "vehicle": "Honda Stylo 160",
+      "query": "Honda Stylo 160",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-007",
+      "vehicle": "Kawasaki Versys-X 250",
+      "query": "Kawasaki Versys-X 250",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-008",
+      "vehicle": "Honda BeAT Deluxe Smart Key",
+      "query": "Honda Beat scooter",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-009",
+      "vehicle": "Honda Vario 125 CBS ISS",
+      "query": "Honda Vario 125",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-010",
+      "vehicle": "Honda PCX 160 RoadSync",
+      "query": "Honda PCX 160",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-011",
+      "vehicle": "Honda ADV 160 RoadSync",
+      "query": "Honda ADV 160",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-012",
+      "vehicle": "Yamaha Aerox Alpha Turbo",
+      "query": "Yamaha Aerox 155",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-013",
+      "vehicle": "Yamaha Fazzio Hybrid Connected",
+      "query": "Yamaha Fazzio",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-014",
+      "vehicle": "Yamaha Gear Ultima Hybrid",
+      "query": "Yamaha Gear scooter",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-015",
+      "vehicle": "Yamaha FreeGo 125 Connected",
+      "query": "Yamaha FreeGo",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "MTR-016",
+      "vehicle": "Suzuki Access 125",
+      "query": "Suzuki Access 125",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "SED-001",
+      "vehicle": "BMW 320i Sport",
+      "query": "320i",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "SED-002",
+      "vehicle": "BYD Seal Performance",
+      "query": "Seal",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "SUV-001",
+      "vehicle": "Honda BR-V Prestige",
+      "query": "BR-V",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "SUV-002",
+      "vehicle": "Hyundai Creta Prime",
+      "query": "Creta",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "SUV-003",
+      "vehicle": "Wuling Alvez EX",
+      "query": "Alvez",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "SUV-004",
+      "vehicle": "Toyota Rush GR Sport",
+      "query": "Rush",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "SUV-005",
+      "vehicle": "New Daihatsu Terios R ADS",
+      "query": "Terios",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "SUV-006",
+      "vehicle": "New Honda WR-V RS Honda Sensing",
+      "query": "WR-V",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "SUV-007",
+      "vehicle": "Suzuki Fronx SGX Hybrid Kuro",
+      "query": "Fronx",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-001",
+      "vehicle": "BMW R 1300 GS",
+      "query": "R 1300 GS",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-002",
+      "vehicle": "BMW R 1300 GS Adventure",
+      "query": "R 1300 GS Adventure",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-003",
+      "vehicle": "BMW K 1600 GTL",
+      "query": "K 1600 GTL",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-004",
+      "vehicle": "Honda Africa Twin",
+      "query": "Africa Twin",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-005",
+      "vehicle": "Honda Africa Twin Adventure Sports ES DCT",
+      "query": "Africa Twin Adventure Sports ES DCT",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-006",
+      "vehicle": "Honda Gold Wing Tour DCT",
+      "query": "Gold Wing Tour DCT",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-007",
+      "vehicle": "Honda NT1100 DCT",
+      "query": "NT1100 DCT",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-008",
+      "vehicle": "Yamaha Tracer 9 GT+",
+      "query": "Tracer 9 GT+",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-009",
+      "vehicle": "Yamaha Ténéré 700 World Raid",
+      "query": "Yamaha Tenere 700 World Raid",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-010",
+      "vehicle": "Kawasaki Versys 1100 SE LT",
+      "query": "Versys 1100 SE LT",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-011",
+      "vehicle": "Kawasaki Versys 650 LT",
+      "query": "Versys 650 LT",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-013",
+      "vehicle": "Suzuki V-Strom 1050",
+      "query": "V-Strom 1050",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-014",
+      "vehicle": "Suzuki V-Strom 800DE",
+      "query": "V-Strom 800DE",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-015",
+      "vehicle": "Ducati Multistrada V4 S",
+      "query": "Multistrada V4 S",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-016",
+      "vehicle": "Ducati DesertX Discovery",
+      "query": "DesertX Discovery",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-017",
+      "vehicle": "KTM 1390 Super Adventure S",
+      "query": "1390 Super Adventure S",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-018",
+      "vehicle": "KTM 890 Adventure R",
+      "query": "890 Adventure R",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-019",
+      "vehicle": "Triumph Tiger 1200 GT Pro",
+      "query": "Tiger 1200 GT Pro",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-020",
+      "vehicle": "Triumph Tiger 900 GT Pro",
+      "query": "Tiger 900 GT Pro",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-021",
+      "vehicle": "Harley-Davidson Road Glide",
+      "query": "Road Glide",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-022",
+      "vehicle": "Harley-Davidson Street Glide Ultra",
+      "query": "Street Glide Ultra",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-023",
+      "vehicle": "Indian Pursuit Dark Horse",
+      "query": "Indian Pursuit motorcycle",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-024",
+      "vehicle": "Moto Guzzi Stelvio PFF",
+      "query": "Stelvio PFF",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-025",
+      "vehicle": "Aprilia Tuareg 660",
+      "query": "Tuareg 660",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-026",
+      "vehicle": "Royal Enfield Himalayan 450",
+      "query": "Himalayan 450",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-027",
+      "vehicle": "CFMOTO 800MT Explore",
+      "query": "CFMoto 800MT",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-028",
+      "vehicle": "Benelli TRK 702 X",
+      "query": "TRK 702 X",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-029",
+      "vehicle": "Husqvarna Norden 901 Expedition",
+      "query": "Norden 901 Expedition",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "code": "TOUR-030",
+      "vehicle": "Zero DSR/X",
+      "query": "Zero DSR X motorcycle",
+      "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+    }
+  ]
+}

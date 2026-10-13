@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Pemesanan{% endblock %}
+
+{% block content %}
+
+  <div class="dashboard-shell">
+    {% include "components/dashboard_nav.html" %}
+    <section class="dashboard-content">
+      <div class="d-flex justify-content-between">
+        <h1>Pemesanan</h1>
+        <a class="btn btn-success" href="{{ url_for('admin.export_rentals') }}"><i class="bi bi-file-earmark-excel"></i> Ekspor Excel</a>
+      </div>
+      <div class="card table-responsive mt-4">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Kode</th>
+              <th>Pelanggan</th>
+              <th>Kendaraan</th>
+              <th>Periode</th>
+              <th>Status</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in rentals %}
+              <tr>
+                <td>{{ item.booking_code }}</td>
+                <td>{{ item.customer.name }}</td>
+                <td>{{ item.vehicle.name }}</td>
+                <td>{{ item.start_date }} – {{ item.end_date }}</td>
+                <td>{{ item.status }}</td>
+                <td>Rp {{ '{:,.0f}'.format(item.total_payment) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,182 @@
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.category-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 20px;
+  border: 1px solid #e4ebf4;
+  border-radius: var(--radius-md);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    transform var(--transition),
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+.category-card:hover {
+  border-color: var(--bright);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-sm);
+}
+.category-card > i {
+  margin-left: auto;
+  color: var(--blue);
+}
+.category-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  place-items: center;
+  border-radius: 13px;
+  color: var(--blue);
+  background: #eaf3ff;
+  font-size: 1.4rem;
+}
+.category-card h5 {
+  margin: 0;
+}
+.category-card small {
+  color: #748196;
+}
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.step-card {
+  padding: 28px;
+  border-top: 3px solid var(--blue);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.step-card > span {
+  color: #d9e9fa;
+  font-size: 2.2rem;
+  font-weight: 900;
+}
+.testimonial-section {
+  background: linear-gradient(120deg, #edf6ff, #f8fbff);
+}
+.review-card {
+  height: 100%;
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.review-card .stars {
+  margin-bottom: 14px;
+  color: var(--orange);
+}
+.review-card small,
+.review-card strong {
+  display: block;
+}
+.review-card small {
+  color: #748196;
+}
+.cta-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 50px;
+  border-radius: 24px;
+  color: #fff;
+  background: linear-gradient(120deg, var(--navy), #12559b);
+}
+.cta-banner span {
+  color: #6ec5ff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+.cta-banner h2 {
+  margin-top: 8px;
+  font-weight: 800;
+}
+.payment-method {
+  white-space: nowrap;
+}
+.touring-hero {
+  padding: 75px 0;
+  color: #fff;
+  background: linear-gradient(120deg, #06182f, #0f5ca8);
+}
+.touring-hero h1 {
+  font-size: clamp(2.5rem, 5vw, 4.7rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+.touring-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 30px;
+}
+.touring-stats strong,
+.touring-stats small {
+  display: block;
+}
+.touring-stats strong {
+  font-size: 1.8rem;
+}
+.touring-stats small {
+  color: #bcd7f2;
+}
+.spec-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 99px;
+  color: #174d83;
+  background: #eef6ff;
+  font-size: 0.78rem;
+}
+.spec-table th {
+  width: 42%;
+  color: #66758b;
+  font-weight: 600;
+}
+.source-note {
+  padding: 14px;
+  border-left: 3px solid var(--blue);
+  background: #f4f9ff;
+  font-size: 0.85rem;
+}
+.touring-card .vehicle-image {
+  height: 210px;
+}
+.touring-card .card-title {
+  min-height: 58px;
+}
+
+@media (max-width: 991.98px) {
+  .category-grid,
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .cta-banner {
+    display: block;
+  }
+  .cta-banner .btn {
+    margin-top: 18px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .category-grid,
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+  .cta-banner {
+    padding: 32px 24px;
+  }
+}

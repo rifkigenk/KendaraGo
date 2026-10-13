@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.py[cod]
+.env
+.pytest_cache/
+.coverage
+htmlcov/
+migration_*.db
+instance/
+# Aset katalog kendaraan adalah bagian aplikasi dan boleh dilacak Git.
+# Unggahan baru dari panel admin disimpan terpisah pada folder user.
+static/uploads/vehicles/user/**
+!static/uploads/**/.gitkeep

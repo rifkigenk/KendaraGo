@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Pemeriksaan Kendaraan{% endblock %}
+
+{% block content %}
+
+  <div class="dashboard-shell">
+    {% include "components/dashboard_nav.html" %}
+    <section class="dashboard-content">
+      <h1>{{ 'Pengambilan' if mode == 'pickup' else 'Pengembalian' }} Kendaraan</h1>
+      <p>{{ rental.booking_code }} · {{ rental.vehicle.name }} · {{ rental.customer.name }}</p>
+      <form method="post" enctype="multipart/form-data" class="card card-body">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="row g-3">
+          {% if mode == "pickup" %}
+            <div class="col-md-4">
+              <label>Kilometer awal</label><input type="number"
+       class="form-control"
+       name="start_mileage"
+       min="0"
+       required />
+            </div>
+          {% else %}
+            <div class="col-md-4">
+              <label>Kilometer akhir</label><input type="number"
+       class="form-control"
+       name="end_mileage"
+       min="{{ rental.pickup.start_mileage if rental.pickup else 0 }}"
+       required />
+            </div>
+          {% endif %}
+          <div class="col-md-4">
+            <label>Kondisi bahan bakar</label><select class="form-select" name="fuel_condition">
+              <option>Penuh</option>
+              <option>3/4</option>
+              <option>1/2</option>
+              <option>1/4</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label>Foto kondisi</label><input class="form-control"
+       type="file"
+       name="photo"
+       accept="image/jpeg,image/png" />
+          </div>
+          {% if mode == "pickup" %}
+            {% for name,label in [('body_condition','Kondisi bodi'),('tire_condition','Kondisi ban'),('light_condition','Kondisi lampu'),('cleanliness','Kebersihan'),('equipment','Kelengkapan')] %}
+              <div class="col-md-6">
+                <label>{{ label }}</label><input class="form-control" name="{{ name }}" required />
+              </div>
+            {% endfor %}
+            <div class="col-12 form-check ms-2">
+              <input type="checkbox"
+                     class="form-check-input"
+                     name="customer_approved"
+                     id="approved"
+                     required /><label for="approved">Pelanggan menyetujui hasil pemeriksaan</label>
+            </div>
+          {% else %}
+            <div class="col-12">
+              <label>Kondisi kendaraan</label><textarea class="form-control" name="vehicle_condition" required></textarea>
+            </div>
+            <div class="col-12">
+              <label>Kelengkapan</label><input class="form-control" name="equipment" />
+            </div>
+            <div class="col-12">
+              <label>Keterangan kerusakan</label><textarea class="form-control" name="damage_notes"></textarea>
+            </div>
+            {% for name,label in [('damage_fee','Biaya kerusakan'),('fuel_fee','Biaya bahan bakar'),('additional_fee','Biaya tambahan')] %}
+              <div class="col-md-4">
+                <label>{{ label }}</label><input type="number"
+       class="form-control"
+       min="0"
+       name="{{ name }}"
+       value="0" />
+              </div>
+            {% endfor %}
+            <div class="col-12 form-check ms-2">
+              <input type="checkbox"
+                     class="form-check-input"
+                     name="needs_maintenance"
+                     id="maintenance" /><label for="maintenance">Kendaraan perlu perawatan</label>
+            </div>
+          {% endif %}
+          <div class="col-12">
+            <label>Catatan petugas</label><textarea class="form-control" name="notes"></textarea>
+          </div>
+        </div>
+        <button class="btn btn-primary mt-4 align-self-start">Simpan pemeriksaan</button>
+      </form>
+    </section>
+  </div>
+
+{% endblock %}

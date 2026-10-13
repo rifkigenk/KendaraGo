@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block content %}
+
+  <div class="dashboard-shell">
+    {% include "components/dashboard_nav.html" %}
+    <section class="dashboard-content">
+      <div class="dashboard-page-heading">
+        <div>
+          <span class="dashboard-eyebrow">PUSAT KENDALI</span>
+          <h1>Dashboard</h1>
+          <p>Ringkasan operasional KendaraGo hari ini.</p>
+        </div>
+        <div class="dashboard-user-pill">
+          <span><i class="bi bi-person-fill" aria-hidden="true"></i></span>
+          <div><small>Masuk sebagai</small><strong>{{ current_user.name }}</strong></div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        {% for label,key,icon in [('Total kendaraan','vehicles','car-front'),('Tersedia','available','check-circle'),('Sedang disewa','rented','key'),('Perawatan','maintenance','tools'),('Pelanggan','customers','people'),('Verifikasi antre','pending_profiles','person-check'),('Transaksi bulan ini','monthly_rentals','receipt'),('Pembayaran antre','pending_payments','credit-card')] %}
+          <div class="col-sm-6 col-xl-3">
+            <div class="stat-card stat-tone-{{ loop.index0 % 4 }}">
+              <i class="bi bi-{{ icon }}" aria-hidden="true"></i>
+              <div><small>{{ label }}</small><strong>{{ stats[key] }}</strong></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="row g-4">
+        <div class="col-xl-8">
+          <section class="dashboard-panel">
+            <div class="panel-heading">
+              <div>
+                <span>AKTIVITAS</span>
+                <h2>Transaksi terbaru</h2>
+              </div>
+              <i class="bi bi-receipt" aria-hidden="true"></i>
+            </div>
+            <div class="table-responsive">
+              <table class="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Kode</th>
+                    <th>Pelanggan</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in recent %}
+                    <tr>
+                      <td><strong>{{ item.booking_code }}</strong></td>
+                      <td>{{ item.customer.name }}</td>
+                      <td><span class="dashboard-status">{{ item.status }}</span></td>
+                      <td>Rp {{ '{:,.0f}'.format(item.total_payment) }}</td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="4" class="text-center text-muted py-5">Belum ada transaksi terbaru.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+        <div class="col-xl-4">
+          <section class="dashboard-panel revenue-panel">
+            <div class="panel-heading">
+              <div>
+                <span>PERFORMA BULANAN</span>
+                <h2>Pendapatan</h2>
+              </div>
+              <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
+            </div>
+            <p class="revenue-value">Rp {{ '{:,.0f}'.format(revenue) }}</p>
+            <div class="chart-wrap">
+              <canvas id="statusChart" aria-label="Komposisi status kendaraan"></canvas>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+  <script nonce="{{ csp_nonce }}">
+      if (window.Chart) {
+          new Chart(document.getElementById('statusChart'), {
+              type: 'doughnut',
+              data: {
+                  labels: ['Tersedia', 'Disewa', 'Perawatan'],
+                  datasets: [{
+                      data: [{{ stats.available }}, {{ stats.rented }}, {{ stats.maintenance }}],
+                      backgroundColor: ['#20b77a', '#1268d6', '#ff8a00'],
+                      borderWidth: 0
+                  }]
+              },
+              options: {
+                  cutout: '68%',
+                  plugins: {
+                      legend: {
+                          position: 'bottom',
+                          labels: {
+                              usePointStyle: true,
+                              padding: 18
+                          }
+                      }
+                  }
+              }
+          });
+      }
+  </script>
+
+{% endblock %}

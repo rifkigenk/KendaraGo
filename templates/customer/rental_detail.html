@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}{{ rental.booking_code }}{% endblock %}
+
+{% block content %}
+
+  <!-- =======================================================
+       01. KERANGKA DASHBOARD PELANGGAN
+       Sidebar dan area utama detail pesanan ditempatkan di sini.
+       ======================================================= -->
+  <div class="dashboard-shell">
+    {% include "components/dashboard_nav.html" %}
+    <section class="dashboard-content">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="text-muted">Kode booking</span>
+          <h1>{{ rental.booking_code }}</h1>
+        </div>
+        <span class="badge text-bg-primary fs-6">{{ rental.status }}</span>
+      </div>
+      <!-- =====================================================
+           02. RINGKASAN PESANAN DAN BIAYA
+           Menampilkan perjalanan, invoice, komponen biaya, dan total.
+           ===================================================== -->
+      <div class="row g-4 mt-2">
+        <div class="col-lg-7">
+          <div class="card card-body">
+            <h4>Detail perjalanan</h4>
+            <dl class="row">
+              <dt class="col-sm-4">Kendaraan</dt>
+              <dd class="col-sm-8">
+                {{ rental.vehicle.name }}
+              </dd>
+              <dt class="col-sm-4">Periode</dt>
+              <dd class="col-sm-8">
+                {{ rental.start_date.strftime("%d/%m/%Y") }} –
+                {{ rental.end_date.strftime("%d/%m/%Y") }} ({{ rental.duration_days }} hari)
+              </dd>
+              <dt class="col-sm-4">Pengambilan</dt>
+              <dd class="col-sm-8">
+                {{ rental.pickup_location.name }}, {{ rental.pickup_time.strftime("%H:%M") }}
+              </dd>
+              <dt class="col-sm-4">Pengemudi</dt>
+              <dd class="col-sm-8">
+                {{ rental.driver.name if rental.driver else 'Tanpa pengemudi' }}
+              </dd>
+            </dl>
+            <a class="btn btn-outline-primary align-self-start"
+               href="{{ url_for('customer.invoice', rental_id=rental.id) }}"><i class="bi bi-file-pdf"></i> Unduh invoice</a>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="card card-body">
+            <h4>Rincian biaya</h4>
+            {% for label,value in [('Sewa kendaraan',rental.vehicle_subtotal),('Pengemudi',rental.driver_fee),('Diskon',-rental.discount),('Deposit',rental.deposit)] %}
+              <div class="d-flex justify-content-between py-2">
+                <span>{{ label }}</span><span>Rp {{ '{:,.0f}'.format(value) }}</span>
+              </div>
+            {% endfor %}
+            <hr />
+            <div class="d-flex justify-content-between fs-5">
+              <strong>Total</strong><strong class="text-primary">Rp {{ '{:,.0f}'.format(rental.total_payment) }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+           03. FORMULIR PEMBAYARAN
+           Hanya muncul ketika status pesanan menunggu pembayaran.
+           ===================================================== -->
+      {% if rental.status == "Menunggu pembayaran" %}
+        <div class="card card-body mt-4 payment-panel">
+          <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+            <div>
+              <span class="dashboard-eyebrow">PEMBAYARAN AMAN</span>
+              <h4 class="mb-1">Pembayaran</h4>
+              <p class="text-muted mb-0">
+                Pilih cara pembayaran yang Anda inginkan. Tenggat:
+                <strong>{{ local_datetime(rental.payment_due_at) }} WIB</strong>.
+              </p>
+            </div>
+            <span class="payment-total-chip">Rp {{ '{:,.0f}'.format(rental.total_payment) }}</span>
+          </div>
+          <form method="post"
+                enctype="multipart/form-data"
+                id="payment-form"
+                action="{{ url_for('customer.pay', rental_id=rental.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <!-- 03A. Satu dropdown menggantikan banyak kartu metode pembayaran. -->
+            <div class="payment-method-field mb-3">
+              <label for="payment-method">Ingin membayar menggunakan apa?</label>
+              <select id="payment-method" class="form-select" name="method" required>
+                {% for method, details in payment_methods.items() %}
+                  <option value="{{ method }}"
+                          data-requires-proof="{{ 'true' if details.requires_proof else 'false' }}">
+                    {{ method }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="payment-info-note mb-3" id="payment-guidance">
+              <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+              <span>Gunakan hanya tujuan pembayaran resmi yang diberikan KendaraGo, lalu unggah bukti transfer.</span>
+            </div>
+            <!-- 03B. Data ini hanya ditampilkan untuk metode yang memerlukan bukti. -->
+            <div class="row g-3" id="payment-proof-fields">
+              <div class="col-md-6">
+                <label for="account-holder">Nama pemilik akun/rekening</label><input id="account-holder"
+       class="form-control"
+       name="account_holder"
+       autocomplete="name" />
+              </div>
+              <div class="col-md-6">
+                <label for="payment-proof">Bukti pembayaran (maks. 2 MB)</label><input id="payment-proof"
+       type="file"
+       class="form-control"
+       name="proof"
+       accept="image/jpeg,image/png,application/pdf" />
+              </div>
+            </div>
+            <input type="hidden" name="amount" value="{{ rental.total_payment }}" />
+            <button class="btn btn-primary mt-3">
+              <i class="bi bi-send-check"></i> <span id="payment-submit-label">Kirim untuk diverifikasi</span>
+            </button>
+          </form>
+          <!-- 03C. Aksi pembatalan pesanan dipisahkan dari pembayaran. -->
+          <form method="post"
+                class="mt-3"
+                action="{{ url_for('customer.cancel', rental_id=rental.id) }}"
+                data-confirm="Batalkan pesanan ini?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><button class="btn btn-outline-danger">Batalkan pesanan</button>
+          </form>
+        </div>
+      {% endif %}
+
+      <!-- =====================================================
+           04. ULASAN SETELAH SEWA SELESAI
+           Formulir hanya muncul untuk pesanan selesai yang belum diulas.
+           ===================================================== -->
+      {% if rental.status == "Selesai" and not rental.review %}
+        <div class="card card-body mt-4">
+          <h4>Beri ulasan</h4>
+          <form method="post"
+                action="{{ url_for('customer.review', rental_id=rental.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><select class="form-select mb-2" name="rating">
+              {% for n in range(5,0,-1) %}<option value="{{ n }}">{{ n }} bintang</option>{% endfor %}</select><textarea class="form-control"
+          name="comment"
+          placeholder="Ceritakan pengalaman Anda"></textarea><button class="btn btn-primary mt-2">Kirim ulasan</button>
+          </form>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+  <script nonce="{{ csp_nonce }}">
+      (() => {
+          // ======================================================
+          // 05. INTERAKSI METODE PEMBAYARAN
+          // Atur bukti pembayaran, petunjuk, dan teks tombol secara otomatis.
+          // ======================================================
+          const method = document.getElementById("payment-method");
+          const proof = document.getElementById("payment-proof");
+          const proofFields = document.getElementById("payment-proof-fields");
+          const accountInput = document.getElementById("account-holder");
+          const guidance = document.querySelector("#payment-guidance span");
+          const submitLabel = document.getElementById("payment-submit-label");
+          if (!method) return;
+
+          // Metode digital memerlukan nama akun dan bukti; tunai/EDC tidak.
+          const syncPaymentFields = () => {
+              const selected = method.options[method.selectedIndex];
+              const requiresProof = selected.dataset.requiresProof === "true";
+              proof.disabled = !requiresProof;
+              proof.required = requiresProof;
+              accountInput.disabled = !requiresProof;
+              accountInput.required = requiresProof;
+              proofFields.hidden = !requiresProof;
+              guidance.textContent = requiresProof ?
+                  "Gunakan hanya tujuan pembayaran resmi yang diberikan KendaraGo, lalu unggah bukti pembayaran." :
+                  "Pembayaran dilakukan di lokasi KendaraGo. Admin tetap akan mengonfirmasi jadwal dan total tagihan.";
+              submitLabel.textContent = requiresProof ?
+                  "Kirim untuk diverifikasi" : "Konfirmasi metode pembayaran";
+          };
+          method.addEventListener("change", syncPaymentFields);
+          syncPaymentFields();
+      })();
+  </script>
+
+{% endblock %}

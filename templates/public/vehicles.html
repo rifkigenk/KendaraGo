@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Daftar Kendaraan{% endblock %}
+
+{% block content %}
+
+  <section class="page-header catalog-header">
+    <div class="container">
+      <span class="eyebrow">ARMADA KENDARAGO</span>
+      <h1>Temukan kendaraan Anda</h1>
+      <p>Pilih mobil atau motor yang paling sesuai untuk setiap perjalanan.</p>
+      {% if request.args.get("category") %}
+        <a class="catalog-back-link"
+           href="{{ url_for('public.home', _anchor='vehicle-categories') }}">
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>
+          Kembali ke kategori
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="catalog-section">
+    <div class="container">
+      <form class="filter-panel" method="get" aria-label="Filter kendaraan">
+        <div class="filter-heading">
+          <div>
+            <span class="filter-icon"><i class="bi bi-sliders" aria-hidden="true"></i></span>
+            <div>
+              <strong>Filter kendaraan</strong><small>Persempit pilihan sesuai kebutuhan Anda</small>
+            </div>
+          </div>
+          {% if request.args %}<a class="filter-reset" href="{{ url_for('public.vehicles') }}">Reset semua</a>{% endif %}
+        </div>
+        <div class="filter-grid">
+          <div class="filter-search">
+            <label for="vehicle-search">Nama atau merek</label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input id="vehicle-search"
+                     class="form-control"
+                     name="q"
+                     value="{{ request.args.get('q', '') }}"
+                     placeholder="Contoh: Toyota" />
+            </div>
+          </div>
+          <div>
+            <label for="vehicle-category">Kategori</label>
+            <select id="vehicle-category" class="form-select" name="category">
+              <option value="">Semua kategori</option>
+              {% for item in categories %}
+                <option value="{{ item.id }}"
+                        {{ 'selected' if request.args.get("category") == item.id|string }}>
+                  {{ item.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="vehicle-transmission">Transmisi</label>
+            <select id="vehicle-transmission" class="form-select" name="transmission">
+              <option value="">Semua transmisi</option>
+              <option value="Manual"
+                      {{ 'selected' if request.args.get("transmission") == 'Manual' }}>
+                Manual
+              </option>
+              <option value="Otomatis"
+                      {{ 'selected' if request.args.get("transmission") == 'Otomatis' }}>
+                Otomatis
+              </option>
+            </select>
+          </div>
+          <div>
+            <label for="vehicle-fuel">Bahan bakar</label>
+            <select id="vehicle-fuel" class="form-select" name="fuel">
+              <option value="">Semua bahan bakar</option>
+              {% for fuel in ['Bensin', 'Diesel', 'Hybrid', 'Listrik'] %}
+                <option value="{{ fuel }}"
+                        {{ 'selected' if request.args.get('fuel') == fuel }}>{{ fuel }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="vehicle-location">Lokasi</label>
+            <select id="vehicle-location" class="form-select" name="location">
+              <option value="">Semua lokasi</option>
+              {% for item in locations %}
+                <option value="{{ item.id }}"
+                        {{ 'selected' if request.args.get('location') == item.id|string }}>
+                  {{ item.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="vehicle-budget">Budget maksimal</label>
+            <select id="vehicle-budget" class="form-select" name="max_price">
+              <option value="">Semua harga</option>
+              {% for value, label in [(200000, 'Rp 200 ribu'), (500000, 'Rp 500 ribu'), (750000, 'Rp 750 ribu'), (1000000, 'Rp 1 juta')] %}
+                <option value="{{ value }}"
+                        {{ 'selected' if request.args.get('max_price') == value|string }}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="vehicle-sort">Urutkan</label>
+            <select id="vehicle-sort" class="form-select" name="sort">
+              <option value="newest"
+                      {{ 'selected' if request.args.get('sort', 'newest') == 'newest' }}>
+                Terbaru
+              </option>
+              <option value="cheapest"
+                      {{ 'selected' if request.args.get("sort") == 'cheapest' }}>
+                Harga terendah
+              </option>
+              <option value="highest"
+                      {{ 'selected' if request.args.get("sort") == 'highest' }}>
+                Harga tertinggi
+              </option>
+            </select>
+          </div>
+          <button class="btn btn-primary filter-submit" type="submit">
+            Terapkan <i class="bi bi-arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </form>
+
+      <div class="catalog-toolbar">
+        <div>
+          <span class="result-count">{{ page.total }}</span><span> kendaraan ditemukan</span>
+        </div>
+        <small>Harga ditampilkan per hari</small>
+      </div>
+
+      <div class="row g-4 vehicle-grid">
+        {% for vehicle in page.items %}
+          {% include "public/_vehicle_card.html" %}
+        {% else %}
+          <div class="col-12">
+            <div class="empty-state">
+              <span class="empty-state-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
+              <h2>Kendaraan tidak ditemukan</h2>
+              <p>Coba gunakan kata kunci lain atau hapus beberapa filter.</p>
+              <a class="btn btn-primary" href="{{ url_for('public.vehicles') }}">Lihat semua kendaraan</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if page.pages > 1 %}
+        <nav class="catalog-pagination" aria-label="Halaman kendaraan">
+          <ul class="pagination justify-content-center">
+            {% for n in page.iter_pages() %}
+              {% if n %}
+                <li class="page-item {{ 'active' if n == page.page }}">
+                  <a class="page-link"
+                     href="{{ url_for('public.vehicles', page=n, q=request.args.get('q'), category=request.args.get('category'), transmission=request.args.get('transmission'), fuel=request.args.get('fuel'), location=request.args.get('location'), min_price=request.args.get('min_price'), max_price=request.args.get('max_price'), sort=request.args.get('sort'), start_date=request.args.get('start_date'), end_date=request.args.get('end_date')) }}"
+                     {% if n == page.page %}aria-current="page"{% endif %}>{{ n }}</a>
+                </li>
+              {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </nav>
+      {% endif %}
+    </div>
+  </section>
+
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Manajemen Kendaraan{% endblock %}
+
+{% block content %}
+
+  <div class="dashboard-shell">
+    {% include "components/dashboard_nav.html" %}
+    <section class="dashboard-content">
+      <div class="dashboard-page-heading">
+        <div>
+          <span class="dashboard-eyebrow">MANAJEMEN ARMADA</span>
+          <h1>Kendaraan</h1>
+          <p>{{ page.total }} armada tersimpan · katalog mendukung impor massal dan pagination.</p>
+        </div>
+        <div class="dashboard-actions">
+          <a class="btn btn-outline-primary"
+             href="{{ url_for('admin.import_vehicles') }}"><i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i> Impor CSV</a>
+          <a class="btn btn-primary" href="{{ url_for('admin.vehicle_form') }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Tambah kendaraan</a>
+        </div>
+      </div>
+
+      <div class="admin-vehicle-grid">
+        {% for item in vehicles %}
+          <article class="admin-vehicle-card">
+            <div class="admin-vehicle-image">
+              {% if item.main_image %}
+                <img src="{{ url_for('static', filename=vehicle_image_path(item)) }}"
+                     alt="Foto {{ item.name }}"
+                     loading="lazy"
+                     width="640"
+                     height="420" />
+              {% else %}
+                <i class="bi bi-car-front-fill" aria-hidden="true"></i>
+              {% endif %}
+              <span class="status-badge status-{{ item.status|lower|replace(' ', '-') }}"><span class="status-dot" aria-hidden="true"></span>{{ item.status }}</span>
+            </div>
+            <div class="admin-vehicle-body">
+              <div class="admin-vehicle-meta">
+                <span>{{ item.category.name }}</span><span>{{ item.code }}</span>
+              </div>
+              <h2>{{ item.name }}</h2>
+              <dl class="admin-vehicle-details">
+                <div>
+                  <dt>Nomor polisi</dt>
+                  <dd>
+                    {{ item.license_plate }}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Harga harian</dt>
+                  <dd>
+                    Rp {{ '{:,.0f}'.format(item.daily_price) }}
+                  </dd>
+                </div>
+              </dl>
+              <div class="admin-vehicle-actions">
+                <a class="btn btn-sm btn-primary"
+                   href="{{ url_for('admin.vehicle_form', vehicle_id=item.id) }}"><i class="bi bi-pencil-square" aria-hidden="true"></i> Ubah</a>
+                <form method="post"
+                      action="{{ url_for('admin.toggle_vehicle', vehicle_id=item.id) }}"
+                      data-confirm="Ubah status kendaraan?">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <button type="submit" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-power" aria-hidden="true"></i>
+                    {{ 'Nonaktifkan' if item.is_active else 'Aktifkan' }}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </article>
+        {% else %}
+          <div class="empty-state admin-empty-state">
+            <span class="empty-state-icon"><i class="bi bi-car-front" aria-hidden="true"></i></span>
+            <h2>Belum ada kendaraan</h2>
+            <p>Tambahkan kendaraan pertama untuk mulai membangun katalog.</p>
+            <a class="btn btn-primary" href="{{ url_for('admin.vehicle_form') }}">Tambah kendaraan</a>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if page.pages > 1 %}
+        <nav class="catalog-pagination" aria-label="Halaman kendaraan">
+          <ul class="pagination">
+            {% for number in page.iter_pages() %}
+              {% if number %}
+                <li class="page-item {{ 'active' if number == page.page }}">
+                  <a class="page-link" href="{{ url_for('admin.vehicles', page=number) }}">{{ number }}</a>
+                </li>
+              {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </nav>
+      {% endif %}
+    </section>
+  </div>
+
+{% endblock %}

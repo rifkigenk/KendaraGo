@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Pelanggan{% endblock %}
+
+{% block content %}
+
+  {% set pending = rentals|selectattr('status', 'equalto', 'Menunggu pembayaran')|list|length %}
+  {% set active = rentals|selectattr('status', 'in', ['Dikonfirmasi', 'Siap diambil', 'Sedang disewa'])|list|length %}
+  {% set completed = rentals|selectattr('status', 'equalto', 'Selesai')|list|length %}
+  <div class="dashboard-shell">
+    {% include "components/dashboard_nav.html" %}
+    <section class="dashboard-content">
+      <div class="dashboard-page-heading">
+        <div>
+          <span class="dashboard-eyebrow">PERJALANAN SAYA</span>
+          <h1>Halo, {{ current_user.name }}</h1>
+          <p>Pantau pesanan, pembayaran, dan status perjalanan Anda.</p>
+        </div>
+        <div class="dashboard-actions">
+          <a class="btn btn-primary" href="{{ url_for('public.vehicles') }}"><i class="bi bi-plus-lg"></i> Sewa kendaraan</a>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        {% for label,value,icon in [('Total pesanan',rentals|length,'receipt'),('Perlu dibayar',pending,'wallet2'),('Perjalanan aktif',active,'car-front'),('Selesai',completed,'check-circle')] %}
+          <div class="col-sm-6 col-xl-3">
+            <div class="stat-card stat-tone-{{ loop.index0 }}">
+              <i class="bi bi-{{ icon }}" aria-hidden="true"></i>
+              <div><small>{{ label }}</small><strong>{{ value }}</strong></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="verification-banner {{ 'is-verified' if current_user.profile.verification_status == 'Terverifikasi' }}">
+        <span class="verification-icon"><i class="bi bi-patch-check-fill"></i></span>
+        <div>
+          <small>STATUS VERIFIKASI</small>
+          <strong>{{ current_user.profile.verification_status }}</strong>
+          <p>Lengkapi identitas dan dokumen agar proses persetujuan sewa lebih cepat.</p>
+        </div>
+        <a class="btn btn-sm btn-light" href="{{ url_for('customer.profile') }}">Kelola profil</a>
+      </div>
+
+      <section class="dashboard-panel mt-4">
+        <div class="panel-heading">
+          <div>
+            <span>RIWAYAT TRANSAKSI</span>
+            <h2>Pesanan saya</h2>
+          </div>
+          <i class="bi bi-receipt" aria-hidden="true"></i>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Kode</th>
+                <th>Kendaraan</th>
+                <th>Periode</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for rental in rentals %}
+                <tr>
+                  <td><strong>{{ rental.booking_code }}</strong></td>
+                  <td>{{ rental.vehicle.name }}</td>
+                  <td>
+                    {{ rental.start_date.strftime("%d/%m/%Y") }} –
+                    {{ rental.end_date.strftime("%d/%m/%Y") }}
+                  </td>
+                  <td>Rp {{ '{:,.0f}'.format(rental.total_payment) }}</td>
+                  <td>
+                    <span class="badge status-{{ rental.status|lower|replace(' ', '-') }}">{{ rental.status }}</span>
+                  </td>
+                  <td>
+                    <a href="{{ url_for('customer.rental_detail', rental_id=rental.id) }}"
+                       class="btn btn-sm btn-outline-primary">Lihat</a>
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="6" class="text-center py-5 text-muted">Belum ada pesanan.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="dashboard-panel mt-4">
+        <div class="panel-heading">
+          <div>
+            <span>PEMBARUAN</span>
+            <h2>Notifikasi</h2>
+          </div>
+          <i class="bi bi-bell" aria-hidden="true"></i>
+        </div>
+        <div class="dashboard-notifications">
+          {% for item in current_user.notifications|sort(attribute='created_at', reverse=true) %}
+            <form method="post"
+                  action="{{ url_for('customer.read_notification', notification_id=item.id) }}"
+                  class="dashboard-notification {{ '' if item.is_read else 'unread' }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><button class="unstyled-button w-100 text-start">
+                <strong>{{ item.title }}</strong>
+                <br />
+                <small>{{ item.message }}</small>
+              </button>
+            </form>{% else %}<div class="mini-empty"><i class="bi bi-bell-slash"></i><p>Belum ada notifikasi.</p></div>{% endfor %}
+        </div>
+      </section>
+    </section>
+  </div>
+
+{% endblock %}

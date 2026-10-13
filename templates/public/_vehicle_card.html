@@ -1,0 +1,54 @@
+<div class="col-md-6 col-lg-4 vehicle-grid-item">
+  <article class="vehicle-card card h-100">
+    <a class="vehicle-image"
+       href="{{ url_for('public.vehicle_detail', vehicle_id=vehicle.id) }}"
+       tabindex="-1"
+       aria-hidden="true">
+      {% if vehicle.main_image %}
+        <img src="{{ url_for('static', filename=vehicle_image_path(vehicle)) }}"
+             alt=""
+             loading="lazy"
+             width="640"
+             height="420" />
+      {% else %}
+        <i class="bi bi-car-front-fill" aria-hidden="true"></i>
+      {% endif %}
+      <span class="status-badge status-{{ vehicle.status|lower|replace(' ', '-') }}">
+        <span class="status-dot" aria-hidden="true"></span>{{ vehicle.status }}
+      </span>
+    </a>
+    <div class="card-body">
+      <div class="vehicle-category">
+        {{ vehicle.category.vehicle_type }} <span>·</span> {{ vehicle.brand }}
+      </div>
+      <h3 class="vehicle-title">
+        <a href="{{ url_for('public.vehicle_detail', vehicle_id=vehicle.id) }}">{{ vehicle.name }}</a>
+      </h3>
+      <div class="specs" aria-label="Spesifikasi utama">
+        <span title="Kapasitas penumpang"><i class="bi bi-people" aria-hidden="true"></i> {{ vehicle.passenger_capacity }}</span>
+        <span title="Transmisi"><i class="bi bi-gear" aria-hidden="true"></i> {{ vehicle.transmission }}</span>
+        <span title="Bahan bakar"><i class="bi bi-fuel-pump" aria-hidden="true"></i> {{ vehicle.fuel_type }}</span>
+      </div>
+      {% if vehicle.facilities %}
+        {% set sorted_facilities = vehicle.facilities|sort(attribute='name') %}
+        <div class="facility-preview" aria-label="Fasilitas kendaraan">
+          {% for facility in sorted_facilities[:3] %}
+            <span><i class="bi bi-{{ facility.icon or 'check-circle' }}" aria-hidden="true"></i>{{ facility.name }}</span>
+          {% endfor %}
+          {% if vehicle.facilities|length > 3 %}
+            <span class="facility-more">+{{ vehicle.facilities|length - 3 }} fitur</span>
+          {% endif %}
+        </div>
+      {% endif %}
+      <div class="vehicle-card-footer">
+        <div class="vehicle-price">
+          <small>Mulai dari</small><strong>Rp {{ '{:,.0f}'.format(vehicle.daily_price) }}<span>/hari</span></strong>
+        </div>
+        <a class="btn btn-primary btn-sm vehicle-action"
+           href="{{ url_for('public.rental_request', vehicle_id=vehicle.id) }}">
+          Isi formulir <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+      </div>
+    </div>
+  </article>
+</div>

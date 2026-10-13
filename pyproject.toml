@@ -1,0 +1,21 @@
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+extend-exclude = """
+/(
+    venv
+  | __pycache__
+  | static/uploads
+)/
+"""
+
+[tool.djlint]
+profile = "jinja"
+indent = 2
+max_line_length = 100
+max_blank_lines = 1
+format_css = true
+format_js = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Daftar{% endblock %}
+
+{% block content %}
+
+  <div class="auth-page">
+    <div class="auth-card wide">
+      <h2>Buat akun pelanggan</h2>
+      <p class="text-muted">Mulai perjalanan Anda bersama KendaraGo.</p>
+      <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="row g-3">
+          <div class="col-12">
+            <label>Nama lengkap</label><input class="form-control"
+       name="name"
+       value="{{ request.form.get('name', '') }}"
+       minlength="3"
+       maxlength="120"
+       autocomplete="name"
+       required />
+          </div>
+          <div class="col-md-6">
+            <label>Email</label><input type="email"
+       class="form-control"
+       name="email"
+       value="{{ request.form.get('email', '') }}"
+       maxlength="190"
+       autocomplete="email"
+       required />
+          </div>
+          <div class="col-md-6">
+            <label>Nomor telepon</label><input class="form-control"
+       name="phone"
+       value="{{ request.form.get('phone', '') }}"
+       placeholder="0812..."
+       maxlength="20"
+       autocomplete="tel"
+       required />
+          </div>
+          <div class="col-md-6">
+            <label>Password</label><input type="password"
+       class="form-control"
+       name="password"
+       minlength="15"
+       maxlength="128"
+       autocomplete="new-password"
+       aria-describedby="password-help"
+       required /><small id="password-help" class="form-text">Gunakan passphrase unik minimal 15 karakter dan jangan memakai nama atau email Anda.</small>
+          </div>
+          <div class="col-md-6">
+            <label>Ulangi password</label><input type="password"
+       class="form-control"
+       name="password_confirmation"
+       minlength="15"
+       maxlength="128"
+       autocomplete="new-password"
+       required />
+          </div>
+        </div>
+        <button class="btn btn-accent w-100 mt-4">Daftar sekarang</button>
+      </form>
+    </div>
+  </div>
+
+{% endblock %}

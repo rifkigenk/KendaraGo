@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Pembayaran{% endblock %}
+
+{% block content %}
+
+  <div class="dashboard-shell">
+    {% include "components/dashboard_nav.html" %}
+    <section class="dashboard-content">
+      <div>
+        <h1>Verifikasi pembayaran</h1>
+        <p class="text-muted">Pantau pembayaran masuk dan riwayat verifikasinya.</p>
+      </div>
+      <div class="row g-3 mt-2">
+        {% for label,value,icon,color in [('Total pembayaran',payments|length,'wallet2','primary'),('Menunggu',payments|selectattr('verification_status','equalto','Menunggu')|list|length,'hourglass-split','warning'),('Diverifikasi',payments|selectattr('verification_status','equalto','Diverifikasi')|list|length,'check-circle','success'),('Ditolak',payments|selectattr('verification_status','equalto','Ditolak')|list|length,'x-circle','danger')] %}
+          <div class="col-md-3">
+            <div class="stat-card">
+              <i class="bi bi-{{ icon }} text-{{ color }}"></i>
+              <div><small>{{ label }}</small><strong>{{ value }}</strong></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="card table-responsive mt-4">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Nomor</th>
+              <th>Pesanan & pelanggan</th>
+              <th>Tanggal</th>
+              <th>Jumlah</th>
+              <th>Metode</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in payments %}
+              <tr>
+                <td><strong>{{ item.payment_number }}</strong></td>
+                <td>
+                  {{ item.rental.booking_code }}
+                  <br />
+                  <small class="text-muted">{{ item.rental.customer.name }}</small>
+                </td>
+                <td>{{ item.payment_date.strftime("%d/%m/%Y %H:%M") }}</td>
+                <td><strong>Rp {{ '{:,.0f}'.format(item.amount) }}</strong></td>
+                <td>
+                  <span class="payment-method"><i class="bi bi-{{ 'qr-code' if item.method == 'QRIS' else 'bank' }}"></i>
+                  {{ item.method }}</span>
+                  {% if item.proof_file %}
+                    <br />
+                    <a class="small"
+                       href="{{ url_for('files.payment_proof', payment_id=item.id) }}">Unduh bukti</a>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge text-bg-{{ 'success' if item.verification_status == 'Diverifikasi' else 'danger' if item.verification_status == 'Ditolak' else 'warning' }}">{{ item.verification_status }}</span>
+                </td>
+                <td>
+                  {% if item.verification_status == "Menunggu" %}
+                    <form method="post"
+                          action="{{ url_for('admin.payment_verification', payment_id=item.id) }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><input class="form-control form-control-sm mb-1"
+       name="notes"
+       placeholder="Catatan" /><button class="btn btn-success btn-sm" name="action" value="accept">Terima</button><button class="btn btn-danger btn-sm" name="action" value="reject">Tolak</button>
+                    </form>{% else %}<small class="text-muted">{{ item.admin_notes or 'Sudah diproses' }}</small>{% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="7" class="text-center py-5">Belum ada pembayaran.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+{% endblock %}

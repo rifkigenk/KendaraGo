@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Motor Touring Dunia{% endblock %}
+
+{% block content %}
+
+  <section class="touring-hero">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <span class="eyebrow">GLOBAL TOURING COLLECTION</span>
+          <h1>Motor touring dari berbagai penjuru dunia.</h1>
+          <p class="lead text-white-50">
+            Adventure, sport, grand, dan cruiser touring—lengkap dengan data teknis dan sumber resmi
+            pabrikan.
+          </p>
+          <div class="touring-stats">
+            <div><strong>{{ total }}+</strong><small>model touring</small></div>
+            <div><strong>{{ brands|length }}</strong><small>merek global</small></div>
+            <div><strong>{{ origins|length }}</strong><small>negara asal</small></div>
+            <div><strong>Unlimited</strong><small>kapasitas katalog</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="container py-5">
+    <form class="card card-body mb-5">
+      <div class="row g-3">
+        <div class="col-lg-3">
+          <label for="tourQ">Nama atau merek</label><input id="tourQ"
+       class="form-control"
+       name="q"
+       value="{{ request.args.get('q', '') }}"
+       placeholder="BMW, Honda, Ducati..." />
+        </div>
+        <div class="col-lg-2">
+          <label for="tourBrand">Merek</label><select id="tourBrand" class="form-select" name="brand">
+            <option value="">Semua merek</option>
+            {% for item in brands %}
+              <option {{ 'selected' if request.args.get("brand") == item }}>{{ item }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-2">
+          <label for="tourClass">Kelas touring</label><select id="tourClass" class="form-select" name="touring_class">
+            <option value="">Semua kelas</option>
+            {% for item in classes %}
+              <option {{ 'selected' if request.args.get("touring_class") == item }}>{{ item }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-2">
+          <label for="tourOrigin">Negara</label><select id="tourOrigin" class="form-select" name="origin">
+            <option value="">Semua negara</option>
+            {% for item in origins %}
+              <option {{ 'selected' if request.args.get("origin") == item }}>{{ item }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-2">
+          <label for="tourSort">Urutkan</label><select id="tourSort" class="form-select" name="sort">
+            <option value="name">Nama A–Z</option>
+            <option value="cc_high">CC terbesar</option>
+            <option value="price_low">Harga termurah</option>
+            <option value="price_high">Harga tertinggi</option>
+          </select>
+        </div>
+        <div class="col-lg-1 d-flex align-items-end">
+          <button class="btn btn-primary w-100"
+                  type="submit"
+                  aria-label="Terapkan filter">
+            <i class="bi bi-funnel"></i>
+          </button>
+        </div>
+        <div class="col-md-2">
+          <label for="minCc">CC minimum</label><input id="minCc"
+       type="number"
+       class="form-control"
+       name="min_cc"
+       value="{{ request.args.get('min_cc', '') }}" />
+        </div>
+        <div class="col-md-2">
+          <label for="maxCc">CC maksimum</label><input id="maxCc"
+       type="number"
+       class="form-control"
+       name="max_cc"
+       value="{{ request.args.get('max_cc', '') }}" />
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+          <a class="btn btn-light" href="{{ url_for('public.touring_catalog') }}">Reset filter</a>
+        </div>
+      </div>
+    </form>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>Katalog touring</h2>
+      <span class="text-muted">{{ page.total }} hasil</span>
+    </div>
+    <div class="row g-4">
+      {% for vehicle in page.items %}
+        {% set spec = vehicle.specification %}
+        <div class="col-md-6 col-xl-4">
+          <article class="vehicle-card touring-card card h-100 border-0 shadow-sm">
+            <div class="vehicle-image">
+              <img src="{{ url_for('static', filename=vehicle_image_path(vehicle)) }}"
+                   alt="{{ vehicle.name }}" /><span class="status-badge">{{ vehicle.status }}</span>
+            </div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <small class="text-primary fw-bold">{{ vehicle.brand }} · {{ spec.brand_origin }}</small><small>{{ vehicle.production_year }}</small>
+              </div>
+              <h4 class="card-title mt-1">{{ vehicle.name }}</h4>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="spec-chip"><i class="bi bi-speedometer"></i> {{ spec.displacement_cc }} cc</span><span class="spec-chip"><i class="bi bi-lightning"></i> {{ spec.power_hp }} hp</span><span class="spec-chip"><i class="bi bi-fuel-pump"></i>
+                  {{ spec.fuel_capacity_l or spec.battery_capacity_kwh }}
+                {{ 'kWh' if spec.battery_capacity_kwh else 'L' }}</span>
+              </div>
+              <p class="small text-muted">
+                {{ spec.vehicle_class }} · {{ spec.final_drive }} · Jok {{ spec.seat_height_mm }} mm
+              </p>
+              <hr />
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Rp {{ '{:,.0f}'.format(vehicle.daily_price) }}</strong><small>/hari</small>
+                </div>
+                <a class="btn btn-primary btn-sm"
+                   href="{{ url_for('public.vehicle_detail', vehicle_id=vehicle.id) }}">Spesifikasi</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <i class="bi bi-bicycle"></i>
+          <h4>Motor touring tidak ditemukan</h4>
+          <p>Coba ubah filter pencarian.</p>
+        </div>
+      {% endfor %}
+    </div>
+    {% if page.pages > 1 %}
+      <nav class="mt-5" aria-label="Halaman katalog touring">
+        <ul class="pagination justify-content-center">
+          {% for number in page.iter_pages() %}
+            {% if number %}
+              <li class="page-item {{ 'active' if number == page.page }}">
+                <a class="page-link"
+                   href="{{ url_for('public.touring_catalog', page=number, q=request.args.get('q'), brand=request.args.get('brand'), touring_class=request.args.get('touring_class'), origin=request.args.get('origin'), min_cc=request.args.get('min_cc'), max_cc=request.args.get('max_cc'), sort=request.args.get('sort')) }}">{{ number }}</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">…</span>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+  </div>
+
+{% endblock %}

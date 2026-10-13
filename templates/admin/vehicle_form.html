@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Form Kendaraan{% endblock %}
+
+{% block content %}
+
+  <div class="dashboard-shell">
+    {% include "components/dashboard_nav.html" %}
+    <section class="dashboard-content">
+      <h1>{{ 'Ubah' if vehicle.id else 'Tambah' }} Kendaraan</h1>
+      <form method="post"
+            enctype="multipart/form-data"
+            class="card card-body mt-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="row g-3">
+          {% for name,label,value,type in [('code','Kode',vehicle.code or '','text'),('name','Nama kendaraan',vehicle.name or '','text'),('brand','Merek',vehicle.brand or '','text'),('model','Model',vehicle.model or '','text'),('license_plate','Nomor polisi',vehicle.license_plate or '','text'),('production_year','Tahun produksi',vehicle.production_year or '','number'),('color','Warna',vehicle.color or '','text'),('passenger_capacity','Kapasitas penumpang',vehicle.passenger_capacity or 2,'number'),('daily_price','Harga per hari',vehicle.daily_price or '','number'),('deposit','Deposit',vehicle.deposit or 0,'number')] %}
+            <div class="col-md-6">
+              <label>{{ label }}</label><input class="form-control"
+       type="{{ type }}"
+       name="{{ name }}"
+       value="{{ value }}"
+       required />
+            </div>
+          {% endfor %}
+          <div class="col-md-6">
+            <label>Kategori</label><select class="form-select" name="category_id">
+              {% for item in categories %}
+                <option value="{{ item.id }}"
+                        {{ 'selected' if vehicle.category_id == item.id }}>{{ item.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label>Lokasi</label><select class="form-select" name="location_id">
+              {% for item in locations %}
+                <option value="{{ item.id }}"
+                        {{ 'selected' if vehicle.location_id == item.id }}>{{ item.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label>Transmisi</label><select class="form-select" name="transmission">
+              <option>Manual</option>
+              <option>Otomatis</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label>Bahan bakar</label><select class="form-select" name="fuel_type">
+              <option>Bensin</option>
+              <option>Diesel</option>
+              <option>Listrik</option>
+              <option>Hybrid</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label>Status</label><select class="form-select" name="status">
+              <option>Tersedia</option>
+              <option>Perawatan</option>
+              <option>Tidak aktif</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label>Deskripsi</label><textarea class="form-control" name="description">
+{{ vehicle.description or '' }}</textarea>
+          </div>
+          <div class="col-md-6">
+            <label>Foto utama</label><input class="form-control image-preview-input"
+       type="file"
+       name="main_image"
+       accept="image/jpeg,image/png" />
+          </div>
+          <div class="col-md-6 d-flex align-items-end">
+            <div class="form-check">
+              <input class="form-check-input"
+                     type="checkbox"
+                     name="is_active"
+                     id="active"
+                     {{ 'checked' if vehicle.is_active is not false }} /><label for="active">Aktif</label>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary mt-4 align-self-start">Simpan kendaraan</button>
+      </form>
+    </section>
+  </div>
+
+{% endblock %}

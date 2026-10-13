@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Verifikasi Pelanggan{% endblock %}
+
+{% block content %}
+
+  <div class="dashboard-shell">
+    {% include "components/dashboard_nav.html" %}
+    <section class="dashboard-content">
+      <h1>Verifikasi pelanggan</h1>
+      <div class="row g-3 mt-2">
+        {% for item in profiles %}
+          <div class="col-xl-6">
+            <div class="card card-body">
+              <div class="d-flex justify-content-between">
+                <h4>{{ item.user.name }}</h4>
+                <span class="badge text-bg-warning">{{ item.verification_status }}</span>
+              </div>
+              <p>{{ item.user.email }} · {{ item.user.phone }}</p>
+              <dl class="row small">
+                <dt class="col-4">KTP</dt>
+                <dd class="col-8">
+                  {{ item.ktp_number or '-' }}
+                  {% if item.ktp_image %}
+                    · <a href="{{ url_for('files.profile_document', profile_id=item.id, field='ktp_image') }}">Periksa berkas</a>
+                  {% endif %}
+                </dd>
+                <dt class="col-4">SIM</dt>
+                <dd class="col-8">
+                  {{ item.sim_type or '-' }} / {{ item.sim_number or '-' }}
+                  {% if item.sim_image %}
+                    · <a href="{{ url_for('files.profile_document', profile_id=item.id, field='sim_image') }}">Periksa berkas</a>
+                  {% endif %}
+                </dd>
+                <dt class="col-4">Alamat</dt>
+                <dd class="col-8">
+                  {{ item.address or '-' }}
+                </dd>
+              </dl>
+              <form method="post"
+                    action="{{ url_for('admin.verify_profile', profile_id=item.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><input class="form-control mb-2"
+       name="reason"
+       placeholder="Alasan jika ditolak" /><button name="action" value="accept" class="btn btn-success btn-sm">Terima</button><button name="action" value="reject" class="btn btn-danger btn-sm">Tolak</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+{% endblock %}

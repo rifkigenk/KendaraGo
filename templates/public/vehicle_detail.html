@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vehicle.name }}{% endblock %}
+
+{% block content %}
+
+  <div class="container py-5">
+    <nav class="vehicle-breadcrumb" aria-label="Breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('public.vehicles') }}">
+            <span class="breadcrumb-icon" aria-hidden="true"><i class="bi bi-car-front-fill"></i></span>
+            <span>Kendaraan</span>
+          </a>
+        </li>
+        <li class="breadcrumb-separator" aria-hidden="true"><i class="bi bi-chevron-right"></i></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ vehicle.name }}</li>
+      </ol>
+    </nav>
+    <div class="row g-5">
+      <div class="col-lg-7">
+        <div class="detail-image">
+          {% if vehicle.main_image %}
+            <img src="{{ url_for('static', filename=vehicle_image_path(vehicle)) }}"
+                 alt="{{ vehicle.name }}" />
+          {% else %}
+            <i class="bi bi-car-front-fill"></i>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <span class="badge text-bg-primary">{{ vehicle.category.name }}</span>
+        <h1 class="mt-2">{{ vehicle.name }}</h1>
+        <p class="text-muted">{{ vehicle.description }}</p>
+        <div class="spec-grid">
+          <div>
+            <i class="bi bi-gear"></i><small>Transmisi</small><strong>{{ vehicle.transmission }}</strong>
+          </div>
+          <div>
+            <i class="bi bi-fuel-pump"></i><small>Bahan bakar</small><strong>{{ vehicle.fuel_type }}</strong>
+          </div>
+          <div>
+            <i class="bi bi-people"></i><small>Kapasitas</small><strong>{{ vehicle.passenger_capacity }} orang</strong>
+          </div>
+          <div>
+            <i class="bi bi-geo-alt"></i><small>Lokasi</small><strong>{{ vehicle.location.name }}</strong>
+            <span class="location-address">{{ vehicle.location.address }}</span>
+          </div>
+        </div>
+        <h3 class="mt-4 text-primary">
+          Rp {{ '{:,.0f}'.format(vehicle.daily_price) }} <small class="fs-6 text-muted">/ hari</small>
+        </h3>
+        <a class="btn btn-primary btn-lg w-100 mt-3"
+           href="{{ url_for('public.rental_request', vehicle_id=vehicle.id) }}">Isi Formulir Penyewaan <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        <p class="whatsapp-note">
+          <i class="bi bi-check-circle-fill" aria-hidden="true"></i> Tanpa perlu login · Dilanjutkan
+          melalui WhatsApp
+        </p>
+      </div>
+    </div>
+    <section class="mt-5">
+      <h3>Fasilitas</h3>
+      <div class="d-flex flex-wrap gap-2">
+        {% for item in vehicle.facilities|sort(attribute='name') %}<span class="facility-pill"><i class="bi bi-{{ item.icon or 'check-circle' }}"></i> {{ item.name }}</span>{% endfor %}
+      </div>
+    </section>
+    {% if vehicle.specification %}
+      {% set spec = vehicle.specification %}
+      <section class="mt-5">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+          <div>
+            <span class="eyebrow">DATA TEKNIS</span>
+            <h2>Spesifikasi lengkap</h2>
+          </div>
+          <span class="badge text-bg-dark">{{ spec.vehicle_class }}</span>
+        </div>
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <div class="card card-body h-100">
+              <h4>Mesin & performa</h4>
+              <table class="table spec-table">
+                <tr>
+                  <th>Asal merek</th>
+                  <td>{{ spec.brand_origin or '-' }}</td>
+                </tr>
+                <tr>
+                  <th>Mesin</th>
+                  <td>{{ spec.engine_layout or '-' }}</td>
+                </tr>
+                <tr>
+                  <th>Kapasitas</th>
+                  <td>{{ spec.displacement_cc or '-' }} cc</td>
+                </tr>
+                <tr>
+                  <th>Tenaga</th>
+                  <td>{{ spec.power_hp or '-' }} hp</td>
+                </tr>
+                <tr>
+                  <th>Torsi</th>
+                  <td>{{ spec.torque_nm or '-' }} Nm</td>
+                </tr>
+                <tr>
+                  <th>Transmisi</th>
+                  <td>{{ spec.gearbox or '-' }}</td>
+                </tr>
+                <tr>
+                  <th>Penggerak akhir</th>
+                  <td>{{ spec.final_drive or '-' }}</td>
+                </tr>
+                <tr>
+                  <th>Pendingin</th>
+                  <td>{{ spec.cooling_system or '-' }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card card-body h-100">
+              <h4>Dimensi & perjalanan</h4>
+              <table class="table spec-table">
+                <tr>
+                  <th>Tangki</th>
+                  <td>{{ spec.fuel_capacity_l or '-' }} liter</td>
+                </tr>
+                <tr>
+                  <th>Baterai</th>
+                  <td>{{ spec.battery_capacity_kwh or '-' }} kWh</td>
+                </tr>
+                <tr>
+                  <th>Jangkauan</th>
+                  <td>{{ spec.estimated_range_km or '-' }} km</td>
+                </tr>
+                <tr>
+                  <th>Tinggi jok</th>
+                  <td>{{ spec.seat_height_mm or '-' }} mm</td>
+                </tr>
+                <tr>
+                  <th>Berat siap jalan</th>
+                  <td>{{ spec.wet_weight_kg or '-' }} kg</td>
+                </tr>
+                <tr>
+                  <th>Ground clearance</th>
+                  <td>{{ spec.ground_clearance_mm or '-' }} mm</td>
+                </tr>
+                <tr>
+                  <th>Roda</th>
+                  <td>{{ spec.front_wheel or '-' }} / {{ spec.rear_wheel or '-' }}</td>
+                </tr>
+                <tr>
+                  <th>Bagasi</th>
+                  <td>{{ spec.luggage or '-' }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="card card-body">
+              <h4>Keselamatan & teknologi</h4>
+              <p><strong>ABS:</strong> {{ spec.abs_type or '-' }}</p>
+              <p><strong>Rider aids:</strong> {{ spec.rider_aids or '-' }}</p>
+              {% if spec.source_url %}
+                <div class="source-note">
+                  Sumber spesifikasi:
+                  <a href="{{ spec.source_url }}"
+                     target="_blank"
+                     rel="noopener noreferrer">{{ spec.source_name or 'Situs resmi pabrikan' }}</a>
+                  · diperiksa
+                  {{ spec.source_checked_at.strftime("%d/%m/%Y") if spec.source_checked_at else '-' }}.
+                  Spesifikasi dapat berbeda menurut negara.
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+  </div>
+
+{% endblock %}

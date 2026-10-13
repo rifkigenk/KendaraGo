@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Profil{% endblock %}
+
+{% block content %}
+
+  <div class="dashboard-shell">
+    {% include "components/dashboard_nav.html" %}
+    <section class="dashboard-content">
+      <div class="d-flex justify-content-between">
+        <div>
+          <h1>Profil & Dokumen</h1>
+          <p class="text-muted">Lengkapi identitas untuk mengaktifkan penyewaan.</p>
+        </div>
+        <span class="badge text-bg-warning align-self-start">{{ profile.verification_status }}</span>
+      </div>
+      {% if profile.rejection_reason %}
+        <div class="alert alert-danger">Alasan penolakan: {{ profile.rejection_reason }}</div>
+      {% endif %}
+      <form method="post"
+            enctype="multipart/form-data"
+            class="card card-body mt-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label>Nama lengkap</label><input class="form-control"
+       name="name"
+       value="{{ current_user.name }}"
+       required />
+          </div>
+          <div class="col-md-6">
+            <label>Nomor telepon</label><input class="form-control"
+       name="phone"
+       value="{{ current_user.phone or '' }}"
+       required />
+          </div>
+          <div class="col-md-4">
+            <label>Jenis kelamin</label><select class="form-select" name="gender">
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label>Tanggal lahir</label><input type="date"
+       class="form-control"
+       name="birth_date"
+       value="{{ profile.birth_date or '' }}" />
+          </div>
+          <div class="col-md-4">
+            <label>Kontak darurat</label><input class="form-control"
+       name="emergency_contact"
+       value="{{ profile.emergency_contact or '' }}" />
+          </div>
+          <div class="col-12">
+            <label>Alamat</label><textarea class="form-control" name="address" required>
+{{ profile.address or '' }}</textarea>
+          </div>
+          <div class="col-md-6">
+            <label>Nomor KTP</label><input class="form-control"
+       name="ktp_number"
+       value="{{ profile.ktp_number or '' }}"
+       required />
+          </div>
+          <div class="col-md-6">
+            <label>Foto KTP</label><input type="file"
+       class="form-control image-preview-input"
+       name="ktp_image"
+       accept="image/jpeg,image/png" />
+          </div>
+          <div class="col-md-4">
+            <label>Jenis SIM</label><select class="form-select" name="sim_type">
+              <option>SIM A</option>
+              <option>SIM C</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label>Nomor SIM</label><input class="form-control"
+       name="sim_number"
+       value="{{ profile.sim_number or '' }}"
+       required />
+          </div>
+          <div class="col-md-4">
+            <label>Foto SIM</label><input type="file"
+       class="form-control image-preview-input"
+       name="sim_image"
+       accept="image/jpeg,image/png" />
+          </div>
+          <div class="col-md-6">
+            <label>Foto profil</label><input type="file"
+       class="form-control image-preview-input"
+       name="profile_image"
+       accept="image/jpeg,image/png" />
+          </div>
+        </div>
+        <button class="btn btn-primary mt-4 align-self-start">Simpan & ajukan verifikasi</button>
+      </form>
+    </section>
+  </div>
+
+{% endblock %}

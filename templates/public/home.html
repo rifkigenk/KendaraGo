@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Beranda{% endblock %}
+
+{% block content %}
+
+  <section class="hero">
+    <div class="container">
+      <div class="row align-items-center min-vh-75">
+        <div class="col-lg-6">
+          <span class="eyebrow">PENYEWAAN TERPERCAYA</span>
+          <h1>Sewa kendaraan tanpa ribet.</h1>
+          <p class="lead">
+            Mobil dan motor berkualitas untuk perjalanan Anda. Harga transparan, proses aman.
+          </p>
+          <a href="{{ url_for('public.vehicles') }}" class="btn btn-accent btn-lg">Cari Kendaraan <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="col-lg-6 text-center">
+          <div class="hero-art">
+            <i class="bi bi-car-front-fill"></i><span class="route-dot one"></span><span class="route-dot two"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="search-float">
+    <div class="container">
+      <form action="{{ url_for('public.vehicles') }}"
+            class="card card-body shadow-lg border-0">
+        <div class="row g-3">
+          <div class="col-lg-3">
+            <label>Kendaraan</label><input class="form-control" name="q" placeholder="Toyota, Honda..." />
+          </div>
+          <div class="col-lg-3">
+            <label>Tanggal mulai</label><input class="form-control datepicker" name="start_date" required />
+          </div>
+          <div class="col-lg-3">
+            <label>Tanggal selesai</label><input class="form-control datepicker" name="end_date" required />
+          </div>
+          <div class="col-lg-3 d-flex align-items-end">
+            <button class="btn btn-primary w-100">
+              <i class="bi bi-search"></i> Cari Sekarang
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+  <section id="vehicle-categories" class="section pb-0">
+    <div class="container">
+      <div class="section-heading">
+        <span>PILIH BERDASARKAN KEBUTUHAN</span>
+        <h2>Kategori kendaraan</h2>
+        <p class="text-muted">Dari perjalanan singkat hingga rombongan besar, semuanya tersedia.</p>
+      </div>
+      <div class="category-grid">
+        {% for category in categories %}
+          <a href="{{ url_for('public.vehicles', category=category.id) }}"
+             class="category-card">
+            <div class="category-icon">
+              <i class="bi bi-{{ 'bicycle' if category.vehicle_type == 'Sepeda motor' else 'car-front-fill' }}"></i>
+            </div>
+            <div>
+              <h5>{{ category.name }}</h5>
+              <small>{{ category.vehicles|length }} kendaraan · {{ category.vehicle_type }}</small>
+            </div>
+            <i class="bi bi-arrow-up-right"></i></a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <div class="section-heading">
+        <span>PILIHAN FAVORIT</span>
+        <h2>Kendaraan terbaru</h2>
+      </div>
+      <div class="row g-4">
+        {% for vehicle in vehicles %}
+          {% include "public/_vehicle_card.html" %}
+        {% else %}
+          <div class="empty-state">
+            <i class="bi bi-car-front"></i>
+            <h4>Belum ada kendaraan</h4>
+            <p>Data kendaraan akan segera tersedia.</p>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="text-center mt-4">
+        <a class="btn btn-outline-primary"
+           href="{{ url_for('public.vehicles') }}">Lihat semua kendaraan</a>
+      </div>
+    </div>
+  </section>
+  <section class="section bg-light">
+    <div class="container">
+      <div class="section-heading">
+        <span>MENGAPA KAMI</span>
+        <h2>Perjalanan lebih tenang</h2>
+      </div>
+      <div class="row g-4">
+        {% for icon,title,text in [('shield-check','Aman','Dokumen dan transaksi terlindungi.'),('lightning-charge','Cepat','Pemesanan dalam beberapa langkah.'),('cash-stack','Transparan','Tidak ada biaya tersembunyi.') ] %}
+          <div class="col-md-4">
+            <div class="feature">
+              <i class="bi bi-{{ icon }}"></i>
+              <h4>{{ title }}</h4>
+              <p>{{ text }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <div class="section-heading">
+        <span>EMPAT LANGKAH MUDAH</span>
+        <h2>Dari pilih hingga berangkat</h2>
+      </div>
+      <div class="steps-grid">
+        {% for number,title,text in [('01','Pilih kendaraan','Temukan armada yang sesuai kebutuhan.'),('02','Isi formulir','Lengkapi identitas dan rencana penyewaan.'),('03','Kirim WhatsApp','Kirim pesan otomatis kepada admin tanpa login.'),('04','Mulai perjalanan','Konfirmasi dokumen, pembayaran, lalu ambil kendaraan.')] %}
+          <div class="step-card">
+            <span>{{ number }}</span>
+            <h4>{{ title }}</h4>
+            <p>{{ text }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% if reviews %}
+    <section class="section testimonial-section">
+      <div class="container">
+        <div class="section-heading">
+          <span>CERITA PELANGGAN</span>
+          <h2>Mereka sudah mencoba</h2>
+        </div>
+        <div class="row justify-content-center g-4">
+          {% for review in reviews %}
+            <div class="col-md-4">
+              <article class="review-card">
+                <div class="stars">
+                  {% for _ in range(review.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                </div>
+                <p>“{{ review.comment }}”</p>
+                <strong>{{ review.customer.name }}</strong><small>{{ review.vehicle.name }}</small>
+              </article>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+  <section class="container">
+    <div class="cta-banner">
+      <div>
+        <span>SIAP BERANGKAT?</span>
+        <h2>Temukan kendaraan yang pas hari ini.</h2>
+        <p>{{ vehicle_count }} armada pilihan dengan harga harian yang transparan.</p>
+      </div>
+      <a class="btn btn-accent btn-lg" href="{{ url_for('public.vehicles') }}">Jelajahi semua armada</a>
+    </div>
+  </section>
+
+{% endblock %}
