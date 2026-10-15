@@ -18,6 +18,10 @@ from utils.security import (
 )
 
 
+# ==========================================================
+# 01. MEMBUAT APLIKASI FLASK
+# Menyiapkan konfigurasi dan extension sebelum fitur didaftarkan.
+# ==========================================================
 def create_app(config_class=Config):
     """Membuat satu aplikasi Flask lengkap berdasarkan kelas konfigurasi."""
 
@@ -45,6 +49,10 @@ def create_app(config_class=Config):
     from routes.public import bp as public_bp
     from routes.staff import bp as staff_bp
 
+    # ==========================================================
+    # 02. PENDAFTARAN MODUL FITUR
+    # Menghubungkan routes publik, akun, pelanggan, berkas, petugas, dan admin.
+    # ==========================================================
     # Blueprint memecah URL berdasarkan tanggung jawab dan peran pengguna.
     app.register_blueprint(public_bp)
     app.register_blueprint(auth_bp)

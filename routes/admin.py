@@ -43,6 +43,10 @@ from utils.validators import bounded_int, decimal_amount, limited_text, safe_htt
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
+# ==========================================================
+# 01. PEMBATASAN AKSES ADMIN
+# Setiap halaman dalam Blueprint ini memerlukan login dan peran admin.
+# ==========================================================
 @bp.before_request
 @login_required
 @roles_required("admin")
@@ -51,6 +55,10 @@ def guard():
     pass
 
 
+# ==========================================================
+# 02. DASHBOARD ADMIN
+# Mengumpulkan statistik armada, pelanggan, pesanan, dan pembayaran.
+# ==========================================================
 @bp.route("/")
 def dashboard():
     first_day = date.today().replace(day=1)
@@ -82,6 +90,10 @@ def dashboard():
     )
 
 
+# ==========================================================
+# 03. DAFTAR ARMADA
+# Menampilkan data kendaraan secara bertahap menggunakan pagination.
+# ==========================================================
 @bp.route("/kendaraan")
 def vehicles():
     page = Vehicle.query.order_by(Vehicle.created_at.desc()).paginate(
@@ -90,6 +102,10 @@ def vehicles():
     return render_template("admin/vehicles.html", vehicles=page.items, page=page)
 
 
+# ==========================================================
+# 04. IMPOR ARMADA DARI CSV
+# Menentukan kolom, memvalidasi baris impor, dan menyediakan contoh CSV.
+# ==========================================================
 IMPORT_COLUMNS = [
     "code",
     "category",
@@ -313,6 +329,10 @@ def vehicle_import_template():
     )
 
 
+# ==========================================================
+# 05. TAMBAH DAN UBAH KENDARAAN
+# Memvalidasi data unit dan foto sebelum menyimpan perubahan armada.
+# ==========================================================
 @bp.route("/kendaraan/tambah", methods=["GET", "POST"])
 @bp.route("/kendaraan/<int:vehicle_id>/ubah", methods=["GET", "POST"])
 @limiter.limit("20 per hour", methods=["POST"])
@@ -413,6 +433,10 @@ def vehicle_form(vehicle_id=None):
     )
 
 
+# ==========================================================
+# 06. STATUS AKTIF KENDARAAN
+# Mengatur apakah kendaraan aktif dengan memeriksa kondisi sewanya.
+# ==========================================================
 @bp.route("/kendaraan/<int:vehicle_id>/status", methods=["POST"])
 @limiter.limit("30 per hour")
 def toggle_vehicle(vehicle_id):
@@ -427,6 +451,10 @@ def toggle_vehicle(vehicle_id):
     return redirect(url_for("admin.vehicles"))
 
 
+# ==========================================================
+# 07. VERIFIKASI DOKUMEN PELANGGAN
+# Menampilkan profil dan menyimpan keputusan verifikasi beserta alasannya.
+# ==========================================================
 @bp.route("/pelanggan/verifikasi")
 def verifications():
     profiles = CustomerProfile.query.order_by(CustomerProfile.updated_at.desc()).all()
@@ -469,6 +497,10 @@ def verify_profile(profile_id):
     return redirect(url_for("admin.verifications"))
 
 
+# ==========================================================
+# 08. VERIFIKASI PEMBAYARAN
+# Menampilkan pembayaran dan memeriksa bentrok jadwal sebelum konfirmasi.
+# ==========================================================
 @bp.route("/pembayaran")
 def payments():
     return render_template(
@@ -542,6 +574,10 @@ def payment_verification(payment_id):
     return redirect(url_for("admin.payments"))
 
 
+# ==========================================================
+# 09. DAFTAR PESANAN
+# Menampilkan penyewaan dengan pilihan filter berdasarkan status.
+# ==========================================================
 @bp.route("/pesanan")
 def rentals():
     query = Rental.query
@@ -553,6 +589,10 @@ def rentals():
     )
 
 
+# ==========================================================
+# 10. UNDUH LAPORAN EXCEL
+# Memanggil layanan laporan dan mengirim hasilnya sebagai file unduhan.
+# ==========================================================
 @bp.route("/laporan/penyewaan.xlsx")
 def export_rentals():
     stream = rentals_excel(Rental.query.order_by(Rental.created_at.desc()).all())

@@ -4,6 +4,10 @@ from extensions import db
 from models import Notification
 
 
+# ==========================================================
+# 01. NOTIFIKASI PENGGUNA
+# Menambahkan judul, pesan, dan tautan notifikasi; commit dapat dilakukan pemanggil.
+# ==========================================================
 def notify(user_id, title, message, link=None, commit=False):
     """Menambahkan notifikasi; commit opsional dipakai untuk transaksi mandiri."""
     notification = Notification(

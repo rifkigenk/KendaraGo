@@ -11,6 +11,10 @@ from models import CustomerProfile, Payment, VehiclePickup, VehicleReturn
 bp = Blueprint("files", __name__, url_prefix="/berkas")
 
 
+# ==========================================================
+# 01. PENGIRIMAN BERKAS PRIVAT
+# Memastikan file berasal dari PRIVATE_UPLOAD_FOLDER sebelum dikirim.
+# ==========================================================
 def send_private_file(relative_path):
     """Mengirim file hanya dari folder privat yang telah ditentukan."""
     if not relative_path:
@@ -31,6 +35,10 @@ def send_private_file(relative_path):
     )
 
 
+# ==========================================================
+# 02. FOTO PROFIL DAN DOKUMEN IDENTITAS
+# Foto profil, KTP, dan SIM hanya dapat diunduh oleh pemilik atau admin.
+# ==========================================================
 @bp.route("/profil/<int:profile_id>/<field>")
 @login_required
 def profile_document(profile_id, field):
@@ -43,6 +51,10 @@ def profile_document(profile_id, field):
     return send_private_file(getattr(profile, field))
 
 
+# ==========================================================
+# 03. BUKTI PEMBAYARAN
+# Memeriksa pemilik pesanan atau peran admin sebelum mengirim bukti.
+# ==========================================================
 @bp.route("/pembayaran/<int:payment_id>")
 @login_required
 def payment_proof(payment_id):
@@ -52,6 +64,10 @@ def payment_proof(payment_id):
     return send_private_file(payment.proof_file)
 
 
+# ==========================================================
+# 04. FOTO PEMERIKSAAN
+# Mengizinkan pemilik pesanan, petugas, atau admin mengunduh foto kondisi.
+# ==========================================================
 @bp.route("/pemeriksaan/<kind>/<int:item_id>")
 @login_required
 def inspection_photo(kind, item_id):

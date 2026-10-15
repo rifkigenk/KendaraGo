@@ -1,3 +1,7 @@
+/* ==========================================================
+   01. KARTU KATEGORI KENDARAAN
+   Mengatur susunan kategori, ikon, teks, dan efek saat kursor diarahkan.
+   ========================================================== */
 .category-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -43,6 +47,10 @@
 .category-card small {
   color: #748196;
 }
+/* ==========================================================
+   02. LANGKAH PENYEWAAN
+   Menyusun kartu urutan menyewa dengan penanda langkah dan bayangan.
+   ========================================================== */
 .steps-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -60,6 +68,10 @@
   font-size: 2.2rem;
   font-weight: 900;
 }
+/* ==========================================================
+   03. TESTIMONI PELANGGAN
+   Mengatur latar bagian ulasan, kartu testimoni, dan warna bintang.
+   ========================================================== */
 .testimonial-section {
   background: linear-gradient(120deg, #edf6ff, #f8fbff);
 }
@@ -81,6 +93,10 @@
 .review-card small {
   color: #748196;
 }
+/* ==========================================================
+   04. AJAKAN MENYEWA
+   Mengatur banner ajakan, judul, dan tombol menuju proses penyewaan.
+   ========================================================== */
 .cta-banner {
   display: flex;
   align-items: center;
@@ -101,9 +117,17 @@
   margin-top: 8px;
   font-weight: 800;
 }
+/* ==========================================================
+   05. LABEL METODE PEMBAYARAN
+   Menjaga nama metode pembayaran tetap berada dalam satu baris.
+   ========================================================== */
 .payment-method {
   white-space: nowrap;
 }
+/* ==========================================================
+   06. KATALOG TOURING DAN SPESIFIKASI
+   Mengatur header touring, statistik, tabel spesifikasi, dan kartu kendaraan.
+   ========================================================== */
 .touring-hero {
   padding: 75px 0;
   color: #fff;
@@ -158,6 +182,10 @@
   min-height: 58px;
 }
 
+/* ==========================================================
+   07. PENYESUAIAN TABLET
+   Mengubah kategori dan langkah menjadi dua kolom serta menyusun ulang banner.
+   ========================================================== */
 @media (max-width: 991.98px) {
   .category-grid,
   .steps-grid {
@@ -171,6 +199,10 @@
   }
 }
 
+/* ==========================================================
+   08. PENYESUAIAN PONSEL
+   Mengubah kartu menjadi satu kolom dan mengurangi jarak dalam banner.
+   ========================================================== */
 @media (max-width: 575.98px) {
   .category-grid,
   .steps-grid {

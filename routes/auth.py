@@ -35,6 +35,10 @@ bp = Blueprint("auth", __name__, url_prefix="/auth")
 DUMMY_PASSWORD_HASH = generate_password_hash("dummy-password-never-used")
 
 
+# ==========================================================
+# 01. IDENTITAS LOGIN DAN ARAH DASHBOARD
+# Menentukan kunci pembatas percobaan login dan halaman tujuan sesuai peran.
+# ==========================================================
 def login_identity():
     email = request.form.get("email", "") if request.method == "POST" else ""
     return f"{get_remote_address()}:{client_fingerprint(email)}"
@@ -48,6 +52,10 @@ def dashboard_for(user):
     return url_for(endpoint)
 
 
+# ==========================================================
+# 02. LOGIN PENGGUNA
+# Memeriksa email dan password, membuat sesi, lalu membuka dashboard.
+# ==========================================================
 @bp.route("/login", methods=["GET", "POST"])
 @limiter.limit("5 per minute", methods=["POST"], key_func=login_identity)
 @limiter.limit("20 per hour", methods=["POST"])
@@ -88,6 +96,10 @@ def login():
     return render_template("auth/login.html")
 
 
+# ==========================================================
+# 03. REGISTRASI PELANGGAN
+# Memvalidasi data pendaftaran lalu membuat akun dan profil pelanggan.
+# ==========================================================
 @bp.route("/register", methods=["GET", "POST"])
 @limiter.limit("3 per hour", methods=["POST"])
 def register():
@@ -143,6 +155,10 @@ def register():
     return render_template("auth/register.html")
 
 
+# ==========================================================
+# 04. KELUAR DARI AKUN
+# Mengakhiri login dan membersihkan sesi melalui permintaan POST.
+# ==========================================================
 @bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
@@ -153,6 +169,10 @@ def logout():
     return redirect(url_for("public.home"))
 
 
+# ==========================================================
+# 05. PERUBAHAN PASSWORD
+# Memeriksa password lama dan aturan password baru sebelum menyimpannya.
+# ==========================================================
 @bp.route("/ubah-password", methods=["GET", "POST"])
 @fresh_login_required
 @limiter.limit("5 per hour", methods=["POST"])

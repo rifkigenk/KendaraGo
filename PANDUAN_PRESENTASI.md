@@ -82,6 +82,67 @@ Pemisahan ini menerapkan prinsip *separation of concerns*: route tidak perlu
 menangani seluruh perhitungan sendiri, dan logika bisnis lebih mudah diuji serta
 digunakan ulang.
 
+## Lokasi folder fitur dan assets
+
+Tidak ada satu folder bernama `features/` atau `assets/` dalam proyek ini.
+Kode setiap fitur terbagi menjadi penerima permintaan di `routes/`, proses bisnis
+di `services/`, tampilan di `templates/`, dan data di `models/`. Assets publik
+berada di `static/`.
+
+| Fitur | Kode penerima permintaan | Tampilan halaman | Proses pendukung |
+|---|---|---|---|
+| Beranda, pencarian, filter, katalog, detail, dan informasi | `routes/public.py` | `templates/public/` | `services/availability_service.py` |
+| Formulir sewa menuju WhatsApp | `routes/public.py` fungsi `rental_request` | `templates/public/rental_form.html` | Fungsi `build_whatsapp_message` dalam route publik |
+| Login, registrasi, logout, dan ubah password | `routes/auth.py` | `templates/auth/` | `models/user.py`, `utils/security.py`, `utils/validators.py` |
+| Profil, pemesanan, pembayaran, pembatalan, ulasan, dan invoice pelanggan | `routes/customer.py` | `templates/customer/` | `services/rental_service.py`, `services/payment_service.py`, `services/report_service.py` |
+| Armada, impor CSV, verifikasi pelanggan dan pembayaran, serta laporan admin | `routes/admin.py` | `templates/admin/` | `services/payment_service.py`, `services/report_service.py` |
+| Pemeriksaan pengambilan dan pengembalian kendaraan | `routes/staff.py` | `templates/staff/` | `services/rental_service.py` |
+| Unduhan dokumen, bukti bayar, dan foto pemeriksaan | `routes/files.py` | Ditautkan dari halaman sesuai peran | `utils/file_handler.py` |
+| Ketersediaan kendaraan dan pengemudi | Dipanggil route publik, pelanggan, dan admin | Pilihan jadwal pada katalog dan pemesanan | `services/availability_service.py` |
+| Pembuatan notifikasi | Dipanggil dari proses terkait | Menu akun dan dashboard pelanggan | `services/notification_service.py` |
+
+### Isi folder assets
+
+| Lokasi | Isi dan kegunaan |
+|---|---|
+| `static/css/app.css` | Gaya utama: warna dasar, tombol, navigasi, katalog, dashboard, dan responsivitas. |
+| `static/css/enhancements.css` | Gaya tambahan untuk kategori, langkah menyewa, testimoni, banner, dan touring. |
+| `static/js/app.js` | Interaksi header, menu ponsel, animasi, toast, kalender, konfirmasi, dan pratinjau gambar. |
+| `static/vendor/` | Library lokal Bootstrap, Bootstrap Icons, Flatpickr, SweetAlert2, dan Chart.js. |
+| `static/uploads/vehicles/` | Foto kendaraan; `catalog/` memuat foto katalog dan `user/` menampung unggahan kendaraan. |
+| `static/favicon.svg` | Ikon situs yang ditampilkan pada tab browser. |
+| `templates/base.html` | Kerangka halaman yang memuat CSS dan JavaScript melalui `url_for('static', filename=...)`. |
+
+Dokumen identitas, foto profil, bukti pembayaran, dan foto pemeriksaan yang
+diunggah oleh aplikasi disimpan di `instance/private_uploads/`, sesuai pengaturan
+`PRIVATE_UPLOAD_FOLDER` dalam `config.py`. Aksesnya melalui `routes/files.py`.
+Folder kosong `static/uploads/documents/`, `profiles/`, `payments/`, dan
+`inspections/` bukan acuan lokasi penyimpanan unggahan privat aplikasi saat ini.
+
+### Cara membaca komentar pembatas
+
+Nomor komentar adalah urutan bagian dalam file tersebut. Judul menjelaskan
+nama bagian, lalu kalimat di bawahnya menjelaskan tujuan kode yang mengikuti.
+Contoh pada CSS dan JavaScript:
+
+```css
+/* ==========================================================
+   01. WARNA DAN UKURAN DASAR
+   Variabel di sini menjadi acuan warna, radius, bayangan, dan animasi.
+   ========================================================== */
+```
+
+Pada Python formatnya memakai `#` pada setiap baris, sedangkan pada template
+Jinja memakai `{# ... #}` agar penjelasannya tidak tampil pada halaman web.
+Komentar pembatas tersedia pada route fitur, layanan bisnis, CSS, JavaScript,
+dan kerangka halaman `templates/base.html`.
+
+Untuk menjelaskan sebuah fitur, mulai dari halaman di `templates/`, lanjutkan
+ke fungsi penerimanya di `routes/`, lalu tunjukkan proses di `services/` dan
+struktur data di `models/`. Contoh pembayaran: `templates/customer/rental_detail.html`
+→ fungsi `pay` di `routes/customer.py` → `services/payment_service.py`
+→ `models/payment.py`.
+
 ## Urutan menunjukkan kode formulir dan pembayaran
 
 Gunakan nomor pada komentar pembatas sebagai urutan presentasi. Tidak perlu

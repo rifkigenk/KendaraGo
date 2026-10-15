@@ -17,6 +17,10 @@ from utils.validators import bounded_int, decimal_amount, limited_text
 bp = Blueprint("staff", __name__, url_prefix="/petugas")
 
 
+# ==========================================================
+# 01. PEMBATASAN AKSES PETUGAS
+# Halaman pemeriksaan dapat diakses oleh petugas atau admin yang login.
+# ==========================================================
 @bp.before_request
 @login_required
 @roles_required("petugas", "admin")
@@ -25,6 +29,10 @@ def guard():
     pass
 
 
+# ==========================================================
+# 02. DASHBOARD PETUGAS
+# Menampilkan daftar pekerjaan pengambilan dan pengembalian kendaraan.
+# ==========================================================
 @bp.route("/")
 def dashboard():
     today = datetime.today().date()
@@ -45,6 +53,10 @@ def dashboard():
     )
 
 
+# ==========================================================
+# 03. PEMERIKSAAN PENGAMBILAN
+# Mencatat checklist, kilometer, dan foto saat kendaraan diserahkan.
+# ==========================================================
 @bp.route("/pengambilan/<int:rental_id>", methods=["GET", "POST"])
 @limiter.limit("30 per hour", methods=["POST"])
 def pickup(rental_id):
@@ -117,6 +129,10 @@ def pickup(rental_id):
     return render_template("staff/inspection.html", rental=rental, mode="pickup")
 
 
+# ==========================================================
+# 04. PEMERIKSAAN PENGEMBALIAN
+# Mencatat kondisi akhir, menghitung denda, dan memperbarui status sewa.
+# ==========================================================
 @bp.route("/pengembalian/<int:rental_id>", methods=["GET", "POST"])
 @limiter.limit("30 per hour", methods=["POST"])
 def vehicle_return(rental_id):

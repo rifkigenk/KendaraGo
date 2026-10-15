@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
+  {# ==========================================================
+     01. IDENTITAS HALAMAN DAN ASSETS CSS
+     Memuat favicon, CSS library dari static/vendor, dan CSS dari static/css.
+     ========================================================== #}
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -23,6 +27,10 @@
   <body>
     <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
 
+    {# ==========================================================
+       02. NAVIGASI DAN MENU AKUN
+       Menampilkan menu publik dan akses dashboard sesuai peran pengguna.
+       ========================================================== #}
     <header class="site-header sticky-top" data-site-header>
       <nav class="navbar navbar-expand-lg navbar-dark"
            aria-label="Navigasi utama">
@@ -104,10 +112,18 @@
       </nav>
     </header>
 
+    {# ==========================================================
+       03. TEMPAT ISI HALAMAN FITUR
+       Template anak mengisi block content dengan tampilan fitur masing-masing.
+       ========================================================== #}
     <main id="main-content">
       {% block content %}{% endblock %}
     </main>
 
+    {# ==========================================================
+       04. FOOTER DAN KONTAK
+       Menampilkan tautan informasi, layanan, dan kanal kontak KendaraGo.
+       ========================================================== #}
     <footer class="footer">
       <div class="footer-bubbles" aria-hidden="true">
         <span class="bubble bubble-1"></span><span class="bubble bubble-2"></span>
@@ -171,6 +187,10 @@
       </div>
     </footer>
 
+    {# ==========================================================
+       05. DATA PESAN NOTIFIKASI
+       Menyediakan pesan Flask untuk dibaca JavaScript sebagai toast.
+       ========================================================== #}
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div id="flash-messages"
@@ -179,6 +199,10 @@
       {% endif %}
     {% endwith %}
 
+    {# ==========================================================
+       06. ASSETS JAVASCRIPT DAN SCRIPT HALAMAN
+       Memuat library lokal, static/js/app.js, dan script dari template anak.
+       ========================================================== #}
     <script nonce="{{ csp_nonce }}"
             src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script nonce="{{ csp_nonce }}"

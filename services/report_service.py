@@ -7,6 +7,10 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen.canvas import Canvas
 
 
+# ==========================================================
+# 01. KEAMANAN ISI EXCEL
+# Mencegah teks masukan pengguna dianggap sebagai rumus oleh aplikasi Excel.
+# ==========================================================
 def excel_safe(value):
     """Mencegah teks pengguna dieksekusi sebagai formula saat laporan dibuka."""
     if isinstance(value, str) and value.startswith(("=", "+", "-", "@", "\t", "\r")):
@@ -14,6 +18,10 @@ def excel_safe(value):
     return value
 
 
+# ==========================================================
+# 02. LAPORAN PENYEWAAN EXCEL
+# Menyusun daftar penyewaan menjadi workbook di memori untuk diunduh.
+# ==========================================================
 def rentals_excel(rentals):
     """Mengubah daftar penyewaan menjadi workbook Excel di memori."""
     workbook = Workbook()
@@ -40,6 +48,10 @@ def rentals_excel(rentals):
     return stream
 
 
+# ==========================================================
+# 03. INVOICE PDF
+# Membuat dokumen tagihan berisi identitas pesanan dan rincian biaya.
+# ==========================================================
 def invoice_pdf(rental):
     """Menghasilkan dokumen invoice PDF untuk satu penyewaan."""
     stream = BytesIO()

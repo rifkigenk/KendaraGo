@@ -8,6 +8,10 @@ from sqlalchemy import and_, or_
 from models import Maintenance, Rental
 
 
+# ==========================================================
+# 01. STATUS YANG MEMBLOKIR JADWAL
+# Menentukan status sewa dan perawatan yang diperhitungkan sebagai bentrok.
+# ==========================================================
 BLOCKING_STATUSES = [
     "Menunggu pembayaran",
     "Menunggu verifikasi pembayaran",
@@ -19,6 +23,10 @@ BLOCKING_STATUSES = [
 MAINTENANCE_STATUSES = ["Dijadwalkan", "Sedang dikerjakan"]
 
 
+# ==========================================================
+# 02. BATAS WAKTU RESERVASI
+# Pesanan menunggu pembayaran hanya memblokir jadwal selama belum kedaluwarsa.
+# ==========================================================
 def blocking_rental_condition():
     """Status menunggu hanya memblokir selama tenggat pembayarannya berlaku."""
     now = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -41,6 +49,10 @@ def blocking_rental_condition():
     )
 
 
+# ==========================================================
+# 03. KETERSEDIAAN KENDARAAN
+# Memeriksa tumpang tindih tanggal dengan penyewaan dan jadwal perawatan.
+# ==========================================================
 def vehicle_is_available(
     vehicle_id, start_date, end_date, exclude_rental_id=None, *, lock=False
 ):
@@ -68,6 +80,10 @@ def vehicle_is_available(
     return maintenance_query.first() is None
 
 
+# ==========================================================
+# 04. KETERSEDIAAN PENGEMUDI
+# Memeriksa apakah pengemudi sudah dipesan pada rentang tanggal yang sama.
+# ==========================================================
 def driver_is_available(
     driver_id, start_date, end_date, exclude_rental_id=None, *, lock=False
 ):

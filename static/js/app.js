@@ -1,9 +1,21 @@
+/* ==========================================================
+   01. MENUNGGU HALAMAN SIAP
+   Interaksi dijalankan setelah elemen HTML selesai dimuat oleh browser.
+   ========================================================== */
 document.addEventListener("DOMContentLoaded", () => {
+  /* ==========================================================
+     02. TAMPILAN HEADER SAAT SCROLL
+     Mengubah gaya header ketika halaman digulir lebih dari 16 piksel.
+     ========================================================== */
   const header = document.querySelector("[data-site-header]");
   const updateHeader = () => header?.classList.toggle("is-scrolled", window.scrollY > 16);
   updateHeader();
   window.addEventListener("scroll", updateHeader, { passive: true });
 
+  /* ==========================================================
+     03. NAVIGASI PADA LAYAR KECIL
+     Menutup menu Bootstrap setelah tautan dipilih pada layar di bawah 992 piksel.
+     ========================================================== */
   const navigation = document.getElementById("mainNavigation");
   if (navigation && window.bootstrap) {
     navigation.querySelectorAll("a").forEach((link) => {
@@ -15,6 +27,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  /* ==========================================================
+     04. ANIMASI KEMUNCULAN KONTEN
+     Menampilkan bagian saat masuk layar sambil menghormati preferensi pengurangan animasi.
+     ========================================================== */
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const revealTargets = document.querySelectorAll(
     "main > section, main > .page-header, .catalog-section, .dashboard-content > *",
@@ -36,6 +52,10 @@ document.addEventListener("DOMContentLoaded", () => {
     revealTargets.forEach((target) => observer.observe(target));
   }
 
+  /* ==========================================================
+     05. PESAN HASIL PROSES
+     Membaca pesan Flask dari HTML dan menampilkannya sebagai toast SweetAlert.
+     ========================================================== */
   const flashContainer = document.getElementById("flash-messages");
   if (flashContainer && window.Swal) {
     const messages = JSON.parse(flashContainer.dataset.messages);
@@ -51,10 +71,18 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  /* ==========================================================
+     06. PILIHAN TANGGAL
+     Memasang kalender pada input datepicker dengan tanggal paling awal hari ini.
+     ========================================================== */
   if (window.flatpickr) {
     flatpickr(".datepicker", { dateFormat: "Y-m-d", minDate: "today" });
   }
 
+  /* ==========================================================
+     07. KONFIRMASI FORMULIR
+     Meminta konfirmasi untuk form bertanda data-confirm sebelum dikirim.
+     ========================================================== */
   document.querySelectorAll("form[data-confirm]").forEach((form) => {
     form.addEventListener("submit", (event) => {
       if (form.dataset.confirmed) return;
@@ -81,6 +109,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  /* ==========================================================
+     08. PRATINJAU GAMBAR UNGGAHAN
+     Menampilkan gambar yang dipilih dan melepas URL pratinjau sebelumnya.
+     ========================================================== */
   document.querySelectorAll(".image-preview-input").forEach((input) => {
     input.addEventListener("change", () => {
       if (!input.files[0]) return;

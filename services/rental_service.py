@@ -22,6 +22,10 @@ from services.availability_service import driver_is_available, vehicle_is_availa
 from services.notification_service import notify
 
 
+# ==========================================================
+# 01. WAKTU DAN TENGGAT PEMBAYARAN
+# Menggunakan waktu UTC dan menentukan batas pembayaran tiap pesanan.
+# ==========================================================
 def utc_now():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
@@ -35,6 +39,10 @@ def payment_deadline_for(rental):
     )
 
 
+# ==========================================================
+# 02. PERHITUNGAN BIAYA SEWA
+# Menghitung durasi, biaya kendaraan, pengemudi, promo, dan deposit.
+# ==========================================================
 def calculate_price(
     vehicle,
     start_date,
@@ -95,6 +103,10 @@ def calculate_price(
     }
 
 
+# ==========================================================
+# 03. PEMBUATAN DATA PENYEWAAN
+# Memvalidasi pilihan dan jadwal lalu menyimpan pesanan beserta harga.
+# ==========================================================
 def create_rental(
     customer,
     vehicle,
@@ -208,6 +220,10 @@ def create_rental(
     return rental
 
 
+# ==========================================================
+# 04. PERUBAHAN STATUS DAN RIWAYAT
+# Mencatat status baru, pelaku perubahan, catatan, dan notifikasi.
+# ==========================================================
 def change_status(rental, new_status, user, notes=None):
     """Mengubah status sekaligus membuat audit log dan notifikasi pelanggan."""
     old_status = rental.status
@@ -229,6 +245,10 @@ def change_status(rental, new_status, user, notes=None):
     )
 
 
+# ==========================================================
+# 05. PEMBATALAN PESANAN
+# Menolak pembatalan yang tidak valid dan melepas penggunaan promo.
+# ==========================================================
 def cancel_rental(rental, user=None, *, automatic=False):
     """Membatalkan reservasi, membebaskan promo, dan menutup pembayaran tertunda."""
     allowed = {"Menunggu pembayaran", "Menunggu verifikasi pembayaran"}
@@ -244,6 +264,10 @@ def cancel_rental(rental, user=None, *, automatic=False):
     change_status(rental, new_status, user, notes)
 
 
+# ==========================================================
+# 06. PEMBATALAN OTOMATIS
+# Menutup pesanan menunggu pembayaran yang sudah melewati tenggat.
+# ==========================================================
 def expire_unpaid_rentals(*, commit=True):
     """Menutup pesanan yang melewati tenggat, termasuk data lama tanpa deadline."""
     now = utc_now()
