@@ -37,6 +37,16 @@
         {% endfor %}
       </div>
 
+      {% if config.WHATSAPP_ENABLED %}
+        <div class="alert alert-info d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div>
+            <strong>Notifikasi pesanan lewat WhatsApp</strong>
+            <p class="mb-0">Gunakan nomor yang sama dengan profil Anda. Kirim MULAI untuk berlangganan atau STOP untuk berhenti.</p>
+          </div>
+          <a class="btn btn-success" href="https://wa.me/{{ config.WHATSAPP_NUMBER }}?text=MULAI" target="_blank" rel="noopener noreferrer">Aktifkan notifikasi WhatsApp</a>
+        </div>
+      {% endif %}
+
       <div class="verification-banner {{ 'is-verified' if current_user.profile.verification_status == 'Terverifikasi' }}">
         <span class="verification-icon"><i class="bi bi-patch-check-fill"></i></span>
         <div>

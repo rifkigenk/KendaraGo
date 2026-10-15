@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Buka WhatsApp{% endblock %}
+{% block content %}
+  <section class="container py-5 text-center">
+    <h1>Pesan Anda siap dibuka di WhatsApp</h1>
+    <p>Kami sedang membuka WhatsApp ke {{ config.WHATSAPP_DISPLAY_NUMBER }}. Periksa ringkasan pesanan, lalu tekan Kirim di WhatsApp.</p>
+    <a id="open-whatsapp" class="btn btn-success btn-lg" href="{{ whatsapp_url }}" rel="noreferrer">
+      <i class="bi bi-whatsapp" aria-hidden="true"></i> Buka WhatsApp sekarang
+    </a>
+    <p class="mt-3 text-muted">Jika belum terbuka otomatis, tekan tombol di atas. Di komputer, Anda mungkin perlu masuk ke WhatsApp Web atau membuka aplikasi WhatsApp.</p>
+    <p>Permintaan sewa belum dikirim sampai Anda menekan Kirim di WhatsApp.</p>
+    <a href="{{ url_for('public.vehicles') }}">Kembali ke kendaraan</a>
+  </section>
+{% endblock %}
+{% block scripts %}
+  <script nonce="{{ csp_nonce }}">
+    window.location.replace(document.getElementById("open-whatsapp").href);
+  </script>
+{% endblock %}

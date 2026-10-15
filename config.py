@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
-DEFAULT_WHATSAPP_NUMBER = "6289632358762"
+DEFAULT_WHATSAPP_NUMBER = "6282282026127"
 
 
 def env_bool(name, default=False):
@@ -66,6 +66,16 @@ class Config:
         os.getenv("WHATSAPP_NUMBER", DEFAULT_WHATSAPP_NUMBER)
     )
     WHATSAPP_DISPLAY_NUMBER = local_phone_number(WHATSAPP_NUMBER)
+    WHATSAPP_ENABLED = env_bool("WHATSAPP_ENABLED", False)
+    WHATSAPP_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
+    WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+    WHATSAPP_APP_SECRET = os.getenv("WHATSAPP_APP_SECRET", "")
+    WHATSAPP_VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN", "")
+    WHATSAPP_API_VERSION = os.getenv("WHATSAPP_API_VERSION", "")
+    WHATSAPP_PUBLIC_URL = os.getenv("WHATSAPP_PUBLIC_URL", "")
+    WHATSAPP_TEMPLATE_NAME = os.getenv("WHATSAPP_TEMPLATE_NAME", "")
+    WHATSAPP_TEMPLATE_LANGUAGE = os.getenv("WHATSAPP_TEMPLATE_LANGUAGE", "id")
+
     # SQLAlchemy membaca URL koneksi MySQL dari environment.
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL", "mysql+pymysql://root:@localhost/db_kendarago"

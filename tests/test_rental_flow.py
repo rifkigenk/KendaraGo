@@ -77,6 +77,47 @@ def rental_data():
 
 
 # Membuat transaksi uji dengan jadwal mendatang dan promo opsional.
+def test_public_rental_opens_whatsapp_without_external_post_redirect(app, client):
+    from html import unescape
+    import re
+    from urllib.parse import parse_qs, urlsplit
+
+    _, vehicle, location, _ = rental_data()
+    app.config["WHATSAPP_ENABLED"] = False
+    app.config["WHATSAPP_NUMBER"] = "6282282026127"
+    form = {
+        "full_name": "Pelanggan Demo",
+        "nik": "1234567890123456",
+        "whatsapp": "081234567890",
+        "emergency_phone": "081234567899",
+        "start_date": str(date.today() + timedelta(days=2)),
+        "end_date": str(date.today() + timedelta(days=3)),
+        "pickup_time": "09:00",
+        "pickup_location_id": str(location.id),
+        "sim_type": "A",
+        "sim_number": "123456789012",
+        "terms": "1",
+    }
+    response = client.post(f"/kendaraan/{vehicle.id}/pesan", data=form)
+    assert response.status_code == 200
+    assert "Location" not in response.headers
+    html = response.get_data(as_text=True)
+    link = unescape(re.search(r'id="open-whatsapp"[^>]+href="([^"]+)"', html)[1])
+    target = urlsplit(link)
+    assert target.netloc == "wa.me"
+    assert target.path == "/6282282026127"
+    message = parse_qs(target.query)["text"][0]
+    assert "Pelanggan Demo" in message
+    assert "1234567890123456" not in message
+    nonce = re.search(r'<script nonce="([^"]+)"', html)[1]
+    assert f"'nonce-{nonce}'" in response.headers["Content-Security-Policy"]
+    assert "window.location.replace" in html
+    form["nik"] = "123"
+    invalid = client.post(f"/kendaraan/{vehicle.id}/pesan", data=form)
+    assert b'id="rental-form-error"' in invalid.data
+    assert b'id="open-whatsapp"' not in invalid.data
+
+
 def make_rental(user, vehicle, location, promo="HEMAT"):
     start = date.today() + timedelta(days=2)
     return create_rental(

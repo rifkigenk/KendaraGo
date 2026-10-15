@@ -20,6 +20,7 @@ from models import (
 )
 from services.availability_service import driver_is_available, vehicle_is_available
 from services.notification_service import notify
+from services.whatsapp_service import queue_rental_update
 
 
 # ==========================================================
@@ -211,6 +212,7 @@ def create_rental(
         f"Pesanan {rental.booking_code} berhasil dibuat.",
         f"/pelanggan/pesanan/{rental.id}",
     )
+    queue_rental_update(rental)
     try:
         db.session.commit()
     except IntegrityError as error:
@@ -227,8 +229,11 @@ def create_rental(
 # ==========================================================
 def change_status(rental, new_status, user, notes=None):
     """Mengubah status sekaligus membuat audit log dan notifikasi pelanggan."""
+    queue_rental_notification = rental.status != new_status
     old_status = rental.status
     rental.status = new_status
+    if queue_rental_notification:
+        queue_rental_update(rental)
     db.session.add(
         RentalStatusLog(
             rental_id=rental.id,

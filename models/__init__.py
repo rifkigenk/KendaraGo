@@ -52,3 +52,5 @@ __all__ = [
     "AppSetting",
     "VehicleSpecification",
 ]
+
+from .whatsapp import WhatsAppContact, WhatsAppEvent, WhatsAppOutbox

@@ -69,46 +69,37 @@ def build_whatsapp_message(
         if driver
         else f"{sim_type} / {mask_identifier(sim_number)}"
     )
-    document_summary = "Foto KTP akan saya kirimkan setelah pesan ini."
-    if not driver:
-        document_summary = "Foto KTP dan SIM akan saya kirimkan setelah pesan ini."
-
     return (
-        "Halo Admin KendaraGo 👋\n\n"
-        "Saya ingin mengajukan penyewaan kendaraan dengan rincian berikut.\n\n"
-        "🚘 *PERMINTAAN SEWA KENDARAGO*\n"
-        f"Nomor permintaan: `{request_code}`\n"
-        "━━━━━━━━━━━━━━━━━━━━\n\n"
-        "👤 *DATA PENYEWA*\n"
-        f"• Nama: {form['full_name'].strip()}\n"
-        f"• NIK: {mask_identifier(nik)}\n"
-        f"• WhatsApp: {form['whatsapp'].strip()}\n"
-        f"• SIM: {license_summary}\n"
-        f"• Kontak darurat: {form['emergency_phone'].strip()}\n\n"
-        "🚗 *KENDARAAN PILIHAN*\n"
-        f"• Unit: {vehicle.name}\n"
-        f"• Kode: {vehicle.code}\n"
-        f"• Kategori: {vehicle.category.name}\n"
-        f"• Harga harian: {format_rupiah(vehicle.daily_price)}\n"
-        f"• Detail kendaraan: {detail_url}\n\n"
-        "🗓️ *JADWAL & LOKASI*\n"
-        f"• Periode: {start_date:%d/%m/%Y}–{end_date:%d/%m/%Y}\n"
-        f"• Durasi: {duration} hari\n"
-        f"• Waktu pengambilan: {pickup_time:%H:%M} waktu setempat\n"
-        f"• Ambil di: {pickup_location.name}\n"
-        f"  {pickup_location.address}\n"
-        "• Lokasi kembali: Sama dengan lokasi pengambilan\n"
-        f"• Layanan pengemudi: {driver_name}\n"
-        "\n"
-        "💰 *ESTIMASI BIAYA*\n"
-        f"• Sewa kendaraan ({duration} hari): {format_rupiah(vehicle_cost)}\n"
-        f"• Pengemudi: {format_rupiah(driver_cost)}\n"
-        f"• Deposit: {format_rupiah(vehicle.deposit)}\n"
-        f"• *Estimasi total: {format_rupiah(estimated_total)}*\n\n"
-        "ℹ️ Estimasi belum menjadi tagihan final dan akan dikonfirmasi oleh admin.\n\n"
-        "✅ Saya menyatakan data di atas benar dan menyetujui syarat penyewaan.\n"
-        f"📎 {document_summary}\n\n"
-        "Mohon bantu cek ketersediaan unit dan konfirmasi langkah selanjutnya. Terima kasih 🙏"
+        "*PENGAJUAN SEWA KENDARAGO*\n"
+        f"Referensi: {request_code}\n\n"
+        "Halo Admin KendaraGo,\n"
+        "Saya ingin mengajukan sewa kendaraan dengan rincian berikut.\n\n"
+        "*Data Penyewa*\n"
+        f"Nama: {form['full_name'].strip()}\n"
+        f"WhatsApp: {form['whatsapp'].strip()}\n"
+        f"NIK (disamarkan): {mask_identifier(nik)}\n"
+        f"SIM: {license_summary}\n"
+        f"Kontak darurat: {form['emergency_phone'].strip()}\n\n"
+        "*Kendaraan & Jadwal*\n"
+        f"Kendaraan: {vehicle.name} ({vehicle.code})\n"
+        f"Tanggal sewa: {start_date:%d/%m/%Y} s.d. {end_date:%d/%m/%Y}\n"
+        f"Durasi: {duration} hari\n"
+        f"Pengambilan: pukul {pickup_time:%H:%M} waktu setempat\n"
+        f"Pengemudi: {driver_name}\n\n"
+        "*Lokasi Pengambilan*\n"
+        f"{pickup_location.name}\n"
+        f"{pickup_location.address}\n"
+        "Pengembalian di lokasi yang sama.\n\n"
+        "*Rincian Estimasi Biaya*\n"
+        f"Sewa: {format_rupiah(vehicle.daily_price)} x {duration} hari = {format_rupiah(vehicle_cost)}\n"
+        f"Pengemudi: {format_rupiah(driver_cost)}\n"
+        f"Deposit: {format_rupiah(vehicle.deposit)}\n"
+        f"*Total estimasi: {format_rupiah(estimated_total)}*\n\n"
+        "Pengajuan ini belum merupakan konfirmasi pemesanan. "
+        "Ketersediaan kendaraan dan biaya akhir menunggu konfirmasi admin.\n\n"
+        "Saya menyetujui syarat penyewaan dan kebijakan privasi KendaraGo.\n\n"
+        "Mohon konfirmasi ketersediaan dan informasikan langkah pemesanan selanjutnya.\n"
+        "Terima kasih."
     )
 
 
@@ -411,7 +402,11 @@ def rental_request(vehicle_id):
                 detail_url=detail_url,
             )
             whatsapp_url = f"https://wa.me/{current_app.config['WHATSAPP_NUMBER']}?text={quote(message, safe='')}"
-            return redirect(whatsapp_url)
+            # Render a same-origin response before navigating to WhatsApp.
+            # Browsers may block external POST redirects under form-action 'self'.
+            return render_template(
+                "public/whatsapp_continue.html", whatsapp_url=whatsapp_url
+            )
         except (TypeError, ValueError) as exception:
             error = str(exception)
 

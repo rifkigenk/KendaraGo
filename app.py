@@ -60,6 +60,29 @@ def create_app(config_class=Config):
     app.register_blueprint(files_bp)
     app.register_blueprint(staff_bp)
     app.register_blueprint(admin_bp)
+    from routes.whatsapp import bp as whatsapp_bp
+    from services.whatsapp_service import send_pending
+    from urllib.parse import urlsplit
+
+    if app.config["WHATSAPP_ENABLED"]:
+        required = (
+            "WHATSAPP_APP_SECRET",
+            "WHATSAPP_VERIFY_TOKEN",
+            "WHATSAPP_PHONE_NUMBER_ID",
+            "WHATSAPP_ACCESS_TOKEN",
+            "WHATSAPP_API_VERSION",
+        )
+        if not all(app.config[key] for key in required):
+            raise ValueError("Lengkapi konfigurasi Meta sebelum mengaktifkan WhatsApp.")
+        public_url = urlsplit(app.config["WHATSAPP_PUBLIC_URL"])
+        if (
+            public_url.scheme != "https"
+            or not public_url.hostname
+            or public_url.username
+        ):
+            raise ValueError("WHATSAPP_PUBLIC_URL harus berupa URL HTTPS publik.")
+    app.register_blueprint(whatsapp_bp)
+    app.cli.add_command(send_pending)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -74,7 +97,7 @@ def create_app(config_class=Config):
     def prepare_security_context():
         # Nonce baru pada setiap request mengizinkan script yang sah di CSP.
         create_csp_nonce()
-        if request.endpoint == "static":
+        if request.endpoint == "static" or request.blueprint == "whatsapp":
             return
         from services.rental_service import expire_unpaid_rentals
 
