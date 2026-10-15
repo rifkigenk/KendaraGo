@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. DATA AWAL APLIKASI
+# Membuat akun demo, armada, lokasi, promo, dan transaksi contoh dalam konteks Flask.
+# ==========================================================
+
 from datetime import date, time, timedelta
 from decimal import Decimal
 
@@ -19,6 +24,7 @@ from models import (
 )
 
 
+# Membuat akun demo dengan hash password serta profil jika perannya pelanggan.
 def user(name, email, password, role, phone):
     item = User(name=name, email=email, role=role, phone=phone)
     item.set_password(password)
@@ -36,6 +42,7 @@ def user(name, email, password, role, phone):
     return item
 
 
+# Mengisi data demo awal dan menjalankan pengayaan katalog yang diperlukan.
 def seed():
     app = create_app()
     with app.app_context():

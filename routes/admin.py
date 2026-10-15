@@ -59,6 +59,7 @@ def guard():
 # 02. DASHBOARD ADMIN
 # Mengumpulkan statistik armada, pelanggan, pesanan, dan pembayaran.
 # ==========================================================
+# Mengambil data ringkasan dan menampilkan dashboard sesuai peran pengguna.
 @bp.route("/")
 def dashboard():
     first_day = date.today().replace(day=1)
@@ -94,6 +95,7 @@ def dashboard():
 # 03. DAFTAR ARMADA
 # Menampilkan data kendaraan secara bertahap menggunakan pagination.
 # ==========================================================
+# Memfilter data kendaraan dan menampilkan daftar armada.
 @bp.route("/kendaraan")
 def vehicles():
     page = Vehicle.query.order_by(Vehicle.created_at.desc()).paginate(
@@ -147,11 +149,13 @@ IMPORT_COLUMNS = [
 ]
 
 
+# Mengubah isian angka opsional menjadi nilai numerik yang divalidasi.
 def optional_number(row, key, number_type=Decimal):
     value = (row.get(key) or "").strip()
     return number_type(value) if value else None
 
 
+# Memvalidasi unggahan spreadsheet dan memasukkan data kendaraan.
 @bp.route("/kendaraan/impor", methods=["GET", "POST"])
 @limiter.limit("5 per hour", methods=["POST"])
 def import_vehicles():
@@ -275,6 +279,7 @@ def import_vehicles():
     return render_template("admin/import_vehicles.html", columns=IMPORT_COLUMNS)
 
 
+# Mengirim template spreadsheet untuk pengisian data kendaraan.
 @bp.route("/kendaraan/template-impor.csv")
 def vehicle_import_template():
     output = StringIO()
@@ -333,6 +338,7 @@ def vehicle_import_template():
 # 05. TAMBAH DAN UBAH KENDARAAN
 # Memvalidasi data unit dan foto sebelum menyimpan perubahan armada.
 # ==========================================================
+# Menampilkan formulir kendaraan dan memproses perubahan data serta foto.
 @bp.route("/kendaraan/tambah", methods=["GET", "POST"])
 @bp.route("/kendaraan/<int:vehicle_id>/ubah", methods=["GET", "POST"])
 @limiter.limit("20 per hour", methods=["POST"])
@@ -437,6 +443,7 @@ def vehicle_form(vehicle_id=None):
 # 06. STATUS AKTIF KENDARAAN
 # Mengatur apakah kendaraan aktif dengan memeriksa kondisi sewanya.
 # ==========================================================
+# Mengubah status aktif kendaraan melalui tindakan admin.
 @bp.route("/kendaraan/<int:vehicle_id>/status", methods=["POST"])
 @limiter.limit("30 per hour")
 def toggle_vehicle(vehicle_id):
@@ -455,12 +462,14 @@ def toggle_vehicle(vehicle_id):
 # 07. VERIFIKASI DOKUMEN PELANGGAN
 # Menampilkan profil dan menyimpan keputusan verifikasi beserta alasannya.
 # ==========================================================
+# Menampilkan profil pelanggan yang perlu diperiksa oleh admin.
 @bp.route("/pelanggan/verifikasi")
 def verifications():
     profiles = CustomerProfile.query.order_by(CustomerProfile.updated_at.desc()).all()
     return render_template("admin/verifications.html", profiles=profiles)
 
 
+# Menyimpan keputusan verifikasi profil dan memberi notifikasi pelanggan.
 @bp.route("/pelanggan/<int:profile_id>/verifikasi", methods=["POST"])
 @limiter.limit("30 per hour")
 def verify_profile(profile_id):
@@ -501,6 +510,7 @@ def verify_profile(profile_id):
 # 08. VERIFIKASI PEMBAYARAN
 # Menampilkan pembayaran dan memeriksa bentrok jadwal sebelum konfirmasi.
 # ==========================================================
+# Menampilkan daftar pembayaran untuk pemeriksaan admin.
 @bp.route("/pembayaran")
 def payments():
     return render_template(
@@ -509,6 +519,7 @@ def payments():
     )
 
 
+# Meneruskan keputusan admin ke layanan verifikasi pembayaran.
 @bp.route("/pembayaran/<int:payment_id>/verifikasi", methods=["POST"])
 @fresh_login_required
 @limiter.limit("30 per hour")
@@ -578,6 +589,7 @@ def payment_verification(payment_id):
 # 09. DAFTAR PESANAN
 # Menampilkan penyewaan dengan pilihan filter berdasarkan status.
 # ==========================================================
+# Menampilkan transaksi penyewaan sesuai filter yang diminta.
 @bp.route("/pesanan")
 def rentals():
     query = Rental.query
@@ -593,6 +605,7 @@ def rentals():
 # 10. UNDUH LAPORAN EXCEL
 # Memanggil layanan laporan dan mengirim hasilnya sebagai file unduhan.
 # ==========================================================
+# Menghasilkan unduhan laporan penyewaan berformat Excel.
 @bp.route("/laporan/penyewaan.xlsx")
 def export_rentals():
     stream = rentals_excel(Rental.query.order_by(Rental.created_at.desc()).all())

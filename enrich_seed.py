@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. ENRICH SEED
+# Penambahan katalog dan transaksi demo. Aman dijalankan berulang kali.
+# ==========================================================
+
 """Penambahan katalog dan transaksi demo. Aman dijalankan berulang kali."""
 
 from datetime import date, datetime, time, timedelta
@@ -143,6 +148,7 @@ BASE_VEHICLE_CODES = [
 ]
 
 
+# Menentukan lokasi gambar katalog untuk kode kendaraan.
 def catalog_image_path(code):
     return f"vehicles/catalog/{code.lower()}.jpg"
 
@@ -747,6 +753,7 @@ def ensure_facilities():
     return facilities
 
 
+# Memilih fasilitas kendaraan berdasarkan jenis dan kategori.
 def facilities_for(vehicle, facilities):
     if vehicle.category.name == "Komersial":
         names = COMMERCIAL_FACILITIES
@@ -793,6 +800,7 @@ def apply_public_catalog_policy():
         image_owners[vehicle.main_image] = (vehicle.code, model_key)
 
 
+# Memastikan lokasi cabang yang diperlukan katalog tersedia.
 def ensure_locations():
     locations = {}
     for name, address, phone in INDONESIA_LOCATIONS:
@@ -808,6 +816,7 @@ def ensure_locations():
     return locations
 
 
+# Mengambil kategori yang ada atau membuat kategori baru.
 def ensure_category(name, vehicle_type, fee):
     category = Category.query.filter_by(name=name).first()
     if not category:
@@ -822,6 +831,7 @@ def ensure_category(name, vehicle_type, fee):
     return category
 
 
+# Mengambil pelanggan demo berdasarkan email atau membuat akun dan profilnya.
 def ensure_customer(index, name, email):
     customer = User.query.filter_by(email=email).first()
     if customer:
@@ -952,6 +962,7 @@ def seed_indonesia_catalog():
     return locations["Jakarta Pusat"]
 
 
+# Menambahkan katalog dan transaksi demo setelah akun admin tersedia.
 def enrich():
     if not User.query.filter_by(role="admin").first():
         raise RuntimeError("Jalankan seed.py terlebih dahulu.")

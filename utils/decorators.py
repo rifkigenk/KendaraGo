@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. DECORATORS
+# Decorator untuk membatasi endpoint berdasarkan role pengguna.
+# ==========================================================
+
 """Decorator untuk membatasi endpoint berdasarkan role pengguna."""
 
 from functools import wraps
@@ -9,7 +14,9 @@ from flask_login import current_user
 def roles_required(*roles):
     """Mengizinkan view hanya untuk pengguna login dengan role yang sesuai."""
 
+    # Membungkus endpoint dengan pemeriksaan autentikasi dan peran.
     def decorator(view):
+        # Memeriksa pengguna saat request sebelum menjalankan endpoint yang dilindungi.
         @wraps(view)
         def wrapped(*args, **kwargs):
             if not current_user.is_authenticated:

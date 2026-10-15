@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. PENGUJIAN OTOMATIS DI GITHUB
+# Menjalankan pemeriksaan format Python dan pytest pada setiap push serta pull request.
+# ==========================================================
+
 name: Tests
 
 on:
@@ -14,7 +19,8 @@ jobs:
           python-version: "3.13"
           cache: pip
       - run: python -m pip install -r requirements-dev.txt
-      - run: python -m black --check app.py config.py extensions.py models routes services utils tests migrations/versions
+      # Periksa seluruh Python milik proyek, termasuk seed dan lingkungan migrasi.
+      - run: python -m black --check .
       - run: python -m pytest -q
         env:
           SECRET_KEY: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

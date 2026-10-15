@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. CONFIG
+# Konfigurasi aplikasi yang nilainya dapat diubah melalui berkas `.env`.
+# ==========================================================
+
 """Konfigurasi aplikasi yang nilainya dapat diubah melalui berkas `.env`."""
 
 import os

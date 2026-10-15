@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. VALIDATORS
+# Validator terpusat agar aturan input konsisten di semua formulir.
+# ==========================================================
+
 """Validator terpusat agar aturan input konsisten di semua formulir."""
 
 import re

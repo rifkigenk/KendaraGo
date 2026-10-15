@@ -1,3 +1,8 @@
+{# ==========================================================
+   01. PUBLIC / VEHICLE DETAIL
+   Menampilkan galeri, spesifikasi, fasilitas, ulasan, dan akses pemesanan kendaraan.
+   ========================================================== #}
+
 {% extends "base.html" %}
 
 {% block title %}{{ vehicle.name }}{% endblock %}
@@ -13,7 +18,9 @@
             <span>Kendaraan</span>
           </a>
         </li>
-        <li class="breadcrumb-separator" aria-hidden="true"><i class="bi bi-chevron-right"></i></li>
+        <li class="breadcrumb-separator" aria-hidden="true">
+          <i class="bi bi-chevron-right"></i>
+        </li>
         <li class="breadcrumb-item active" aria-current="page">{{ vehicle.name }}</li>
       </ol>
     </nav>

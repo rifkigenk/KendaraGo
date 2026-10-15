@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. FILE HANDLER
+# Validasi dan penyimpanan aman untuk gambar serta dokumen PDF.
+# ==========================================================
+
 """Validasi dan penyimpanan aman untuk gambar serta dokumen PDF."""
 
 from pathlib import Path, PurePosixPath
@@ -20,6 +25,7 @@ UNSAFE_PDF_MARKERS = (
 Image.MAX_IMAGE_PIXELS = 25_000_000
 
 
+# Mengukur ukuran unggahan lalu mengembalikan posisi stream ke awal.
 def _file_size(file):
     file.stream.seek(0, 2)
     size = file.stream.tell()
@@ -27,6 +33,7 @@ def _file_size(file):
     return size
 
 
+# Memastikan folder tujuan tetap di bawah root unggahan dan membuatnya jika perlu.
 def _safe_folder(root, folder):
     relative = PurePosixPath(folder)
     if relative.is_absolute() or ".." in relative.parts:
@@ -39,6 +46,7 @@ def _safe_folder(root, folder):
     return destination
 
 
+# Memvalidasi isi JPEG atau PNG lalu menyimpan ulang dengan nama acak.
 def _save_image(file, destination, optimize_image):
     path = None
     try:
@@ -74,6 +82,7 @@ def _save_image(file, destination, optimize_image):
         raise ValueError("Isi file gambar rusak atau tidak aman.") from error
 
 
+# Memeriksa penanda PDF dan menolak konten aktif sebelum menyimpan berkas.
 def _save_pdf(file, destination):
     file.stream.seek(0)
     data = file.stream.read()

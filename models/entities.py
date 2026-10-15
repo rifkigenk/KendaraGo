@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. EKSPOR MODEL ENTITIES
+# Menyediakan alias model dari entities agar impor melalui modul ini tetap kompatibel.
+# ==========================================================
+
 """Model SQLAlchemy yang memetakan objek Python ke tabel database KendaraGo."""
 
 from datetime import datetime, timedelta, timezone
@@ -66,13 +71,16 @@ class User(UserMixin, TimestampMixin, db.Model):
         cascade="all, delete-orphan",
     )
 
+    # Memberikan status akun aktif kepada Flask-Login.
     @property
     def is_active(self):
         return self.is_active_account
 
+    # Menyimpan hash password agar password asli tidak disimpan di database.
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
+    # Membandingkan password masukan dengan hash yang tersimpan.
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
@@ -179,6 +187,7 @@ class Vehicle(TimestampMixin, db.Model):
         "VehicleImage", back_populates="vehicle", cascade="all, delete-orphan"
     )
 
+    # Menghitung rata-rata ulasan yang terlihat, atau nol jika belum ada.
     @property
     def average_rating(self):
         visible = [r.rating for r in self.reviews if r.is_visible]
@@ -327,6 +336,7 @@ class Rental(TimestampMixin, db.Model):
         "Payment", back_populates="rental", cascade="all, delete-orphan"
     )
 
+    # Menjumlahkan nominal seluruh denda pada transaksi penyewaan.
     @property
     def total_fines(self):
         return sum((f.amount for f in self.fines), Decimal("0"))

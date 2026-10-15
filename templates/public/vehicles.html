@@ -1,3 +1,8 @@
+{# ==========================================================
+   01. PUBLIC / VEHICLES
+   Menampilkan filter pencarian, hasil katalog kendaraan, dan navigasi halaman.
+   ========================================================== #}
+
 {% extends "base.html" %}
 
 {% block title %}Daftar Kendaraan{% endblock %}
@@ -75,7 +80,7 @@
               <option value="">Semua bahan bakar</option>
               {% for fuel in ['Bensin', 'Diesel', 'Hybrid', 'Listrik'] %}
                 <option value="{{ fuel }}"
-                        {{ 'selected' if request.args.get('fuel') == fuel }}>{{ fuel }}</option>
+                        {{ 'selected' if request.args.get("fuel") == fuel }}>{{ fuel }}</option>
               {% endfor %}
             </select>
           </div>
@@ -85,7 +90,7 @@
               <option value="">Semua lokasi</option>
               {% for item in locations %}
                 <option value="{{ item.id }}"
-                        {{ 'selected' if request.args.get('location') == item.id|string }}>
+                        {{ 'selected' if request.args.get("location") == item.id|string }}>
                   {{ item.name }}
                 </option>
               {% endfor %}
@@ -97,7 +102,7 @@
               <option value="">Semua harga</option>
               {% for value, label in [(200000, 'Rp 200 ribu'), (500000, 'Rp 500 ribu'), (750000, 'Rp 750 ribu'), (1000000, 'Rp 1 juta')] %}
                 <option value="{{ value }}"
-                        {{ 'selected' if request.args.get('max_price') == value|string }}>{{ label }}</option>
+                        {{ 'selected' if request.args.get("max_price") == value|string }}>{{ label }}</option>
               {% endfor %}
             </select>
           </div>

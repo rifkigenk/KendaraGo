@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. ATURAN PENULISAN BERKAS
+# Menetapkan UTF-8, akhir baris LF, indentasi, dan pembersihan spasi untuk editor.
+# ==========================================================
+
 root = true
 
 [*]

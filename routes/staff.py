@@ -33,6 +33,7 @@ def guard():
 # 02. DASHBOARD PETUGAS
 # Menampilkan daftar pekerjaan pengambilan dan pengembalian kendaraan.
 # ==========================================================
+# Mengambil data ringkasan dan menampilkan dashboard sesuai peran pengguna.
 @bp.route("/")
 def dashboard():
     today = datetime.today().date()
@@ -57,6 +58,7 @@ def dashboard():
 # 03. PEMERIKSAAN PENGAMBILAN
 # Mencatat checklist, kilometer, dan foto saat kendaraan diserahkan.
 # ==========================================================
+# Memproses pemeriksaan dan serah-terima kendaraan oleh petugas.
 @bp.route("/pengambilan/<int:rental_id>", methods=["GET", "POST"])
 @limiter.limit("30 per hour", methods=["POST"])
 def pickup(rental_id):
@@ -133,6 +135,7 @@ def pickup(rental_id):
 # 04. PEMERIKSAAN PENGEMBALIAN
 # Mencatat kondisi akhir, menghitung denda, dan memperbarui status sewa.
 # ==========================================================
+# Memproses pengembalian, kondisi kendaraan, dan denda terkait.
 @bp.route("/pengembalian/<int:rental_id>", methods=["GET", "POST"])
 @limiter.limit("30 per hour", methods=["POST"])
 def vehicle_return(rental_id):

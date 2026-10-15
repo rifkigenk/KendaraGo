@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. BERKAS LOKAL YANG DIABAIKAN GIT
+# Mengecualikan secret, lingkungan Python, cache, database lokal, dan unggahan pengguna.
+# ==========================================================
+
 venv/
 __pycache__/
 *.py[cod]

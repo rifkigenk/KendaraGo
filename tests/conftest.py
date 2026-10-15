@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. FIXTURE PENGUJIAN FLASK
+# Menyiapkan aplikasi uji dengan database sementara dan membersihkan tabel setelah setiap tes.
+# ==========================================================
+
 from pathlib import Path
 
 import pytest
@@ -7,8 +12,10 @@ from config import TestingConfig
 from extensions import db
 
 
+# Menyediakan fixture aplikasi uji dan membersihkan database setelah pemakaian.
 @pytest.fixture()
 def app(tmp_path):
+    # Mengatur secret pengujian dan tenggat pembayaran untuk fixture lokal.
     class LocalTestingConfig(TestingConfig):
         SECRET_KEY = "a" * 64
         WTF_CSRF_SECRET_KEY = "b" * 64
@@ -26,6 +33,7 @@ def app(tmp_path):
         db.engine.dispose()
 
 
+# Menyediakan HTTP test client dari aplikasi fixture.
 @pytest.fixture()
 def client(app):
     return app.test_client()

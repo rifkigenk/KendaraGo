@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. PENGUJIAN KEAMANAN DAN HALAMAN
+# Memeriksa penyamaran identitas, secret, formula Excel, halaman publik, dan gambar cadangan.
+# ==========================================================
+
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -11,7 +16,9 @@ from services.report_service import excel_safe
 from utils.security import validate_security_config
 
 
+# Memastikan NIK dan nomor SIM tidak dikirim utuh dalam ringkasan WhatsApp.
 def test_whatsapp_message_masks_identifiers():
+    # Objek sederhana untuk menampung atribut data pengujian.
     class Value:
         pass
 
@@ -51,6 +58,7 @@ def test_whatsapp_message_masks_identifiers():
     assert "********9012" in message
 
 
+# Memastikan secret contoh tidak diterima oleh validasi konfigurasi.
 def test_example_secrets_are_rejected():
     application = Flask(__name__)
     application.config.update(
@@ -64,11 +72,13 @@ def test_example_secrets_are_rejected():
         validate_security_config(application)
 
 
+# Memastikan nilai berawalan formula diamankan dalam ekspor Excel.
 @pytest.mark.parametrize("value", ["=CMD()", "+SUM(1,2)", "-1+2", "@IMPORTDATA()"])
 def test_excel_formula_input_is_escaped(value):
     assert excel_safe(value).startswith("'")
 
 
+# Memastikan halaman publik berhasil dibuka dan foto hilang memakai cadangan.
 def test_public_pages_and_missing_image_fallback(app, client):
     category = Category(name="Test", vehicle_type="Mobil", late_fee_per_day=0)
     location = Location(name="Test", address="Alamat")

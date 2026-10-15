@@ -11,10 +11,10 @@ from models import Payment
 from services.rental_service import change_status, payment_deadline_for, utc_now
 
 
-# =============================================================
+# ==========================================================
 # 01. DAFTAR METODE PEMBAYARAN
 # requires_proof menentukan apakah pengguna wajib mengunggah bukti.
-# =============================================================
+# ==========================================================
 PAYMENT_METHODS = {
     "Transfer bank": {"icon": "bank", "requires_proof": True},
     "QRIS": {"icon": "qr-code", "requires_proof": True},
@@ -27,10 +27,10 @@ PAYMENT_METHODS = {
 }
 
 
-# =============================================================
+# ==========================================================
 # 02. VALIDASI METODE
 # Hanya metode yang terdaftar di atas yang boleh diproses.
-# =============================================================
+# ==========================================================
 def payment_method_details(method):
     """Mengambil informasi rekening/instruksi untuk metode pembayaran."""
     try:
@@ -39,10 +39,10 @@ def payment_method_details(method):
         raise ValueError("Pilih metode pembayaran yang tersedia.") from exception
 
 
-# =============================================================
+# ==========================================================
 # 03. PENYIMPANAN PEMBAYARAN
 # Membuat nomor pembayaran dan mengubah status pesanan untuk diverifikasi.
-# =============================================================
+# ==========================================================
 def create_payment(rental, method, account_holder, amount, proof_file):
     """Membuat pembayaran setelah metode, nominal, dan bukti divalidasi."""
     payment_method_details(method)
@@ -75,10 +75,10 @@ def create_payment(rental, method, account_holder, amount, proof_file):
     return payment
 
 
-# =============================================================
+# ==========================================================
 # 04. VERIFIKASI ADMIN
 # Keputusan admin menentukan pesanan dikonfirmasi atau dikembalikan.
-# =============================================================
+# ==========================================================
 def verify_payment(payment, admin, accepted, notes=None):
     """Mencatat keputusan admin dan memperbarui status pembayaran."""
     if payment.verification_status != "Menunggu":

@@ -47,10 +47,10 @@ from utils.security import safe_internal_path
 from utils.validators import limited_text, valid_phone
 
 
-# =============================================================
+# ==========================================================
 # 01. AKSES KHUSUS PELANGGAN
 # Prefix dan penjaga route membatasi halaman ke pelanggan yang sudah login.
-# =============================================================
+# ==========================================================
 bp = Blueprint("customer", __name__, url_prefix="/pelanggan")
 
 
@@ -62,10 +62,11 @@ def guard():
     pass
 
 
-# =============================================================
+# ==========================================================
 # 02. DASHBOARD DAN PROFIL
 # Menampilkan riwayat pesanan serta mengelola identitas dan dokumen.
-# =============================================================
+# ==========================================================
+# Mengambil data ringkasan dan menampilkan dashboard sesuai peran pengguna.
 @bp.route("/")
 def dashboard():
     rentals = (
@@ -76,6 +77,7 @@ def dashboard():
     return render_template("customer/dashboard.html", rentals=rentals)
 
 
+# Menampilkan dan memperbarui profil serta dokumen pelanggan.
 @bp.route("/profil", methods=["GET", "POST"])
 @limiter.limit("10 per hour", methods=["POST"])
 def profile():
@@ -204,10 +206,11 @@ def profile():
     return render_template("customer/profile.html", profile=profile)
 
 
-# =============================================================
+# ==========================================================
 # 03. PEMBUATAN PESANAN
 # Memvalidasi jadwal, lokasi, pengemudi, promo, lalu menyimpan penyewaan.
-# =============================================================
+# ==========================================================
+# Memvalidasi permintaan pemesanan sebelum membuat transaksi sewa.
 @bp.route("/pesan/<int:vehicle_id>", methods=["GET", "POST"])
 @limiter.limit("10 per hour", methods=["POST"])
 def book(vehicle_id):
@@ -256,10 +259,10 @@ def book(vehicle_id):
     )
 
 
-# =============================================================
+# ==========================================================
 # 04. DETAIL PESANAN
 # Pesanan selalu diperiksa agar hanya dapat dibuka oleh pemiliknya.
-# =============================================================
+# ==========================================================
 def owned_rental(rental_id):
     """Mengambil pesanan hanya jika pesanan tersebut milik pengguna aktif."""
     return Rental.query.filter_by(
@@ -267,6 +270,7 @@ def owned_rental(rental_id):
     ).first_or_404()
 
 
+# Menampilkan detail transaksi yang dapat diakses pelanggan.
 @bp.route("/pesanan/<int:rental_id>")
 def rental_detail(rental_id):
     return render_template(
@@ -276,10 +280,11 @@ def rental_detail(rental_id):
     )
 
 
-# =============================================================
+# ==========================================================
 # 05. PROSES PEMBAYARAN
 # Memvalidasi total, metode, pemilik akun, dan bukti sebelum disimpan.
-# =============================================================
+# ==========================================================
+# Memproses nominal dan bukti bayar untuk transaksi pelanggan.
 @bp.route("/pesanan/<int:rental_id>/bayar", methods=["POST"])
 @limiter.limit("5 per hour")
 def pay(rental_id):
@@ -318,10 +323,11 @@ def pay(rental_id):
     return redirect(url_for("customer.rental_detail", rental_id=rental.id))
 
 
-# =============================================================
+# ==========================================================
 # 06. PEMBATALAN DAN ULASAN
 # Pelanggan dapat membatalkan pesanan aktif atau mengulas sewa selesai.
-# =============================================================
+# ==========================================================
+# Membatalkan transaksi pelanggan melalui layanan penyewaan.
 @bp.route("/pesanan/<int:rental_id>/batal", methods=["POST"])
 @limiter.limit("10 per hour")
 def cancel(rental_id):
@@ -336,6 +342,7 @@ def cancel(rental_id):
     return redirect(url_for("customer.rental_detail", rental_id=rental.id))
 
 
+# Menyimpan ulasan pelanggan untuk penyewaan yang memenuhi ketentuan.
 @bp.route("/pesanan/<int:rental_id>/ulasan", methods=["POST"])
 @limiter.limit("5 per hour")
 def review(rental_id):
@@ -368,10 +375,11 @@ def review(rental_id):
     return redirect(url_for("customer.rental_detail", rental_id=rental.id))
 
 
-# =============================================================
+# ==========================================================
 # 07. INVOICE DAN NOTIFIKASI
 # Menyediakan unduhan invoice serta pembaruan status notifikasi.
-# =============================================================
+# ==========================================================
+# Menghasilkan unduhan invoice PDF transaksi pelanggan.
 @bp.route("/pesanan/<int:rental_id>/invoice.pdf")
 def invoice(rental_id):
     rental = owned_rental(rental_id)
@@ -383,6 +391,7 @@ def invoice(rental_id):
     )
 
 
+# Menandai notifikasi milik pelanggan sebagai sudah dibaca.
 @bp.route("/notifikasi/<int:notification_id>", methods=["POST"])
 def read_notification(notification_id):
     notification = next(

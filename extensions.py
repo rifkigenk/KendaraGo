@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. EXTENSIONS
+# Objek extension Flask yang dipakai bersama oleh seluruh modul aplikasi.
+# ==========================================================
+
 """Objek extension Flask yang dipakai bersama oleh seluruh modul aplikasi."""
 
 from flask_login import LoginManager

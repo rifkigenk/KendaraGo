@@ -69,6 +69,7 @@ def create_app(config_class=Config):
         except (TypeError, ValueError):
             return None
 
+    # Membuat nonce CSP dan menutup reservasi kedaluwarsa sebelum request non-statis.
     @app.before_request
     def prepare_security_context():
         # Nonce baru pada setiap request mengizinkan script yang sah di CSP.
@@ -79,6 +80,7 @@ def create_app(config_class=Config):
 
         expire_unpaid_rentals()
 
+    # Memasang header keamanan pada respons sebelum dikirim ke browser.
     @app.after_request
     def secure_response(response):
         # Header keamanan dipasang pada semua respons, termasuk halaman error.
@@ -93,6 +95,7 @@ def create_app(config_class=Config):
                 1 for item in current_user.notifications if not item.is_read
             )
 
+        # Memastikan foto berada di folder unggahan publik atau memakai gambar cadangan.
         def vehicle_image_path(vehicle):
             relative = PurePosixPath(vehicle.main_image or "")
             upload_root = Path(app.config["PUBLIC_UPLOAD_FOLDER"]).resolve()
@@ -107,6 +110,7 @@ def create_app(config_class=Config):
                 return f"uploads/{relative.as_posix()}"
             return "uploads/vehicles/adventure-bike-green.png"
 
+        # Mengubah waktu UTC database ke zona waktu aplikasi sebelum ditampilkan.
         def local_datetime(value, format_string="%d/%m/%Y %H:%M"):
             if value is None:
                 return "-"
@@ -132,6 +136,7 @@ def create_app(config_class=Config):
         count = expire_unpaid_rentals()
         print(f"{count} pesanan kedaluwarsa ditutup.")
 
+    # Mencatat penolakan CSRF dan mengembalikan halaman kesalahan 400.
     @app.errorhandler(CSRFError)
     def csrf_error(error):
         app.logger.warning(
@@ -139,11 +144,13 @@ def create_app(config_class=Config):
         )
         return render_template("errors/error.html", code=400), 400
 
+    # Mencatat batas request yang terlampaui dan mengembalikan halaman 429.
     @app.errorhandler(TooManyRequests)
     def rate_limit_error(error):
         app.logger.warning("Batas request terlampaui pada endpoint %s", error.name)
         return render_template("errors/error.html", code=429), 429
 
+    # Menolak header Host yang tidak sesuai konfigurasi aplikasi.
     @app.errorhandler(SecurityError)
     def untrusted_host(error):
         app.logger.warning("Permintaan dengan Host tidak tepercaya ditolak")

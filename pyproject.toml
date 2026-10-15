@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. KONFIGURASI ALAT PENGEMBANGAN
+# Menyamakan format Black dan djLint serta menentukan folder pengujian pytest.
+# ==========================================================
+
 [tool.black]
 line-length = 88
 target-version = ["py313"]

@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. PENGUJIAN ALUR PENYEWAAN
+# Memeriksa bentrok jadwal, pembatalan, pelepasan kuota promo, tenggat, dan kode pesanan.
+# ==========================================================
+
 from datetime import date, time, timedelta
 from decimal import Decimal
 
@@ -25,6 +30,7 @@ from services.rental_service import (
 )
 
 
+# Membuat pelanggan, kendaraan, lokasi, dan promo untuk skenario pengujian.
 def rental_data():
     user = User(
         name="Pelanggan Test",
@@ -70,6 +76,7 @@ def rental_data():
     return user, vehicle, location, promotion
 
 
+# Membuat transaksi uji dengan jadwal mendatang dan promo opsional.
 def make_rental(user, vehicle, location, promo="HEMAT"):
     start = date.today() + timedelta(days=2)
     return create_rental(
@@ -84,6 +91,7 @@ def make_rental(user, vehicle, location, promo="HEMAT"):
     )
 
 
+# Memastikan reservasi memblokir jadwal bentrok dan pembatalan melepas kuota promo.
 def test_booking_blocks_overlap_and_cancel_releases_promo(app):
     user, vehicle, location, _ = rental_data()
     rental = make_rental(user, vehicle, location)
@@ -103,6 +111,7 @@ def test_booking_blocks_overlap_and_cancel_releases_promo(app):
     assert make_rental(user, vehicle, location).id != rental.id
 
 
+# Memastikan transaksi kedaluwarsa dibatalkan dan kuota promo dikembalikan.
 def test_expiration_cancels_booking_and_releases_quota(app):
     user, vehicle, location, _ = rental_data()
     rental = make_rental(user, vehicle, location)
@@ -114,6 +123,7 @@ def test_expiration_cancels_booking_and_releases_quota(app):
     assert PromotionUsage.query.filter_by(rental_id=rental.id).count() == 0
 
 
+# Memastikan pembatalan sewa menutup pembayaran yang masih tertunda.
 def test_cancel_closes_pending_payment(app):
     user, vehicle, location, _ = rental_data()
     rental = make_rental(user, vehicle, location, promo=None)
@@ -128,6 +138,7 @@ def test_cancel_closes_pending_payment(app):
     assert Payment.query.filter_by(verification_status="Menunggu").count() == 0
 
 
+# Memastikan pembayaran ditolak setelah tenggat reservasi terlewati.
 def test_expired_booking_rejects_payment(app):
     user, vehicle, location, _ = rental_data()
     rental = make_rental(user, vehicle, location, promo=None)
@@ -138,6 +149,7 @@ def test_expired_booking_rejects_payment(app):
         create_payment(rental, "Tunai", None, rental.total_payment, None)
 
 
+# Memastikan panjang kode pesanan sesuai batas kolom database.
 def test_booking_code_fits_database_column(app):
     user, vehicle, location, _ = rental_data()
     rental = make_rental(user, vehicle, location, promo=None)

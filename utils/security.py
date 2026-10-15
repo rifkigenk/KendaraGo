@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. SECURITY
+# Konfigurasi keamanan HTTP, CSP, fingerprint, dan redirect internal.
+# ==========================================================
+
 """Konfigurasi keamanan HTTP, CSP, fingerprint, dan redirect internal."""
 
 from hashlib import sha256
@@ -18,6 +23,7 @@ INSECURE_SECRETS = {
 }
 
 
+# Memvalidasi secret, HTTPS, tenggat, zona waktu, dan konfigurasi produksi.
 def validate_security_config(app):
     secret = app.config.get("SECRET_KEY") or ""
     if len(secret) < 32 or secret.lower() in INSECURE_SECRETS:
@@ -47,10 +53,12 @@ def validate_security_config(app):
             )
 
 
+# Menyimpan token acak per request untuk izin script pada kebijakan CSP.
 def create_csp_nonce():
     g.csp_nonce = token_urlsafe(24)
 
 
+# Memasang kebijakan CSP, pembatasan browser, dan kontrol cache respons HTML.
 def apply_security_headers(response):
     nonce = getattr(g, "csp_nonce", "")
     policy = (
@@ -90,6 +98,7 @@ def apply_security_headers(response):
     return response
 
 
+# Meringkas identitas yang dinormalisasi menjadi 12 karakter hash SHA-256.
 def client_fingerprint(value):
     return sha256((value or "").strip().lower().encode()).hexdigest()[:12]
 
@@ -104,5 +113,6 @@ def safe_internal_path(value, fallback="/"):
     return parsed.path + (f"?{parsed.query}" if parsed.query else "")
 
 
+# Memeriksa HTTPS request atau kewajiban HTTPS dalam konfigurasi.
 def request_is_secure():
     return request.is_secure or current_app.config.get("FORCE_HTTPS", False)

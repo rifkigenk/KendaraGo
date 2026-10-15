@@ -39,6 +39,7 @@ def send_private_file(relative_path):
 # 02. FOTO PROFIL DAN DOKUMEN IDENTITAS
 # Foto profil, KTP, dan SIM hanya dapat diunduh oleh pemilik atau admin.
 # ==========================================================
+# Memeriksa hak akses sebelum mengirim dokumen identitas privat.
 @bp.route("/profil/<int:profile_id>/<field>")
 @login_required
 def profile_document(profile_id, field):
@@ -55,6 +56,7 @@ def profile_document(profile_id, field):
 # 03. BUKTI PEMBAYARAN
 # Memeriksa pemilik pesanan atau peran admin sebelum mengirim bukti.
 # ==========================================================
+# Memeriksa hak akses sebelum mengirim bukti pembayaran privat.
 @bp.route("/pembayaran/<int:payment_id>")
 @login_required
 def payment_proof(payment_id):
@@ -68,6 +70,7 @@ def payment_proof(payment_id):
 # 04. FOTO PEMERIKSAAN
 # Mengizinkan pemilik pesanan, petugas, atau admin mengunduh foto kondisi.
 # ==========================================================
+# Memeriksa hak akses sebelum mengirim foto pemeriksaan privat.
 @bp.route("/pemeriksaan/<kind>/<int:item_id>")
 @login_required
 def inspection_photo(kind, item_id):

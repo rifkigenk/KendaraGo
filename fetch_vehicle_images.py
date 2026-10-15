@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. PENGAMBILAN FOTO KENDARAAN
+# Mencari foto Wikimedia Commons, menyimpan JPEG lokal, dan mencatat sumber serta lisensi.
+# ==========================================================
+
 """Download model-specific vehicle photos from Wikimedia Commons.
 
 Run this script after ``seed.py``. It stores one locally served JPEG per vehicle
@@ -71,16 +76,19 @@ IGNORED_WORDS = {
 }
 
 
+# Menghapus tag HTML, membuka entitas, dan merapikan spasi metadata gambar.
 def clean_text(value):
     value = html.unescape(re.sub(r"<[^>]+>", "", value or ""))
     return re.sub(r"\s+", " ", value).strip()
 
 
+# Memecah teks pencarian menjadi kata yang relevan untuk pencocokan gambar.
 def normalized_tokens(value):
     words = re.findall(r"[a-z0-9]+", value.lower())
     return [word for word in words if len(word) > 1 and word not in IGNORED_WORDS]
 
 
+# Membuka URL dengan maksimal tiga percobaan saat terjadi kegagalan jaringan.
 def open_url(request, timeout):
     for attempt in range(3):
         try:
@@ -91,6 +99,7 @@ def open_url(request, timeout):
             time.sleep(1.5 * (attempt + 1))
 
 
+# Meminta kandidat gambar bitmap dari API Wikimedia Commons.
 def commons_search(query):
     params = {
         "action": "query",
@@ -111,6 +120,7 @@ def commons_search(query):
     return list(payload.get("query", {}).get("pages", {}).values())
 
 
+# Memberi skor kandidat foto berdasarkan format dan kecocokan kata pencarian.
 def image_score(page, query):
     title = page.get("title", "").lower()
     image_info = page.get("imageinfo", [{}])[0]
@@ -129,6 +139,7 @@ def image_score(page, query):
     return score
 
 
+# Memilih kandidat dengan skor tertinggi jika memenuhi ambang kecocokan.
 def best_image(query):
     pages = commons_search(query)
     candidates = sorted(pages, key=lambda page: image_score(page, query), reverse=True)
@@ -137,12 +148,14 @@ def best_image(query):
     return candidates[0]
 
 
+# Mengunduh isi gambar ke berkas tujuan menggunakan identitas User-Agent.
 def download(url, destination):
     request = Request(url, headers={"User-Agent": USER_AGENT})
     with open_url(request, timeout=60) as response:
         destination.write_bytes(response.read())
 
 
+# Menyusun catatan kendaraan, sumber foto, dan metadata lisensi.
 def source_record(vehicle, query, page):
     info = page["imageinfo"][0]
     metadata = info.get("extmetadata", {})
@@ -159,6 +172,7 @@ def source_record(vehicle, query, page):
     }
 
 
+# Mencari foto satu kendaraan dan mengembalikan hasil atau catatan kegagalan.
 def fetch_vehicle(vehicle):
     query = SEARCH_OVERRIDES.get(
         vehicle["code"], f"{vehicle['brand']} {vehicle['model']}"
@@ -177,6 +191,7 @@ def fetch_vehicle(vehicle):
     return source_record(vehicle, query, page), None
 
 
+# Mengambil foto katalog lalu menyimpan hasil unduhan dan atribusi sumber.
 def fetch_images():
     app = create_app()
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

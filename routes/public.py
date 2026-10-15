@@ -25,10 +25,11 @@ from utils.validators import decimal_amount, limited_text
 bp = Blueprint("public", __name__)
 
 
-# =============================================================
+# ==========================================================
 # 01. FUNGSI BANTU FORMAT DAN PESAN WHATSAPP
 # Bagian ini menghitung biaya dan menyusun ringkasan pesanan.
-# =============================================================
+# ==========================================================
+# Memformat nominal dengan awalan Rp dan pemisah ribuan Indonesia.
 def format_rupiah(value):
     return f"Rp {Decimal(value):,.0f}".replace(",", ".")
 
@@ -111,10 +112,11 @@ def build_whatsapp_message(
     )
 
 
-# =============================================================
+# ==========================================================
 # 02. HALAMAN BERANDA DAN KATALOG
 # Route publik untuk melihat serta mencari kendaraan.
-# =============================================================
+# ==========================================================
+# Mengambil data kendaraan dan informasi yang diperlukan beranda.
 @bp.route("/")
 def home():
     available_vehicles = Vehicle.query.filter_by(is_active=True, status="Tersedia")
@@ -135,6 +137,7 @@ def home():
     )
 
 
+# Memfilter data kendaraan dan menampilkan daftar armada.
 @bp.route("/kendaraan")
 def vehicles():
     query = Vehicle.query.filter_by(is_active=True)
@@ -207,6 +210,7 @@ def vehicles():
     )
 
 
+# Memfilter kendaraan touring dan menampilkan katalog spesifikasinya.
 @bp.route("/motor-touring")
 def touring_catalog():
     query = Vehicle.query.join(VehicleSpecification).filter(Vehicle.is_active.is_(True))
@@ -261,20 +265,22 @@ def touring_catalog():
     )
 
 
-# =============================================================
+# ==========================================================
 # 03. DETAIL KENDARAAN
 # Mengambil satu kendaraan aktif sebelum formulir sewa dibuka.
-# =============================================================
+# ==========================================================
+# Mengambil satu kendaraan untuk halaman detail publik.
 @bp.route("/kendaraan/<int:vehicle_id>")
 def vehicle_detail(vehicle_id):
     vehicle = Vehicle.query.filter_by(id=vehicle_id, is_active=True).first_or_404()
     return render_template("public/vehicle_detail.html", vehicle=vehicle)
 
 
-# =============================================================
+# ==========================================================
 # 04. FORMULIR PENYEWAAN RINGKAS
 # Alur: muat pilihan, validasi data, cek ketersediaan, lalu buka WhatsApp.
-# =============================================================
+# ==========================================================
+# Memvalidasi formulir sewa publik dan menyusun permintaan melalui WhatsApp.
 @bp.route("/kendaraan/<int:vehicle_id>/pesan", methods=["GET", "POST"])
 @limiter.limit("5 per 10 minutes", methods=["POST"])
 @limiter.limit("20 per day", methods=["POST"])
@@ -420,10 +426,11 @@ def rental_request(vehicle_id):
     )
 
 
-# =============================================================
+# ==========================================================
 # 05. HALAMAN INFORMASI
 # Konten statis: tentang, panduan menyewa, syarat, dan kontak.
-# =============================================================
+# ==========================================================
+# Menampilkan informasi tentang layanan KendaraGo.
 @bp.route("/tentang")
 def about():
     return render_template(
@@ -433,6 +440,7 @@ def about():
     )
 
 
+# Menampilkan petunjuk penggunaan layanan penyewaan.
 @bp.route("/cara-menyewa")
 def how_to():
     return render_template(
@@ -442,6 +450,7 @@ def how_to():
     )
 
 
+# Menampilkan ketentuan layanan penyewaan.
 @bp.route("/syarat")
 def terms():
     return render_template(
@@ -451,6 +460,7 @@ def terms():
     )
 
 
+# Menampilkan informasi kebijakan privasi.
 @bp.route("/privasi")
 def privacy():
     return render_template(
@@ -466,6 +476,7 @@ def privacy():
     )
 
 
+# Menampilkan informasi kontak layanan.
 @bp.route("/kontak")
 def contact():
     phone_number = current_app.config["WHATSAPP_DISPLAY_NUMBER"]

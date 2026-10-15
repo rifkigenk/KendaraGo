@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. EKSPOR MODEL DATABASE
+# Menyediakan model dari entities melalui satu jalur impor untuk route dan service.
+# ==========================================================
+
 from .entities import (
     AppSetting,
     Category,

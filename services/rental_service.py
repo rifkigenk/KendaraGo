@@ -26,6 +26,7 @@ from services.notification_service import notify
 # 01. WAKTU DAN TENGGAT PEMBAYARAN
 # Menggunakan waktu UTC dan menentukan batas pembayaran tiap pesanan.
 # ==========================================================
+# Menghasilkan waktu UTC tanpa zona untuk perbandingan timestamp database.
 def utc_now():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 

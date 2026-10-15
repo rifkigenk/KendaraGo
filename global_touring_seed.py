@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. GLOBAL TOURING SEED
+# Katalog motor touring global dengan sumber spesifikasi pabrikan resmi.
+# ==========================================================
+
 """Katalog motor touring global dengan sumber spesifikasi pabrikan resmi."""
 
 from datetime import date, datetime, timedelta
@@ -769,6 +774,7 @@ CATEGORY_FEES = {
 }
 
 
+# Membuat atau memperbarui kategori, kendaraan touring, dan spesifikasinya.
 def seed_touring():
     db.create_all()
     categories = {}

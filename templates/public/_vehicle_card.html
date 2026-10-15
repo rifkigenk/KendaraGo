@@ -1,3 +1,8 @@
+{# ==========================================================
+   01. PUBLIC /  VEHICLE CARD
+   Komponen kartu kendaraan yang dipakai ulang untuk foto, spesifikasi, tarif, dan detail.
+   ========================================================== #}
+
 <div class="col-md-6 col-lg-4 vehicle-grid-item">
   <article class="vehicle-card card h-100">
     <a class="vehicle-image"
@@ -33,7 +38,10 @@
         {% set sorted_facilities = vehicle.facilities|sort(attribute='name') %}
         <div class="facility-preview" aria-label="Fasilitas kendaraan">
           {% for facility in sorted_facilities[:3] %}
-            <span><i class="bi bi-{{ facility.icon or 'check-circle' }}" aria-hidden="true"></i>{{ facility.name }}</span>
+            <span>
+              <i class="bi bi-{{ facility.icon or 'check-circle' }}"
+                 aria-hidden="true"></i>{{ facility.name }}
+            </span>
           {% endfor %}
           {% if vehicle.facilities|length > 3 %}
             <span class="facility-more">+{{ vehicle.facilities|length - 3 }} fitur</span>

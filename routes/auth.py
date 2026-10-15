@@ -39,6 +39,7 @@ DUMMY_PASSWORD_HASH = generate_password_hash("dummy-password-never-used")
 # 01. IDENTITAS LOGIN DAN ARAH DASHBOARD
 # Menentukan kunci pembatas percobaan login dan halaman tujuan sesuai peran.
 # ==========================================================
+# Menentukan identitas request untuk pembatasan percobaan login.
 def login_identity():
     email = request.form.get("email", "") if request.method == "POST" else ""
     return f"{get_remote_address()}:{client_fingerprint(email)}"

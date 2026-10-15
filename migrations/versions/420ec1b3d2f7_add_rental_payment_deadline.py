@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. TENGGAT PEMBAYARAN SEWA
+# Menambahkan payment_due_at, mengisi data lama dari created_at, lalu memasang indeks.
+# ==========================================================
+
 """add rental payment deadline
 
 Revision ID: 420ec1b3d2f7
@@ -17,6 +22,7 @@ branch_labels = None
 depends_on = None
 
 
+# Menerapkan perubahan skema yang didefinisikan oleh revisi ini.
 def upgrade():
     # Tambahkan sebagai nullable dahulu agar database lama yang sudah berisi
     # transaksi dapat dimigrasikan tanpa kehilangan data.
@@ -34,6 +40,7 @@ def upgrade():
         )
 
 
+# Membalikkan perubahan skema dari revisi ini.
 def downgrade():
     with op.batch_alter_table("rentals", schema=None) as batch_op:
         batch_op.drop_index(batch_op.f("ix_rentals_payment_due_at"))
