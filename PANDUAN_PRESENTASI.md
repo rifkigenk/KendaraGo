@@ -4,6 +4,49 @@ Dokumen ini adalah catatan singkat untuk menjelaskan kode dan perintah yang
 dipakai dalam proyek. Gunakan sebagai panduan memahami program, bukan sekadar
 teks untuk dihafalkan.
 
+## Presentasi dashboard admin: kode dahulu, baru tampilan
+
+Mulai dari `app.py`, kemudian fokus pada satu fitur dashboard. Gunakan urutan
+berikut agar hubungan kode dengan hasilnya jelas. Durasi sekitar 4–5 menit.
+
+| Urutan | Kode yang dibuka | Penjelasan dan hasil yang ditunjukkan |
+|---|---|---|
+| 1 | `app.py`: `create_app()` dan `app.register_blueprint(admin_bp)` | Flask menyiapkan aplikasi dan mendaftarkan modul admin. |
+| 2 | `routes/admin.py`: `bp`, `guard()`, dan `dashboard()` | Prefix `/admin` dan route `/` membentuk URL `/admin/`. Login dan peran admin diperiksa sebelum halaman dibuka. |
+| 3 | `models/entities.py`: `class Vehicle`, lalu `stats` di `routes/admin.py` | Model mewakili tabel kendaraan. `count()` menghitung total data; `filter_by(status="Tersedia", is_active=True)` menghitung kendaraan aktif yang tersedia. Hasilnya menjadi angka kartu statistik. |
+| 4 | `revenue`, `recent`, dan `render_template(...)` di `routes/admin.py` | Pendapatan menjumlahkan pembayaran berstatus `Diverifikasi` sejak awal bulan. Transaksi diurutkan dari terbaru dan dibatasi delapan. Ketiga data dikirim sebagai `stats`, `revenue`, dan `recent`. |
+| 5 | `templates/admin/dashboard.html`: `extends`, `block content`, dan `include` | Template memakai kerangka `base.html`, mengisi konten, dan menyertakan menu `components/dashboard_nav.html`. Tunjukkan header serta menu pada browser. |
+| 6 | Loop `{% for label,key,icon ... %}` dan `{{ stats[key] }}` | Satu loop menghasilkan delapan kartu statistik. `{{ ... }}` menampilkan nilai; `{% ... %}` menjalankan logika template. Tunjukkan angka kartu di browser. |
+| 7 | Loop `{% for item in recent %}` dan bagian `revenue` | Setiap transaksi menjadi satu baris tabel. Bagian `else` menampilkan pesan saat belum ada transaksi. Nilai pendapatan tampil di panel kanan. |
+| 8 | `<canvas id="statusChart">`, lalu `static/js/admin-dashboard.js` | Flask menulis angka ke atribut `data-*`. JavaScript membaca `dataset`, mengubahnya menjadi angka dengan `Number()`, lalu Chart.js menggambar grafik donat. Grafik menunjukkan status kendaraan, bukan pendapatan. |
+| 9 | `static/css/app.css`: `.dashboard-shell`, `.stat-card`, `.dashboard-panel` | CSS mengatur tata letak, kartu, dan panel. Bootstrap menyediakan grid seperti `col-sm-6` dan `col-xl-3` agar jumlah kolom menyesuaikan lebar layar. |
+
+Alur yang perlu dipahami:
+
+```text
+Browser meminta /admin/
+  -> Flask memeriksa login dan peran admin
+  -> route mengambil data database melalui model SQLAlchemy
+  -> render_template mengirim data ke template Jinja
+  -> HTML dan CSS membentuk halaman
+  -> JavaScript membaca data dan menggambar grafik
+```
+
+Contoh kalimat saat menjelaskan:
+
+> "Saya mulai dari fungsi dashboard di routes/admin.py. Fungsi ini menghitung
+> kendaraan melalui model Vehicle, lalu menyimpan hasilnya dalam stats.
+> Data dikirim ke dashboard.html menggunakan render_template. Di template,
+> stats[key] menampilkan angka pada kartu. Sekarang saya buka browser untuk
+> menunjukkan hasil kode tersebut, yaitu kartu Total kendaraan dan Tersedia."
+
+Sebelum demo, nyalakan MySQL XAMPP lalu jalankan
+`.\venv\Scripts\python.exe app.py` dari folder proyek. Buka
+`http://127.0.0.1:5000/auth/login`, masuk menggunakan akun admin yang sudah
+dimiliki, lalu buka `http://127.0.0.1:5000/admin/`. Template harus dibuka melalui
+Flask agar Jinja diproses. Jika browser masih memakai JavaScript lama, tekan
+`Ctrl+F5`. Tidak perlu menjalankan seed atau migrasi untuk perbaikan grafik ini.
+
 ## Ringkasan aplikasi
 
 KendaraGo adalah sistem penyewaan mobil dan sepeda motor berbasis Flask.
