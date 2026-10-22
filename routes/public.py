@@ -17,7 +17,7 @@ from flask import (
 from sqlalchemy import false, or_
 
 from extensions import db, limiter
-from models import Category, Driver, Location, Review, Vehicle, VehicleSpecification
+from models import Category, Driver, Location, RentalInquiry, Review, Vehicle, VehicleSpecification
 from services.availability_service import driver_is_available, vehicle_is_available
 from utils.validators import decimal_amount, limited_text
 
@@ -385,6 +385,24 @@ def rental_request(vehicle_id):
 
             sanitized_form = request.form.to_dict()
             sanitized_form["full_name"] = full_name
+
+            inquiry = RentalInquiry(
+                vehicle_id=vehicle.id,
+                driver_id=driver.id if driver else None,
+                pickup_location_id=pickup_location.id,
+                full_name=full_name,
+                nik=nik,
+                whatsapp="".join(filter(str.isdigit, request.form["whatsapp"])),
+                emergency_phone="".join(filter(str.isdigit, request.form["emergency_phone"])),
+                start_date=start_date,
+                end_date=end_date,
+                pickup_time=pickup_time,
+                with_driver=with_driver,
+                sim_type=None if with_driver else request.form.get("sim_type"),
+                sim_number=None if with_driver else "".join(filter(str.isdigit, request.form["sim_number"])),
+            )
+            db.session.add(inquiry)
+            db.session.commit()
 
             # 04H. Susun pesan final dan arahkan pengguna ke WhatsApp.
             detail_url = url_for(

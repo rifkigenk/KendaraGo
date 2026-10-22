@@ -75,7 +75,15 @@ def seed():
             "pelanggan",
             "081211110003",
         )
-        db.session.add_all([admin, staff, customer])
+        returning_customer = user(
+            "Pelanggan Lama KendaraGo",
+            "pelanggan.lama@kendarago.com",
+            "PelangganLama123!",
+            "pelanggan",
+            "081211110004",
+        )
+        returning_customer.profile.ktp_number = "3174000000000002"
+        db.session.add_all([admin, staff, customer, returning_customer])
 
         locations = [
             Location(
@@ -377,7 +385,7 @@ def seed():
 
         completed = Rental(
             booking_code="KG-DEMO-0001",
-            customer=customer,
+            customer=returning_customer,
             vehicle=vehicles[0],
             pickup_location=locations[0],
             return_location=locations[0],
@@ -436,6 +444,7 @@ def seed():
         print("Admin: admin@kendarago.com / Admin123!")
         print("Petugas: petugas@kendarago.com / Petugas123!")
         print("Pelanggan: pelanggan@kendarago.com / Pelanggan123!")
+        print("Pelanggan lama: pelanggan.lama@kendarago.com / PelangganLama123!")
 
 
 if __name__ == "__main__":

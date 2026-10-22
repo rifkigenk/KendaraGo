@@ -53,6 +53,7 @@ def calculate_price(
     promo_code=None,
     *,
     lock_promotion=False,
+    loyal_customer=False,
 ):
     """Menghitung snapshot biaya kendaraan, sopir, diskon, dan deposit."""
     # Tanggal awal dan akhir sama-sama dihitung sebagai hari sewa.
@@ -91,6 +92,8 @@ def calculate_price(
         else:
             discount = Decimal(promotion.discount_value)
         discount = min(discount, subtotal)
+    elif loyal_customer and subtotal >= Decimal("300000"):
+        discount = min(subtotal * Decimal("0.10"), Decimal("150000"))
     total = subtotal - discount + Decimal(vehicle.deposit)
     return {
         "duration_days": days,
@@ -168,6 +171,9 @@ def create_rental(
         driver,
         promo_code,
         lock_promotion=True,
+        loyal_customer=Rental.query.filter_by(
+            customer_id=customer.id, status="Selesai"
+        ).count() > 0,
     )
     promotion = prices.pop("promotion")
     rental = Rental(

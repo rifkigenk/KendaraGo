@@ -27,6 +27,7 @@ from models import (
     Location,
     Payment,
     Rental,
+    RentalInquiry,
     User,
     Vehicle,
     VehicleSpecification,
@@ -597,8 +598,22 @@ def rentals():
     if status:
         query = query.filter_by(status=status)
     return render_template(
-        "admin/rentals.html", rentals=query.order_by(Rental.created_at.desc()).all()
+        "admin/rentals.html",
+        rentals=query.order_by(Rental.created_at.desc()).all(),
+        inquiries=RentalInquiry.query.order_by(RentalInquiry.created_at.desc()).all(),
     )
+
+
+@bp.route("/permintaan-sewa/<int:inquiry_id>/status", methods=["POST"])
+def rental_inquiry_status(inquiry_id):
+    inquiry = RentalInquiry.query.get_or_404(inquiry_id)
+    status = request.form.get("status", "")
+    if status not in {"Menunggu konfirmasi", "Dihubungi", "Dikonfirmasi", "Ditolak"}:
+        abort(400)
+    inquiry.status = status
+    db.session.commit()
+    flash("Status permintaan sewa diperbarui.", "success")
+    return redirect(url_for("admin.rentals"))
 
 
 # ==========================================================

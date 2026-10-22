@@ -853,6 +853,60 @@ def ensure_customer(index, name, email):
     return customer
 
 
+def ensure_returning_customer():
+    """Menyiapkan akun pelanggan lama dengan satu riwayat sewa selesai."""
+    email = "pelanggan.lama@kendarago.com"
+    customer = User.query.filter_by(email=email).first()
+    if not customer:
+        customer = User(
+            name="Pelanggan Lama KendaraGo",
+            email=email,
+            phone="081211110004",
+            role="pelanggan",
+        )
+        customer.set_password("PelangganLama123!")
+        customer.profile = CustomerProfile(
+            address="Jl. Pelanggan KendaraGo No. 4, Jakarta",
+            ktp_number="3174000000000002",
+            sim_number="SIM-LAMA-004",
+            sim_type="SIM A",
+            verification_status="Terverifikasi",
+            emergency_contact="081277770004",
+        )
+        db.session.add(customer)
+        db.session.flush()
+    if not Rental.query.filter_by(customer_id=customer.id, status="Selesai").first():
+        previous = Rental.query.filter_by(booking_code="KG-DEMO-0001").first()
+        if previous:
+            previous.customer_id = customer.id
+        else:
+            vehicle = Vehicle.query.filter_by(is_active=True).first()
+            location = Location.query.filter_by(is_active=True).first()
+            if vehicle and location:
+                db.session.add(
+                    Rental(
+                        booking_code="KG-LOYAL-0001",
+                        customer_id=customer.id,
+                        vehicle_id=vehicle.id,
+                        pickup_location_id=location.id,
+                        return_location_id=location.id,
+                        start_date=date.today() - timedelta(days=20),
+                        end_date=date.today() - timedelta(days=18),
+                        pickup_time=time(9, 0),
+                        duration_days=3,
+                        daily_price=vehicle.daily_price,
+                        vehicle_subtotal=Decimal(vehicle.daily_price) * 3,
+                        driver_fee=0,
+                        additional_fee=0,
+                        discount=0,
+                        deposit=vehicle.deposit,
+                        total_payment=Decimal(vehicle.daily_price) * 3 + Decimal(vehicle.deposit),
+                        status="Selesai",
+                    )
+                )
+    return customer
+
+
 def seed_indonesia_catalog():
     """Create or refresh Indonesian locations and locally relevant vehicles."""
     locations = ensure_locations()
@@ -968,6 +1022,7 @@ def enrich():
         raise RuntimeError("Jalankan seed.py terlebih dahulu.")
 
     location = seed_indonesia_catalog()
+    ensure_returning_customer()
 
     customers = [
         ensure_customer(1, "Siti Rahmawati", "siti@demo.kendarago.com"),

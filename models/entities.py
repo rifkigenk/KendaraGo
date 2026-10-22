@@ -284,6 +284,30 @@ class Promotion(TimestampMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
 
+class RentalInquiry(TimestampMixin, db.Model):
+    """Permintaan sewa publik yang menunggu tindak lanjut admin."""
+
+    __tablename__ = "rental_inquiries"
+    id = db.Column(db.Integer, primary_key=True)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey("vehicles.id"), nullable=False, index=True)
+    driver_id = db.Column(db.Integer, db.ForeignKey("drivers.id"), index=True)
+    pickup_location_id = db.Column(db.Integer, db.ForeignKey("locations.id"), nullable=False)
+    full_name = db.Column(db.String(120), nullable=False)
+    nik = db.Column(db.String(16), nullable=False)
+    whatsapp = db.Column(db.String(20), nullable=False)
+    emergency_phone = db.Column(db.String(20), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    pickup_time = db.Column(db.Time, nullable=False)
+    with_driver = db.Column(db.Boolean, default=False, nullable=False)
+    sim_type = db.Column(db.String(20))
+    sim_number = db.Column(db.String(32))
+    status = db.Column(db.String(30), default="Menunggu konfirmasi", nullable=False, index=True)
+    vehicle = db.relationship("Vehicle")
+    driver = db.relationship("Driver")
+    pickup_location = db.relationship("Location")
+
+
 class Rental(TimestampMixin, db.Model):
     """Transaksi penyewaan beserta snapshot harga pada saat dipesan."""
 
