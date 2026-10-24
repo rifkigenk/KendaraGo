@@ -173,7 +173,8 @@ def create_rental(
         lock_promotion=True,
         loyal_customer=Rental.query.filter_by(
             customer_id=customer.id, status="Selesai"
-        ).count() > 0,
+        ).count()
+        > 0,
     )
     promotion = prices.pop("promotion")
     rental = Rental(

@@ -17,7 +17,15 @@ from flask import (
 from sqlalchemy import false, or_
 
 from extensions import db, limiter
-from models import Category, Driver, Location, RentalInquiry, Review, Vehicle, VehicleSpecification
+from models import (
+    Category,
+    Driver,
+    Location,
+    RentalInquiry,
+    Review,
+    Vehicle,
+    VehicleSpecification,
+)
 from services.availability_service import driver_is_available, vehicle_is_available
 from utils.validators import decimal_amount, limited_text
 
@@ -393,13 +401,19 @@ def rental_request(vehicle_id):
                 full_name=full_name,
                 nik=nik,
                 whatsapp="".join(filter(str.isdigit, request.form["whatsapp"])),
-                emergency_phone="".join(filter(str.isdigit, request.form["emergency_phone"])),
+                emergency_phone="".join(
+                    filter(str.isdigit, request.form["emergency_phone"])
+                ),
                 start_date=start_date,
                 end_date=end_date,
                 pickup_time=pickup_time,
                 with_driver=with_driver,
                 sim_type=None if with_driver else request.form.get("sim_type"),
-                sim_number=None if with_driver else "".join(filter(str.isdigit, request.form["sim_number"])),
+                sim_number=(
+                    None
+                    if with_driver
+                    else "".join(filter(str.isdigit, request.form["sim_number"]))
+                ),
             )
             db.session.add(inquiry)
             db.session.commit()

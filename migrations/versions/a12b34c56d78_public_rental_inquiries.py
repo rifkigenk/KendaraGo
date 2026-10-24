@@ -35,7 +35,9 @@ def upgrade():
         sa.ForeignKeyConstraint(["vehicle_id"], ["vehicles.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_rental_inquiries_vehicle_id", "rental_inquiries", ["vehicle_id"])
+    op.create_index(
+        "ix_rental_inquiries_vehicle_id", "rental_inquiries", ["vehicle_id"]
+    )
     op.create_index("ix_rental_inquiries_driver_id", "rental_inquiries", ["driver_id"])
     op.create_index("ix_rental_inquiries_status", "rental_inquiries", ["status"])
 

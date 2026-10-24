@@ -29,7 +29,11 @@ BALI_LOCATIONS = [
     ("Ubud", "Jl. Raya Ubud, Kabupaten Gianyar, Bali", "089632358762"),
     ("Canggu", "Jl. Pantai Batu Bolong, Kabupaten Badung, Bali", "089632358762"),
     ("Sanur", "Jl. Danau Tamblingan, Kota Denpasar, Bali", "089632358762"),
-    ("Bandara Ngurah Rai", "Terminal Domestik, Bandara I Gusti Ngurah Rai, Bali", "089632358762"),
+    (
+        "Bandara Ngurah Rai",
+        "Terminal Domestik, Bandara I Gusti Ngurah Rai, Bali",
+        "089632358762",
+    ),
 ]
 
 
@@ -866,7 +870,8 @@ def ensure_returning_customer():
                         additional_fee=0,
                         discount=0,
                         deposit=vehicle.deposit,
-                        total_payment=Decimal(vehicle.daily_price) * 3 + Decimal(vehicle.deposit),
+                        total_payment=Decimal(vehicle.daily_price) * 3
+                        + Decimal(vehicle.deposit),
                         status="Selesai",
                     )
                 )
@@ -896,9 +901,7 @@ def seed_bali_catalog():
         if not vehicle:
             continue
         vehicle.main_image = catalog_image_path(code)
-        vehicle.location = locations[
-            VEHICLE_LOCATION_BY_CODE.get(code, "Denpasar")
-        ]
+        vehicle.location = locations[VEHICLE_LOCATION_BY_CODE.get(code, "Denpasar")]
         vehicle.is_active = True
         if code in CURRENT_MODEL_UPDATES:
             vehicle.name, vehicle.model, vehicle.production_year = (

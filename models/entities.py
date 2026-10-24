@@ -289,9 +289,13 @@ class RentalInquiry(TimestampMixin, db.Model):
 
     __tablename__ = "rental_inquiries"
     id = db.Column(db.Integer, primary_key=True)
-    vehicle_id = db.Column(db.Integer, db.ForeignKey("vehicles.id"), nullable=False, index=True)
+    vehicle_id = db.Column(
+        db.Integer, db.ForeignKey("vehicles.id"), nullable=False, index=True
+    )
     driver_id = db.Column(db.Integer, db.ForeignKey("drivers.id"), index=True)
-    pickup_location_id = db.Column(db.Integer, db.ForeignKey("locations.id"), nullable=False)
+    pickup_location_id = db.Column(
+        db.Integer, db.ForeignKey("locations.id"), nullable=False
+    )
     full_name = db.Column(db.String(120), nullable=False)
     nik = db.Column(db.String(16), nullable=False)
     whatsapp = db.Column(db.String(20), nullable=False)
@@ -302,7 +306,9 @@ class RentalInquiry(TimestampMixin, db.Model):
     with_driver = db.Column(db.Boolean, default=False, nullable=False)
     sim_type = db.Column(db.String(20))
     sim_number = db.Column(db.String(32))
-    status = db.Column(db.String(30), default="Menunggu konfirmasi", nullable=False, index=True)
+    status = db.Column(
+        db.String(30), default="Menunggu konfirmasi", nullable=False, index=True
+    )
     vehicle = db.relationship("Vehicle")
     driver = db.relationship("Driver")
     pickup_location = db.relationship("Location")
