@@ -13,6 +13,7 @@ from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from extensions import db
+from sqlalchemy.dialects.mysql import DATETIME
 
 
 def now():
@@ -130,11 +131,14 @@ class Location(TimestampMixin, db.Model):
     """Cabang tempat kendaraan diambil atau dikembalikan."""
 
     __tablename__ = "locations"
+    updated_at = db.Column(db.DateTime().with_variant(DATETIME(fsp=6), "mysql"), default=now, onupdate=now, nullable=False)
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=True, nullable=False)
     address = db.Column(db.Text, nullable=False)
     phone = db.Column(db.String(20))
     is_active = db.Column(db.Boolean, default=True, nullable=False)
+    address_data = db.Column(db.JSON)
+    verified_by_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
 
 class Facility(TimestampMixin, db.Model):
@@ -318,6 +322,8 @@ class Rental(TimestampMixin, db.Model):
     """Transaksi penyewaan beserta snapshot harga pada saat dipesan."""
 
     __tablename__ = "rentals"
+    updated_at = db.Column(db.DateTime().with_variant(DATETIME(fsp=6), "mysql"), default=now, onupdate=now, nullable=False)
+    __table_args__ = (db.UniqueConstraint("customer_id", "request_key", name="uq_rental_request"),)
     id = db.Column(db.Integer, primary_key=True)
     booking_code = db.Column(db.String(30), unique=True, nullable=False, index=True)
     customer_id = db.Column(
@@ -329,11 +335,15 @@ class Rental(TimestampMixin, db.Model):
     driver_id = db.Column(db.Integer, db.ForeignKey("drivers.id"), index=True)
     promotion_id = db.Column(db.Integer, db.ForeignKey("promotions.id"))
     pickup_location_id = db.Column(
-        db.Integer, db.ForeignKey("locations.id"), nullable=False
+        db.Integer, db.ForeignKey("locations.id"), nullable=True
     )
     return_location_id = db.Column(
-        db.Integer, db.ForeignKey("locations.id"), nullable=False
+        db.Integer, db.ForeignKey("locations.id"), nullable=True
     )
+    pickup_address = db.Column(db.JSON)
+    return_address = db.Column(db.JSON)
+    request_key = db.Column(db.String(64))
+    request_hash = db.Column(db.String(64))
     start_date = db.Column(db.Date, nullable=False, index=True)
     end_date = db.Column(db.Date, nullable=False, index=True)
     pickup_time = db.Column(db.Time, nullable=False)

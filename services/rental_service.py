@@ -123,6 +123,11 @@ def create_rental(
     driver=None,
     promo_code=None,
     notes=None,
+    *,
+    pickup_address=None,
+    return_address=None,
+    request_key=None,
+    request_hash=None,
 ):
     """Memvalidasi permintaan lalu menyimpan pesanan dalam satu transaksi."""
     if start_date < date.today():
@@ -139,6 +144,12 @@ def create_rental(
     ).scalar_one_or_none()
     if vehicle is None:
         raise ValueError("Kendaraan tidak ditemukan.")
+    if request_key:
+        previous = Rental.query.filter_by(customer_id=customer.id, request_key=request_key).with_for_update().first()
+        if previous:
+            if previous.request_hash != request_hash:
+                raise ValueError("Kunci pemesanan sudah digunakan untuk data berbeda.")
+            return previous
     if not vehicle.is_active or vehicle.status in {"Perawatan", "Tidak aktif"}:
         raise ValueError("Kendaraan sedang tidak dapat disewa.")
     if not vehicle_is_available(vehicle.id, start_date, end_date, lock=True):
@@ -153,14 +164,15 @@ def create_rental(
         if not driver_is_available(driver.id, start_date, end_date, lock=True):
             raise ValueError("Pengemudi tidak tersedia pada periode tersebut.")
 
-    location_ids = {pickup_location_id, return_location_id}
-    active_locations = db.session.scalars(
-        db.select(Location.id).where(
-            Location.id.in_(location_ids), Location.is_active.is_(True)
-        )
-    ).all()
-    if set(active_locations) != location_ids:
-        raise ValueError("Lokasi pengambilan atau pengembalian tidak valid.")
+    from services.location_service import validate_address
+    def snapshot(address, location_id):
+        if address is None:
+            office = db.session.get(Location, location_id) if location_id else None
+            address = {"kind": "office", "office_id": location_id, "confirmed": True,
+                       "office_updated_at": office.updated_at.isoformat() if office else ""}
+        return validate_address(address)
+    pickup_address = snapshot(pickup_address, pickup_location_id)
+    return_address = snapshot(return_address, return_location_id)
 
     # Harga disimpan pada pesanan (snapshot), sehingga perubahan harga kendaraan
     # di masa depan tidak mengubah tagihan pesanan yang sudah dibuat.
@@ -183,8 +195,12 @@ def create_rental(
         vehicle_id=vehicle.id,
         driver_id=driver.id if driver else None,
         promotion_id=promotion.id if promotion else None,
-        pickup_location_id=pickup_location_id,
-        return_location_id=return_location_id,
+        pickup_location_id=pickup_address.get("office_id"),
+        return_location_id=return_address.get("office_id"),
+        pickup_address=pickup_address,
+        return_address=return_address,
+        request_key=request_key,
+        request_hash=request_hash,
         start_date=start_date,
         end_date=end_date,
         pickup_time=pickup_time,
@@ -272,8 +288,9 @@ def cancel_rental(rental, user=None, *, automatic=False):
             payment.verification_status = "Dibatalkan"
             payment.admin_notes = "Pesanan dibatalkan sebelum pembayaran diverifikasi."
     PromotionUsage.query.filter_by(rental_id=rental.id).delete()
-    new_status = "Dibatalkan otomatis" if automatic else "Dibatalkan pelanggan"
-    notes = "Tenggat pembayaran berakhir" if automatic else "Dibatalkan pelanggan"
+    admin_cancel = user is not None and user.role == "admin"
+    new_status = "Dibatalkan otomatis" if automatic else ("Dibatalkan admin" if admin_cancel else "Dibatalkan pelanggan")
+    notes = "Tenggat pembayaran berakhir" if automatic else new_status
     change_status(rental, new_status, user, notes)
 
 

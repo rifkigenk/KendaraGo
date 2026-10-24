@@ -28,6 +28,7 @@ from models import (
 )
 from services.availability_service import driver_is_available, vehicle_is_available
 from utils.validators import decimal_amount, limited_text
+from services.location_service import bookable_offices
 
 
 bp = Blueprint("public", __name__)
@@ -205,7 +206,7 @@ def vehicles():
         "public/vehicles.html",
         page=page,
         categories=Category.query.filter_by(is_active=True).all(),
-        locations=Location.query.filter_by(is_active=True).all(),
+        locations=bookable_offices(),
     )
 
 
@@ -284,173 +285,9 @@ def vehicle_detail(vehicle_id):
 @limiter.limit("5 per 10 minutes", methods=["POST"])
 @limiter.limit("20 per day", methods=["POST"])
 def rental_request(vehicle_id):
-    # 04A. Data yang diperlukan untuk menampilkan formulir.
-    vehicle = Vehicle.query.filter_by(id=vehicle_id, is_active=True).first_or_404()
-    locations = Location.query.filter_by(is_active=True).order_by(Location.name).all()
-    drivers = Driver.query.filter_by(is_active=True).order_by(Driver.name).all()
-    error = None
-
-    if request.method == "POST":
-        try:
-            # 04B. Pastikan seluruh data inti telah diisi.
-            required_fields = {
-                "full_name": "nama lengkap",
-                "nik": "NIK",
-                "whatsapp": "nomor WhatsApp",
-                "emergency_phone": "nomor kontak darurat",
-                "start_date": "tanggal mulai",
-                "end_date": "tanggal selesai",
-                "pickup_time": "waktu pengambilan",
-            }
-            missing = [
-                label
-                for field, label in required_fields.items()
-                if not request.form.get(field, "").strip()
-            ]
-            if missing:
-                raise ValueError(f"Lengkapi bagian: {', '.join(missing)}.")
-
-            # 04C. Bersihkan identitas dan periksa format kontak.
-            full_name = limited_text(
-                request.form["full_name"],
-                "Nama lengkap",
-                minimum=3,
-                maximum=120,
-                required=True,
-            )
-
-            nik = "".join(filter(str.isdigit, request.form["nik"]))
-            if len(nik) != 16:
-                raise ValueError("NIK harus terdiri dari 16 digit.")
-
-            for field, label in (
-                ("whatsapp", "Nomor WhatsApp"),
-                ("emergency_phone", "Nomor kontak darurat"),
-            ):
-                phone_digits = "".join(filter(str.isdigit, request.form[field]))
-                if not 9 <= len(phone_digits) <= 15:
-                    raise ValueError(f"{label} harus terdiri dari 9 sampai 15 digit.")
-
-            # 04D. Ubah jadwal menjadi objek tanggal dan cek ketersediaan unit.
-            today = datetime.now().date()
-            start_date = datetime.strptime(
-                request.form["start_date"], "%Y-%m-%d"
-            ).date()
-            end_date = datetime.strptime(request.form["end_date"], "%Y-%m-%d").date()
-            pickup_time = datetime.strptime(request.form["pickup_time"], "%H:%M").time()
-            if start_date < today:
-                raise ValueError("Tanggal mulai tidak boleh sebelum hari ini.")
-            if end_date < start_date:
-                raise ValueError("Tanggal selesai tidak boleh sebelum tanggal mulai.")
-            if vehicle.status != "Tersedia" or not vehicle_is_available(
-                vehicle.id, start_date, end_date
-            ):
-                raise ValueError(
-                    "Kendaraan tidak tersedia pada periode tersebut. Silakan pilih tanggal lain."
-                )
-
-            # 04E. Pastikan lokasi pengambilan masih aktif.
-            pickup_location_id = request.form.get("pickup_location_id", type=int)
-            pickup_location = (
-                db.session.get(Location, pickup_location_id)
-                if pickup_location_id
-                else None
-            )
-            if not pickup_location or not pickup_location.is_active:
-                raise ValueError("Pilih lokasi pengambilan yang valid.")
-
-            # 04F. Pengemudi dan SIM bersifat bergantian.
-            with_driver = bool(request.form.get("with_driver"))
-            driver = None
-            if with_driver:
-                driver_id = request.form.get("driver_id", type=int)
-                driver = db.session.get(Driver, driver_id) if driver_id else None
-                if not driver or not driver.is_active:
-                    raise ValueError("Pilih pengemudi yang tersedia.")
-                if not driver_is_available(driver.id, start_date, end_date):
-                    raise ValueError(
-                        "Pengemudi tersebut tidak tersedia pada periode yang dipilih."
-                    )
-            elif (
-                not request.form.get("sim_type")
-                or not request.form.get("sim_number", "").strip()
-            ):
-                raise ValueError(
-                    "Jenis dan nomor SIM wajib diisi jika menyewa tanpa pengemudi."
-                )
-            elif (
-                not 8
-                <= len("".join(filter(str.isdigit, request.form["sim_number"])))
-                <= 16
-            ):
-                raise ValueError("Nomor SIM harus terdiri dari 8 sampai 16 digit.")
-
-            # 04G. Persetujuan pengguna wajib sebelum diarahkan ke WhatsApp.
-            if not request.form.get("terms"):
-                raise ValueError(
-                    "Anda harus menyetujui syarat dan ketentuan penyewaan."
-                )
-
-            sanitized_form = request.form.to_dict()
-            sanitized_form["full_name"] = full_name
-
-            inquiry = RentalInquiry(
-                vehicle_id=vehicle.id,
-                driver_id=driver.id if driver else None,
-                pickup_location_id=pickup_location.id,
-                full_name=full_name,
-                nik=nik,
-                whatsapp="".join(filter(str.isdigit, request.form["whatsapp"])),
-                emergency_phone="".join(
-                    filter(str.isdigit, request.form["emergency_phone"])
-                ),
-                start_date=start_date,
-                end_date=end_date,
-                pickup_time=pickup_time,
-                with_driver=with_driver,
-                sim_type=None if with_driver else request.form.get("sim_type"),
-                sim_number=(
-                    None
-                    if with_driver
-                    else "".join(filter(str.isdigit, request.form["sim_number"]))
-                ),
-            )
-            db.session.add(inquiry)
-            db.session.commit()
-
-            # 04H. Susun pesan final dan arahkan pengguna ke WhatsApp.
-            detail_url = url_for(
-                "public.vehicle_detail", vehicle_id=vehicle.id, _external=True
-            )
-            message = build_whatsapp_message(
-                form=sanitized_form,
-                vehicle=vehicle,
-                driver=driver,
-                pickup_location=pickup_location,
-                start_date=start_date,
-                end_date=end_date,
-                pickup_time=pickup_time,
-                nik=nik,
-                detail_url=detail_url,
-            )
-            whatsapp_url = f"https://wa.me/{current_app.config['WHATSAPP_NUMBER']}?text={quote(message, safe='')}"
-            # Render a same-origin response before navigating to WhatsApp.
-            # Browsers may block external POST redirects under form-action 'self'.
-            return render_template(
-                "public/whatsapp_continue.html", whatsapp_url=whatsapp_url
-            )
-        except (TypeError, ValueError) as exception:
-            error = str(exception)
-
-    # Permintaan GET atau POST gagal akan kembali menampilkan formulir.
-    return render_template(
-        "public/rental_form.html",
-        vehicle=vehicle,
-        locations=locations,
-        drivers=drivers,
-        form=request.form,
-        error=error,
-    )
+    Vehicle.query.filter_by(id=vehicle_id, is_active=True).first_or_404()
+    # All new bookings belong to an authenticated customer; historical inquiries remain.
+    return redirect(url_for("customer.book", vehicle_id=vehicle_id), code=303)
 
 
 # ==========================================================
