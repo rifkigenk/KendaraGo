@@ -10,13 +10,13 @@
        ======================================================= -->
   <div class="dashboard-shell">
     {% include "components/dashboard_nav.html" %}
-    <section class="dashboard-content">
+    <section class="dashboard-content" data-booking-detail="{{ url_for('booking_sync.detail', rental_id=rental.id) }}" data-version="{{ rental.updated_at.isoformat() }}">
       <div class="d-flex justify-content-between align-items-start">
         <div>
           <span class="text-muted">Kode booking</span>
           <h1>{{ rental.booking_code }}</h1>
         </div>
-        <span class="badge text-bg-primary fs-6">{{ rental.status }}</span>
+        <span class="badge text-bg-primary fs-6" data-live-status>{{ rental.status }}</span>
       </div>
       <!-- =====================================================
            02. RINGKASAN PESANAN DAN BIAYA
@@ -38,7 +38,7 @@
               </dd>
               <dt class="col-sm-4">Pengambilan</dt>
               <dd class="col-sm-8">
-                {{ rental.pickup_location.name }}, {{ rental.pickup_time.strftime("%H:%M") }}
+                {{ rental.pickup_address.place_name if rental.pickup_address else (rental.pickup_location.name if rental.pickup_location else "Belum tersedia") }}, {{ rental.pickup_time.strftime("%H:%M") }}
               </dd>
               <dt class="col-sm-4">Pengemudi</dt>
               <dd class="col-sm-8">
@@ -65,6 +65,9 @@
         </div>
       </div>
 
+      <p class="small mt-4" data-sync-message role="status" aria-live="polite">Menghubungkan sinkronisasi?</p>
+      <div data-live-locations>{% include 'components/booking_locations.html' %}</div>
+      <a class="btn btn-outline-primary mt-3" href="{{ url_for('customer.edit_locations', rental_id=rental.id) }}">Ubah lokasi dan catatan</a>
       <!-- =====================================================
            03. FORMULIR PEMBAYARAN
            Hanya muncul ketika status pesanan menunggu pembayaran.

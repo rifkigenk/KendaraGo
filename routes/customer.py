@@ -1,6 +1,11 @@
 """Route pelanggan untuk profil, pesanan, pembayaran, dan ulasan."""
 
 from datetime import datetime
+import json
+import hashlib
+from uuid import uuid4, UUID
+from flask import jsonify
+from services.location_service import office_options
 from decimal import Decimal, InvalidOperation
 
 from flask import (
@@ -215,48 +220,50 @@ def profile():
 @limiter.limit("10 per hour", methods=["POST"])
 def book(vehicle_id):
     vehicle = Vehicle.query.filter_by(id=vehicle_id, is_active=True).first_or_404()
-    locations = Location.query.filter_by(is_active=True).all()
     drivers = Driver.query.filter_by(is_active=True).all()
     if request.method == "POST":
         try:
+            request_key = str(UUID(request.form.get("request_key", "")))
+            payload = {k: v for k, v in request.form.items() if k not in {"csrf_token", "request_key"}}
+            request_hash = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+            previous = Rental.query.filter_by(customer_id=current_user.id, request_key=request_key).first()
+            if previous:
+                if previous.request_hash != request_hash:
+                    return jsonify(error="Kunci pemesanan sudah dipakai. Buka pesanan sebelumnya atau mulai pesanan baru."), 409
+                return jsonify(url=url_for("customer.rental_detail", rental_id=previous.id), id=previous.id)
+            if request.form.get("terms") != "1":
+                raise ValueError("Setujui syarat penyewaan terlebih dahulu.")
             start = datetime.strptime(request.form["start_date"], "%Y-%m-%d").date()
             end = datetime.strptime(request.form["end_date"], "%Y-%m-%d").date()
             pickup_time = datetime.strptime(request.form["pickup_time"], "%H:%M").time()
-            pickup_location_id = int(request.form["pickup_location_id"])
-            return_location_id = int(request.form["return_location_id"])
-            valid_location_ids = {location.id for location in locations}
-            if (
-                pickup_location_id not in valid_location_ids
-                or return_location_id not in valid_location_ids
-            ):
-                raise ValueError("Lokasi pengambilan atau pengembalian tidak valid.")
+            pickup = json.loads(request.form.get("pickup_address", "null"))
+            dropoff = pickup if request.form.get("same_location") == "1" else json.loads(request.form.get("return_address", "null"))
+            if not isinstance(pickup, dict) or not isinstance(dropoff, dict):
+                raise ValueError("Lengkapi dan konfirmasi kedua lokasi.")
             driver = None
             if request.form.get("with_driver"):
-                driver = Driver.query.get_or_404(int(request.form["driver_id"]))
-                if not driver_is_available(driver.id, start, end):
-                    raise ValueError(
-                        "Pengemudi tersebut tidak tersedia pada periode yang dipilih."
-                    )
+                driver = db.session.get(Driver, int(request.form.get("driver_id", "0")))
+                if not driver:
+                    raise ValueError("Pilih pengemudi yang tersedia.")
             rental = create_rental(
-                current_user,
-                vehicle,
-                start,
-                end,
-                pickup_time,
-                pickup_location_id,
-                return_location_id,
-                driver,
+                current_user, vehicle, start, end, pickup_time, None, None, driver,
                 request.form.get("promo_code"),
                 limited_text(request.form.get("notes"), "Catatan", maximum=1000),
+                pickup_address=pickup, return_address=dropoff,
+                request_key=request_key, request_hash=request_hash,
             )
-            flash("Pemesanan berhasil dibuat. Silakan lakukan pembayaran.", "success")
-            return redirect(url_for("customer.rental_detail", rental_id=rental.id))
-        except (ValueError, KeyError) as error:
+            return jsonify(url=url_for("customer.rental_detail", rental_id=rental.id), id=rental.id), 201
+        except IntegrityError:
             db.session.rollback()
-            flash(str(error), "danger")
-    return render_template(
-        "customer/book.html", vehicle=vehicle, locations=locations, drivers=drivers
-    )
+            previous = Rental.query.filter_by(customer_id=current_user.id, request_key=request_key).first()
+            if previous and previous.request_hash == request_hash:
+                return jsonify(url=url_for("customer.rental_detail", rental_id=previous.id), id=previous.id)
+            return jsonify(error="Data berbenturan. Coba lagi dengan data yang sama."), 409
+        except (ValueError, TypeError, KeyError) as error:
+            db.session.rollback()
+            return jsonify(error=str(error)), 422
+    return render_template("customer/book.html", vehicle=vehicle, drivers=drivers,
+                           offices=office_options(), request_key=str(uuid4()))
 
 
 # ==========================================================
@@ -278,6 +285,16 @@ def rental_detail(rental_id):
         rental=owned_rental(rental_id),
         payment_methods=PAYMENT_METHODS,
     )
+
+
+@bp.get("/pesanan/<int:rental_id>/lokasi")
+def edit_locations(rental_id):
+    from routes.booking_sync import EDITABLE
+    rental = owned_rental(rental_id)
+    if rental.status not in EDITABLE:
+        flash("Lokasi tidak dapat diubah pada status ini.", "info")
+        return redirect(url_for("customer.rental_detail", rental_id=rental.id))
+    return render_template("customer/edit_locations.html", rental=rental)
 
 
 # ==========================================================

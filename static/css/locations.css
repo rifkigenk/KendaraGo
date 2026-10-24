@@ -1,0 +1,9 @@
+.location-editor {border:1px solid var(--bs-border-color,#dce3e8);border-radius:1rem;padding:1.25rem;margin-block:1rem;background:var(--bs-body-bg,#fff)}
+.location-map {height:300px;min-height:240px;width:100%;border-radius:.75rem;background:#e4eee9;isolation:isolate;z-index:0}
+.location-map-small {height:220px;min-height:180px}
+.meeting-pin {color:#164d42;font-size:30px;line-height:28px;text-align:center;text-shadow:0 0 3px white,0 0 6px white;cursor:grab}
+.location-preview,.preserve-lines {white-space:pre-wrap;overflow-wrap:anywhere}
+.location-details,.location-details p,.location-details dd,.location-details a,[data-results] button {overflow-wrap:anywhere;white-space:normal;min-width:0}
+.location-details .badge {white-space:normal;text-align:left;line-height:1.4}
+[data-save-message],[data-sync-message],[data-location-message] {overflow-wrap:anywhere}
+@media(max-width:576px){.location-editor{padding:1rem}.location-map{height:250px}.location-details .btn{width:100%}}

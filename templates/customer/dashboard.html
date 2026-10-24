@@ -65,44 +65,7 @@
           </div>
           <i class="bi bi-receipt" aria-hidden="true"></i>
         </div>
-        <div class="table-responsive">
-          <table class="table align-middle mb-0">
-            <thead>
-              <tr>
-                <th>Kode</th>
-                <th>Kendaraan</th>
-                <th>Periode</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for rental in rentals %}
-                <tr>
-                  <td><strong>{{ rental.booking_code }}</strong></td>
-                  <td>{{ rental.vehicle.name }}</td>
-                  <td>
-                    {{ rental.start_date.strftime("%d/%m/%Y") }} –
-                    {{ rental.end_date.strftime("%d/%m/%Y") }}
-                  </td>
-                  <td>Rp {{ '{:,.0f}'.format(rental.total_payment) }}</td>
-                  <td>
-                    <span class="badge status-{{ rental.status|lower|replace(' ', '-') }}">{{ rental.status }}</span>
-                  </td>
-                  <td>
-                    <a href="{{ url_for('customer.rental_detail', rental_id=rental.id) }}"
-                       class="btn btn-sm btn-outline-primary">Lihat</a>
-                  </td>
-                </tr>
-              {% else %}
-                <tr>
-                  <td colspan="6" class="text-center py-5 text-muted">Belum ada pesanan.</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+        {% include 'components/live_bookings.html' %}
       </section>
 
       <section class="dashboard-panel mt-4">

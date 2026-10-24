@@ -60,6 +60,10 @@ def create_app(config_class=Config):
     app.register_blueprint(files_bp)
     app.register_blueprint(staff_bp)
     app.register_blueprint(admin_bp)
+    from routes.locations import bp as locations_bp
+    from routes.booking_sync import bp as booking_sync_bp
+    app.register_blueprint(locations_bp)
+    app.register_blueprint(booking_sync_bp)
     from routes.whatsapp import bp as whatsapp_bp
     from services.whatsapp_service import send_pending
     from urllib.parse import urlsplit

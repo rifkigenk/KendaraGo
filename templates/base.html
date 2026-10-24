@@ -23,6 +23,8 @@
           rel="stylesheet" />
     <link href="{{ url_for('static', filename='css/enhancements.css') }}"
           rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/locations.css') }}" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
@@ -214,6 +216,12 @@
     <script nonce="{{ csp_nonce }}"
             src="{{ url_for('static', filename='js/app.js') }}"></script>
 
+    <div id="location-config" hidden data-tiles="{{ 'true' if config.MAP_TILES_ENABLED else 'false' }}"
+         data-search-enabled="{{ 'true' if config.GEOAPIFY_API_KEY else 'false' }}"
+         data-search="{{ url_for('locations.search') }}" data-offices="{{ url_for('locations.offices') }}"></div>
+    <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/locations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/booking-sync.js') }}"></script>
     {% block scripts %}{% endblock %}
   </body>
 </html>

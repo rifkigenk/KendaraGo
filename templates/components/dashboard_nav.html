@@ -16,6 +16,7 @@
          href="{{ url_for('admin.vehicles') }}"><i class="bi bi-car-front"></i><span>Kendaraan</span></a>
       <a class="{{ 'active' if request.endpoint == 'admin.rentals' }}"
          href="{{ url_for('admin.rentals') }}"><i class="bi bi-receipt"></i><span>Pemesanan</span></a>
+      <a href="{{ url_for('locations.manage') }}"><i class="bi bi-geo-alt"></i><span>Kantor rental Bali</span></a>
       <a class="{{ 'active' if request.endpoint == 'admin.payments' }}"
          href="{{ url_for('admin.payments') }}"><i class="bi bi-credit-card"></i><span>Pembayaran</span></a>
       <a class="{{ 'active' if request.endpoint == 'admin.verifications' }}"

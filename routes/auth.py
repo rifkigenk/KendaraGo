@@ -24,7 +24,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from extensions import db, limiter
 from models import CustomerProfile, User
 from services.notification_service import notify
-from utils.security import client_fingerprint
+from utils.security import client_fingerprint, safe_internal_path
 from utils.validators import limited_text, normalize_email, password_errors, valid_phone
 
 
@@ -87,7 +87,7 @@ def login():
                 get_remote_address(),
             )
             flash(f"Selamat datang, {user.name}.", "success")
-            return redirect(dashboard_for(user))
+            return redirect(safe_internal_path(request.args.get("next"), dashboard_for(user)))
         current_app.logger.warning(
             "Login gagal untuk identitas %s dari %s",
             client_fingerprint(email),

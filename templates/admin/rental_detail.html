@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}{{ rental.booking_code }}{% endblock %}
+{% block content %}
+<div class="dashboard-shell">
+  {% include 'components/dashboard_nav.html' %}
+  <section class="dashboard-content" data-booking-detail="{{ url_for('booking_sync.detail', rental_id=rental.id) }}" data-version="{{ rental.updated_at.isoformat() }}">
+    <a href="{{ url_for('admin.rentals') }}">← Pemesanan</a>
+    <h1>{{ rental.booking_code }}</h1>
+    <span class="badge text-bg-primary" data-live-status>{{ rental.status }}</span>
+    <p class="mt-3">{{ rental.customer.name }} · {{ rental.customer.email }} · {{ rental.customer.phone or '-' }}</p>
+    <p>{{ rental.vehicle.name }} · {{ rental.start_date }} – {{ rental.end_date }} · {{ rental.pickup_time.strftime('%H:%M') }}</p>
+    <p class="small" data-sync-message role="status" aria-live="polite">Menghubungkan sinkronisasi…</p>
+    <div data-live-locations>{% include 'components/booking_locations.html' %}</div>
+    <form class="card card-body mt-4" data-status-form action="{{ url_for('booking_sync.status', rental_id=rental.id) }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <label for="next-status">Perbarui status</label>
+      <select class="form-select" id="next-status" name="status"><option value="">Pilih status</option>{% for status in transitions %}<option>{{ status }}</option>{% endfor %}</select>
+      <small class="mt-2">Persetujuan pembayaran melalui menu Pembayaran. Serah terima melalui pemeriksaan petugas.</small>
+      <button class="btn btn-primary mt-2" type="submit">Simpan status</button>
+      <p data-save-message role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</div>
+{% endblock %}

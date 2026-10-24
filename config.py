@@ -116,6 +116,8 @@ class Config:
     ITEMS_PER_PAGE = 9
     PAYMENT_DEADLINE_HOURS = int(os.getenv("PAYMENT_DEADLINE_HOURS", 2))
     APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Asia/Jakarta")
+    GEOAPIFY_API_KEY = os.getenv("GEOAPIFY_API_KEY", "")
+    MAP_TILES_ENABLED = env_bool("MAP_TILES_ENABLED", True)
 
 
 class TestingConfig(Config):

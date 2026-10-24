@@ -69,7 +69,7 @@ def apply_security_headers(response):
         "form-action 'self'; "
         f"script-src 'self' 'nonce-{nonce}'; "
         "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: blob:; "
+        "img-src 'self' data: blob: https://tile.openstreetmap.org; "
         "font-src 'self'; "
         "connect-src 'self'; "
         "media-src 'self'; "
@@ -86,13 +86,13 @@ def apply_security_headers(response):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
     response.headers["Permissions-Policy"] = (
-        "camera=(), microphone=(), geolocation=(), payment=(), usb=(), "
+        "camera=(), microphone=(), geolocation=(self), payment=(), usb=(), "
         "interest-cohort=()"
     )
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
     response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
     response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
-    if response.mimetype == "text/html":
+    if response.mimetype in {"text/html", "application/json"}:
         response.headers["Cache-Control"] = "no-store, max-age=0"
         response.headers["Pragma"] = "no-cache"
     return response

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Ubah lokasi {{ rental.booking_code }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h1>Ubah titik temu</h1><p>{{ rental.booking_code }} · {{ rental.vehicle.name }}</p>
+  <form method="post" action="{{ url_for('booking_sync.update_locations', rental_id=rental.id) }}" data-location-update
+        data-version="{{ rental.updated_at.isoformat() }}" data-return-url="{{ url_for('customer.rental_detail', rental_id=rental.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    {% set prefix = 'pickup' %}{% set heading = 'Lokasi Pengambilan' %}{% set initial_address = rental.pickup_address %}
+    {% include 'components/location_editor.html' %}
+    <label class="d-flex gap-2"><input type="checkbox" name="same_location" value="1" data-same-location /> Sama dengan lokasi pengambilan</label>
+    {% set prefix = 'return' %}{% set heading = 'Lokasi Pengembalian' %}{% set initial_address = rental.return_address %}
+    {% include 'components/location_editor.html' %}
+    <label for="edit-notes">Catatan pesanan</label><textarea class="form-control" id="edit-notes" name="notes" maxlength="1000">{{ rental.customer_notes or '' }}</textarea>
+    <p data-save-message role="status" aria-live="polite"></p>
+    <button class="btn btn-primary mt-3" type="submit">Simpan perubahan lokasi</button>
+  </form>
+</div>
+{% endblock %}

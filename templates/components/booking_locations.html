@@ -1,0 +1,18 @@
+<div class="row g-3 location-details">
+{% for label,address,legacy in [('Lokasi Pengambilan',rental.pickup_address,rental.pickup_location),('Lokasi Pengembalian',rental.return_address,rental.return_location)] %}
+  <div class="col-lg-6"><div class="card card-body h-100">
+    <h3 class="h5">{{ label }}</h3>
+    {% if address %}
+      <p>{{ address.formatted }}</p>
+      <dl><dt>Instruksi titik temu</dt><dd class="preserve-lines">{{ address.instructions or 'Tidak ada instruksi tambahan.' }}</dd>
+        <dt>Koordinat tersimpan</dt><dd>{{ address.latitude }}, {{ address.longitude }}</dd></dl>
+      <div class="location-map location-map-small" data-saved-map data-lat="{{ address.latitude }}" data-lon="{{ address.longitude }}" aria-label="Pin {{ label }}"></div>
+      <a class="btn btn-outline-primary mt-2 align-self-start" target="_blank" rel="noopener noreferrer"
+         href="https://www.google.com/maps/search/?api=1&amp;query={{ address.latitude }},{{ address.longitude }}">Buka di Google Maps</a>
+    {% else %}<p>{{ legacy.name if legacy else 'Lokasi belum tersedia' }}{% if legacy %} — {{ legacy.address }}{% endif %}</p>
+      <small>Pesanan lama belum memiliki alamat terstruktur dan pin terkonfirmasi.</small>{% endif %}
+  </div></div>
+{% endfor %}
+</div>
+<p class="mt-3 preserve-lines"><strong>Catatan:</strong> {{ rental.customer_notes or 'Tidak ada catatan.' }}</p>
+<small>Terakhir diperbarui: {{ local_datetime(rental.updated_at) }} WIB</small>
