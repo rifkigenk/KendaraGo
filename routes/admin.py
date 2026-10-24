@@ -302,7 +302,7 @@ def vehicle_import_template():
             "fuel_type": "Bensin",
             "daily_price": 1000000,
             "deposit": 2000000,
-            "location": "Jakarta Pusat",
+            "location": "Denpasar",
             "description": "Motor touring contoh",
             "image": "vehicles/adventure-bike-green.png",
             "vehicle_class": "Adventure Touring",

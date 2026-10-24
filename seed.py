@@ -32,7 +32,7 @@ def user(name, email, password, role, phone):
         item.profile = CustomerProfile(
             gender="Laki-laki",
             birth_date=date(1995, 5, 12),
-            address="Jl. Merdeka No. 10, Jakarta",
+            address="Jl. Merdeka No. 10, Denpasar, Bali",
             ktp_number="3174000000000001",
             sim_number="SIM-A-001",
             sim_type="SIM A",
@@ -87,19 +87,19 @@ def seed():
 
         locations = [
             Location(
-                name="Jakarta Pusat",
-                address="Jl. Medan Merdeka No. 1, Jakarta",
-                phone="0215550101",
+                name="Denpasar",
+                address="Jl. By Pass Ngurah Rai, Kota Denpasar, Bali",
+                phone="03615550101",
             ),
             Location(
-                name="Bandung Kota",
-                address="Jl. Asia Afrika No. 20, Bandung",
-                phone="0225550102",
+                name="Kuta",
+                address="Jl. Raya Kuta, Kabupaten Badung, Bali",
+                phone="03615550102",
             ),
             Location(
-                name="Bandara Soekarno-Hatta",
-                address="Terminal 2, Tangerang",
-                phone="0215550103",
+                name="Ubud",
+                address="Jl. Raya Ubud, Kabupaten Gianyar, Bali",
+                phone="03615550103",
             ),
         ]
         categories = [
@@ -148,21 +148,21 @@ def seed():
                 name="Budi Santoso",
                 phone="081300000101",
                 license_number="DRV-A-101",
-                address="Jakarta",
+                address="Denpasar, Bali",
                 daily_rate=250000,
             ),
             Driver(
                 name="Andi Pratama",
                 phone="081300000102",
                 license_number="DRV-A-102",
-                address="Bandung",
+                address="Kuta, Bali",
                 daily_rate=275000,
             ),
             Driver(
                 name="Rizky Hidayat",
                 phone="081300000103",
                 license_number="DRV-A-103",
-                address="Tangerang",
+                address="Ubud, Bali",
                 daily_rate=250000,
             ),
         ]

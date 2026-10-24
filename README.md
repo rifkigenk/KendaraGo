@@ -20,7 +20,7 @@ Integrasi WhatsApp Meta: lihat [PANDUAN_WHATSAPP.md](PANDUAN_WHATSAPP.md).
 - Invoice PDF, ekspor laporan Excel, notifikasi dalam aplikasi, ulasan, dan halaman error.
 - Skema 22 tabel MySQL serta seed 74 armada bergambar; 40 kendaraan harian hingga Rp900.000/hari ditampilkan di katalog publik.
 - Setiap model aktif memakai foto tersendiri, fasilitas mobil/motor dipisahkan, dan armada premium global tetap tersedia sebagai data arsip admin.
-- Katalog kendaraan populer Indonesia serta model 2026, dengan titik layanan dari Sumatra hingga Papua.
+- Katalog kendaraan populer untuk layanan sewa di kawasan Bali, dengan titik layanan di Denpasar, Kuta, Ubud, Canggu, Sanur, dan Bandara Ngurah Rai.
 
 ## Instalasi Windows (XAMPP)
 
@@ -97,7 +97,7 @@ di Admin → Pemesanan. Pemilihan pengemudi terhubung dengan data pengemudi di
 database. Pelanggan yang sudah memiliki penyewaan berstatus selesai mendapat
 diskon loyalitas otomatis 10% sampai Rp150.000 untuk transaksi minimal Rp300.000.
 
-## Sumber katalog Indonesia
+## Sumber katalog kendaraan Indonesia
 
 Daftar model Indonesia diperiksa pada 10 September 2026 berdasarkan katalog resmi pabrikan dan data pasar berikut:
 

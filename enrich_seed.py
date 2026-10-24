@@ -23,55 +23,13 @@ from models import (
 )
 
 
-INDONESIA_LOCATIONS = [
-    ("Jakarta Pusat", "Jl. Medan Merdeka, Jakarta Pusat, DKI Jakarta", "089632358762"),
-    ("Bandung Kota", "Jl. Asia Afrika, Kota Bandung, Jawa Barat", "089632358762"),
-    (
-        "Bandara Soekarno-Hatta",
-        "Terminal 2, Bandara Soekarno-Hatta, Kota Tangerang, Banten",
-        "089632358762",
-    ),
-    ("Banda Aceh", "Jl. Teuku Daud Beureueh, Banda Aceh, Aceh", "089632358762"),
-    ("Medan", "Jl. Gatot Subroto, Kota Medan, Sumatera Utara", "089632358762"),
-    ("Padang", "Jl. Khatib Sulaiman, Kota Padang, Sumatera Barat", "089632358762"),
-    ("Pekanbaru", "Jl. Jenderal Sudirman, Kota Pekanbaru, Riau", "089632358762"),
-    ("Batam", "Jl. Raja H. Fisabilillah, Kota Batam, Kepulauan Riau", "089632358762"),
-    (
-        "Palembang",
-        "Jl. Demang Lebar Daun, Kota Palembang, Sumatera Selatan",
-        "089632358762",
-    ),
-    ("Bandar Lampung", "Jl. Z.A. Pagar Alam, Bandar Lampung, Lampung", "089632358762"),
-    ("Semarang", "Jl. Pandanaran, Kota Semarang, Jawa Tengah", "089632358762"),
-    ("Yogyakarta", "Jl. Laksda Adisucipto, Sleman, DI Yogyakarta", "089632358762"),
-    ("Surabaya", "Jl. Ahmad Yani, Kota Surabaya, Jawa Timur", "089632358762"),
-    ("Malang", "Jl. Soekarno-Hatta, Kota Malang, Jawa Timur", "089632358762"),
+BALI_LOCATIONS = [
     ("Denpasar", "Jl. By Pass Ngurah Rai, Kota Denpasar, Bali", "089632358762"),
-    ("Mataram", "Jl. Pejanggik, Kota Mataram, Nusa Tenggara Barat", "089632358762"),
-    ("Kupang", "Jl. Frans Seda, Kota Kupang, Nusa Tenggara Timur", "089632358762"),
-    ("Pontianak", "Jl. Ahmad Yani, Kota Pontianak, Kalimantan Barat", "089632358762"),
-    (
-        "Banjarmasin",
-        "Jl. Ahmad Yani, Kota Banjarmasin, Kalimantan Selatan",
-        "089632358762",
-    ),
-    (
-        "Balikpapan",
-        "Jl. Jenderal Sudirman, Kota Balikpapan, Kalimantan Timur",
-        "089632358762",
-    ),
-    (
-        "Samarinda",
-        "Jl. Pangeran Antasari, Kota Samarinda, Kalimantan Timur",
-        "089632358762",
-    ),
-    ("Makassar", "Jl. A.P. Pettarani, Kota Makassar, Sulawesi Selatan", "089632358762"),
-    ("Manado", "Jl. Sam Ratulangi, Kota Manado, Sulawesi Utara", "089632358762"),
-    ("Palu", "Jl. Emy Saelan, Kota Palu, Sulawesi Tengah", "089632358762"),
-    ("Kendari", "Jl. M.T. Haryono, Kota Kendari, Sulawesi Tenggara", "089632358762"),
-    ("Ambon", "Jl. Jenderal Sudirman, Kota Ambon, Maluku", "089632358762"),
-    ("Sorong", "Jl. Basuki Rahmat, Kota Sorong, Papua Barat Daya", "089632358762"),
-    ("Jayapura", "Jl. Raya Abepura, Kota Jayapura, Papua", "089632358762"),
+    ("Kuta", "Jl. Raya Kuta, Kabupaten Badung, Bali", "089632358762"),
+    ("Ubud", "Jl. Raya Ubud, Kabupaten Gianyar, Bali", "089632358762"),
+    ("Canggu", "Jl. Pantai Batu Bolong, Kabupaten Badung, Bali", "089632358762"),
+    ("Sanur", "Jl. Danau Tamblingan, Kota Denpasar, Bali", "089632358762"),
+    ("Bandara Ngurah Rai", "Terminal Domestik, Bandara I Gusti Ngurah Rai, Bali", "089632358762"),
 ]
 
 
@@ -119,6 +77,12 @@ VEHICLE_LOCATION_BY_CODE = {
     "MTR-014": "Sorong",
     "MTR-015": "Jayapura",
     "MTR-016": "Makassar",
+}
+
+# Sebar armada demo ke titik layanan di Bali.
+VEHICLE_LOCATION_BY_CODE = {
+    code: BALI_LOCATIONS[index % len(BALI_LOCATIONS)][0]
+    for index, code in enumerate(VEHICLE_LOCATION_BY_CODE)
 }
 
 
@@ -803,7 +767,9 @@ def apply_public_catalog_policy():
 # Memastikan lokasi cabang yang diperlukan katalog tersedia.
 def ensure_locations():
     locations = {}
-    for name, address, phone in INDONESIA_LOCATIONS:
+    for location in Location.query.all():
+        location.is_active = False
+    for name, address, phone in BALI_LOCATIONS:
         location = Location.query.filter_by(name=name).first()
         if not location:
             location = Location(name=name)
@@ -841,7 +807,7 @@ def ensure_customer(index, name, email):
     )
     customer.set_password("Pelanggan123!")
     customer.profile = CustomerProfile(
-        address=f"Jl. Pelanggan KendaraGo No. {index}, Jakarta",
+        address=f"Jl. Pelanggan KendaraGo No. {index}, Denpasar, Bali",
         ktp_number=f"3174000000001{index:03}",
         sim_number=f"SIM-DEMO-{index:03}",
         sim_type="SIM A",
@@ -866,7 +832,7 @@ def ensure_returning_customer():
         )
         customer.set_password("PelangganLama123!")
         customer.profile = CustomerProfile(
-            address="Jl. Pelanggan KendaraGo No. 4, Jakarta",
+            address="Jl. Pelanggan KendaraGo No. 4, Denpasar, Bali",
             ktp_number="3174000000000002",
             sim_number="SIM-LAMA-004",
             sim_type="SIM A",
@@ -907,8 +873,8 @@ def ensure_returning_customer():
     return customer
 
 
-def seed_indonesia_catalog():
-    """Create or refresh Indonesian locations and locally relevant vehicles."""
+def seed_bali_catalog():
+    """Create or refresh Bali locations and locally relevant vehicles."""
     locations = ensure_locations()
 
     category_specs = [
@@ -931,7 +897,7 @@ def seed_indonesia_catalog():
             continue
         vehicle.main_image = catalog_image_path(code)
         vehicle.location = locations[
-            VEHICLE_LOCATION_BY_CODE.get(code, "Jakarta Pusat")
+            VEHICLE_LOCATION_BY_CODE.get(code, "Denpasar")
         ]
         vehicle.is_active = True
         if code in CURRENT_MODEL_UPDATES:
@@ -974,7 +940,7 @@ def seed_indonesia_catalog():
             existing_vehicle.deposit = Decimal(price) * 2
             existing_vehicle.main_image = image
             existing_vehicle.location = locations[
-                VEHICLE_LOCATION_BY_CODE.get(code, "Jakarta Pusat")
+                VEHICLE_LOCATION_BY_CODE.get(code, "Denpasar")
             ]
             existing_vehicle.is_active = (
                 not code.startswith(HIDDEN_PREMIUM_PREFIXES)
@@ -985,7 +951,7 @@ def seed_indonesia_catalog():
         vehicle = Vehicle(
             code=code,
             category=Category.query.filter_by(name=category_name).one(),
-            location=locations[VEHICLE_LOCATION_BY_CODE.get(code, "Jakarta Pusat")],
+            location=locations[VEHICLE_LOCATION_BY_CODE.get(code, "Denpasar")],
             name=name,
             brand=brand,
             model=model,
@@ -1013,7 +979,7 @@ def seed_indonesia_catalog():
         vehicle.facilities = facilities_for(vehicle, facilities)
         db.session.add(vehicle)
     db.session.flush()
-    return locations["Jakarta Pusat"]
+    return locations["Denpasar"]
 
 
 # Menambahkan katalog dan transaksi demo setelah akun admin tersedia.
@@ -1021,7 +987,7 @@ def enrich():
     if not User.query.filter_by(role="admin").first():
         raise RuntimeError("Jalankan seed.py terlebih dahulu.")
 
-    location = seed_indonesia_catalog()
+    location = seed_bali_catalog()
     ensure_returning_customer()
 
     customers = [
