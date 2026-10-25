@@ -87,7 +87,9 @@ def login():
                 get_remote_address(),
             )
             flash(f"Selamat datang, {user.name}.", "success")
-            return redirect(safe_internal_path(request.args.get("next"), dashboard_for(user)))
+            return redirect(
+                safe_internal_path(request.args.get("next"), dashboard_for(user))
+            )
         current_app.logger.warning(
             "Login gagal untuk identitas %s dari %s",
             client_fingerprint(email),

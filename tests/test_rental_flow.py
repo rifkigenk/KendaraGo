@@ -43,13 +43,31 @@ def rental_data():
     category = Category(
         name="Mobil Test", vehicle_type="Mobil", late_fee_per_day=100000
     )
-    admin = User(name="Admin Test", email="admin@example.com", role="admin", password_hash="unused")
+    admin = User(
+        name="Admin Test",
+        email="admin@example.com",
+        role="admin",
+        password_hash="unused",
+    )
     db.session.add(admin)
     db.session.flush()
-    location = Location(name="Cabang Test (fixture)", address="Alamat fixture, bukan kantor nyata", verified_by_id=admin.id,
-                        address_data={"kind":"office", "confirmed":True, "place_name":"Kantor fixture pengujian",
-                                      "street":"", "village":"Kelurahan fixture", "district":"Kecamatan fixture",
-                                      "city":"Denpasar", "province":"Bali", "latitude":-8.65, "longitude":115.216})
+    location = Location(
+        name="Cabang Test (fixture)",
+        address="Alamat fixture, bukan kantor nyata",
+        verified_by_id=admin.id,
+        address_data={
+            "kind": "office",
+            "confirmed": True,
+            "place_name": "Kantor fixture pengujian",
+            "street": "",
+            "village": "Kelurahan fixture",
+            "district": "Kecamatan fixture",
+            "city": "Denpasar",
+            "province": "Bali",
+            "latitude": -8.65,
+            "longitude": 115.216,
+        },
+    )
     vehicle = Vehicle(
         code="TEST-001",
         category=category,

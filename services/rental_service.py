@@ -145,7 +145,11 @@ def create_rental(
     if vehicle is None:
         raise ValueError("Kendaraan tidak ditemukan.")
     if request_key:
-        previous = Rental.query.filter_by(customer_id=customer.id, request_key=request_key).with_for_update().first()
+        previous = (
+            Rental.query.filter_by(customer_id=customer.id, request_key=request_key)
+            .with_for_update()
+            .first()
+        )
         if previous:
             if previous.request_hash != request_hash:
                 raise ValueError("Kunci pemesanan sudah digunakan untuk data berbeda.")
@@ -165,12 +169,18 @@ def create_rental(
             raise ValueError("Pengemudi tidak tersedia pada periode tersebut.")
 
     from services.location_service import validate_address
+
     def snapshot(address, location_id):
         if address is None:
             office = db.session.get(Location, location_id) if location_id else None
-            address = {"kind": "office", "office_id": location_id, "confirmed": True,
-                       "office_updated_at": office.updated_at.isoformat() if office else ""}
+            address = {
+                "kind": "office",
+                "office_id": location_id,
+                "confirmed": True,
+                "office_updated_at": office.updated_at.isoformat() if office else "",
+            }
         return validate_address(address)
+
     pickup_address = snapshot(pickup_address, pickup_location_id)
     return_address = snapshot(return_address, return_location_id)
 
@@ -289,7 +299,11 @@ def cancel_rental(rental, user=None, *, automatic=False):
             payment.admin_notes = "Pesanan dibatalkan sebelum pembayaran diverifikasi."
     PromotionUsage.query.filter_by(rental_id=rental.id).delete()
     admin_cancel = user is not None and user.role == "admin"
-    new_status = "Dibatalkan otomatis" if automatic else ("Dibatalkan admin" if admin_cancel else "Dibatalkan pelanggan")
+    new_status = (
+        "Dibatalkan otomatis"
+        if automatic
+        else ("Dibatalkan admin" if admin_cancel else "Dibatalkan pelanggan")
+    )
     notes = "Tenggat pembayaran berakhir" if automatic else new_status
     change_status(rental, new_status, user, notes)
 

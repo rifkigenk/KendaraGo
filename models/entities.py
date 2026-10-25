@@ -131,7 +131,12 @@ class Location(TimestampMixin, db.Model):
     """Cabang tempat kendaraan diambil atau dikembalikan."""
 
     __tablename__ = "locations"
-    updated_at = db.Column(db.DateTime().with_variant(DATETIME(fsp=6), "mysql"), default=now, onupdate=now, nullable=False)
+    updated_at = db.Column(
+        db.DateTime().with_variant(DATETIME(fsp=6), "mysql"),
+        default=now,
+        onupdate=now,
+        nullable=False,
+    )
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=True, nullable=False)
     address = db.Column(db.Text, nullable=False)
@@ -322,8 +327,15 @@ class Rental(TimestampMixin, db.Model):
     """Transaksi penyewaan beserta snapshot harga pada saat dipesan."""
 
     __tablename__ = "rentals"
-    updated_at = db.Column(db.DateTime().with_variant(DATETIME(fsp=6), "mysql"), default=now, onupdate=now, nullable=False)
-    __table_args__ = (db.UniqueConstraint("customer_id", "request_key", name="uq_rental_request"),)
+    updated_at = db.Column(
+        db.DateTime().with_variant(DATETIME(fsp=6), "mysql"),
+        default=now,
+        onupdate=now,
+        nullable=False,
+    )
+    __table_args__ = (
+        db.UniqueConstraint("customer_id", "request_key", name="uq_rental_request"),
+    )
     id = db.Column(db.Integer, primary_key=True)
     booking_code = db.Column(db.String(30), unique=True, nullable=False, index=True)
     customer_id = db.Column(

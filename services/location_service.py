@@ -1,4 +1,5 @@
 """Bali-only meeting points, independent of a geocoding provider or browser input."""
+
 import json
 import math
 from functools import lru_cache
@@ -7,17 +8,26 @@ from pathlib import Path
 from models import Location
 
 FIELDS = {
-    "place_name": 180, "street": 250, "building_number": 40,
-    "village": 120, "district": 120, "city": 120, "province": 40,
-    "postcode": 12, "instructions": 1000,
+    "place_name": 180,
+    "street": 250,
+    "building_number": 40,
+    "village": 120,
+    "district": 120,
+    "city": 120,
+    "province": 40,
+    "postcode": 12,
+    "instructions": 1000,
 }
 KINDS = {"office", "airport", "hotel", "other"}
 
 
 @lru_cache(maxsize=1)
 def bali_geometry():
-    return json.loads((Path(__file__).resolve().parents[1] / "static/data/bali.geojson")
-                      .read_text(encoding="utf-8"))["geometry"]
+    return json.loads(
+        (Path(__file__).resolve().parents[1] / "static/data/bali.geojson").read_text(
+            encoding="utf-8"
+        )
+    )["geometry"]
 
 
 def in_ring(x, y, ring):
@@ -37,14 +47,33 @@ def in_bali(latitude, longitude):
     if not math.isfinite(lat) or not math.isfinite(lon):
         return False
     geometry = bali_geometry()
-    polygons = geometry["coordinates"] if geometry["type"] == "MultiPolygon" else [geometry["coordinates"]]
-    return any(in_ring(lon, lat, p[0]) and not any(in_ring(lon, lat, h) for h in p[1:]) for p in polygons)
+    polygons = (
+        geometry["coordinates"]
+        if geometry["type"] == "MultiPolygon"
+        else [geometry["coordinates"]]
+    )
+    return any(
+        in_ring(lon, lat, p[0]) and not any(in_ring(lon, lat, h) for h in p[1:])
+        for p in polygons
+    )
 
 
 def format_address(data):
     street = " ".join(filter(None, [data.get("street"), data.get("building_number")]))
-    return ", ".join(filter(None, [data.get("place_name"), street, data.get("village"),
-                                  data.get("district"), data.get("city"), "Bali", data.get("postcode")]))
+    return ", ".join(
+        filter(
+            None,
+            [
+                data.get("place_name"),
+                street,
+                data.get("village"),
+                data.get("district"),
+                data.get("city"),
+                "Bali",
+                data.get("postcode"),
+            ],
+        )
+    )
 
 
 def validate_address(raw, *, office_admin=False):
@@ -54,14 +83,23 @@ def validate_address(raw, *, office_admin=False):
     if kind not in KINDS:
         raise ValueError("Pilih jenis lokasi yang valid.")
     if kind == "office" and not office_admin:
-        office = Location.query.filter_by(id=raw.get("office_id"), is_active=True).first()
+        office = Location.query.filter_by(
+            id=raw.get("office_id"), is_active=True
+        ).first()
         if not office or not office.verified_by_id or not office.address_data:
             raise ValueError("Kantor belum dikonfirmasi admin atau sudah tidak aktif.")
         # Never trust a submitted office address: snapshot the admin's current record.
         if raw.get("office_updated_at") != office.updated_at.isoformat():
-            raise ValueError("Alamat kantor diperbarui admin. Muat ulang dan konfirmasi kembali.")
-        result = validate_address({**office.address_data, "kind": "office", "confirmed": True}, office_admin=True)
-        result.update(office_id=office.id, office_updated_at=office.updated_at.isoformat())
+            raise ValueError(
+                "Alamat kantor diperbarui admin. Muat ulang dan konfirmasi kembali."
+            )
+        result = validate_address(
+            {**office.address_data, "kind": "office", "confirmed": True},
+            office_admin=True,
+        )
+        result.update(
+            office_id=office.id, office_updated_at=office.updated_at.isoformat()
+        )
         instructions = raw.get("instructions", "")
         if not isinstance(instructions, str) or len(instructions) > 1000:
             raise ValueError("Instruksi penjemputan maksimal 1000 karakter.")
@@ -73,8 +111,12 @@ def validate_address(raw, *, office_admin=False):
         if not isinstance(value, str) or len(value) > limit:
             raise ValueError(f"Isian {field} tidak valid atau terlalu panjang.")
         data[field] = value.strip()
-    if data["province"].casefold() != "bali" or not in_bali(raw.get("latitude"), raw.get("longitude")):
-        raise ValueError("Titik layanan harus berada di wilayah Bali. Periksa pin peta.")
+    if data["province"].casefold() != "bali" or not in_bali(
+        raw.get("latitude"), raw.get("longitude")
+    ):
+        raise ValueError(
+            "Titik layanan harus berada di wilayah Bali. Periksa pin peta."
+        )
     if not data["place_name"]:
         raise ValueError("Isi nama tempat atau titik temu.")
     data["province"] = "Bali"
@@ -85,11 +127,25 @@ def validate_address(raw, *, office_admin=False):
 
 
 def bookable_offices():
-    return Location.query.filter(Location.is_active.is_(True), Location.verified_by_id.is_not(None),
-                                 Location.address_data.is_not(None)).order_by(Location.name).all()
+    return (
+        Location.query.filter(
+            Location.is_active.is_(True),
+            Location.verified_by_id.is_not(None),
+            Location.address_data.is_not(None),
+        )
+        .order_by(Location.name)
+        .all()
+    )
 
 
 def office_options():
-    return [{"id": o.id, "name": o.name, "address": o.address_data,
-             "updated_at": o.updated_at.isoformat()} for o in bookable_offices()
-            if in_bali(o.address_data.get("latitude"), o.address_data.get("longitude"))]
+    return [
+        {
+            "id": o.id,
+            "name": o.name,
+            "address": o.address_data,
+            "updated_at": o.updated_at.isoformat(),
+        }
+        for o in bookable_offices()
+        if in_bali(o.address_data.get("latitude"), o.address_data.get("longitude"))
+    ]
