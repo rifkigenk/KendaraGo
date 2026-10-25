@@ -10,7 +10,7 @@
 {% block content %}
 
   <div class="container py-5">
-    <div class="row g-5">
+    <div class="row g-3 g-lg-5">
       <div class="col-lg-4">
         <div class="card card-body sticky-lg-top booking-summary">
           <span class="text-primary">{{ vehicle.category.name }}</span>
@@ -47,7 +47,7 @@
             <div class="col-12">
               {% set prefix = 'pickup' %}{% set heading = 'Lokasi Pengambilan' %}
               {% include 'components/location_editor.html' %}
-              <label class="d-flex gap-2"><input type="checkbox" name="same_location" value="1" checked data-same-location /> Sama dengan lokasi pengambilan</label>
+              <label class="d-flex gap-2"><input type="checkbox" name="same_location" value="1" checked data-same-location /> Kembalikan kendaraan di tempat yang sama</label>
               {% set prefix = 'return' %}{% set heading = 'Lokasi Pengembalian' %}
               {% include 'components/location_editor.html' %}
             </div>

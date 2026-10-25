@@ -75,8 +75,8 @@ def validate_address(raw, *, office_admin=False):
         data[field] = value.strip()
     if data["province"].casefold() != "bali" or not in_bali(raw.get("latitude"), raw.get("longitude")):
         raise ValueError("Titik layanan harus berada di wilayah Bali. Periksa pin peta.")
-    if not data["place_name"] or not data["city"] or not data["district"] or not data["village"]:
-        raise ValueError("Lengkapi nama tempat, desa/kelurahan, kecamatan, dan kabupaten/kota.")
+    if not data["place_name"]:
+        raise ValueError("Isi nama tempat atau titik temu.")
     data["province"] = "Bali"
     data["latitude"] = round(float(raw["latitude"]), 7)
     data["longitude"] = round(float(raw["longitude"]), 7)

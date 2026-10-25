@@ -8,7 +8,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     {% set prefix = 'pickup' %}{% set heading = 'Lokasi Pengambilan' %}{% set initial_address = rental.pickup_address %}
     {% include 'components/location_editor.html' %}
-    <label class="d-flex gap-2"><input type="checkbox" name="same_location" value="1" data-same-location /> Sama dengan lokasi pengambilan</label>
+    <label class="d-flex gap-2"><input type="checkbox" name="same_location" value="1" data-same-location {{ 'checked' if rental.pickup_address and rental.pickup_address == rental.return_address }} /> Kembalikan kendaraan di tempat yang sama</label>
     {% set prefix = 'return' %}{% set heading = 'Lokasi Pengembalian' %}{% set initial_address = rental.return_address %}
     {% include 'components/location_editor.html' %}
     <label for="edit-notes">Catatan pesanan</label><textarea class="form-control" id="edit-notes" name="notes" maxlength="1000">{{ rental.customer_notes or '' }}</textarea>

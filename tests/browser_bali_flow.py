@@ -65,18 +65,39 @@ def run():
                 login(customer, 'customer@example.com', 'Passphrase-Test-123')
                 customer.goto(f'http://127.0.0.1:5099/pelanggan/pesan/{vehicle_id}')
                 expect(customer.locator('[data-prefix=return]')).to_be_hidden()
+                expect(customer.locator('[data-prefix=pickup] [data-search-wrap]')).to_be_hidden()
                 customer.locator('[data-prefix=pickup] [data-geolocate]').click()
                 expect(customer.locator('[data-prefix=pickup] [data-location-message]')).to_contain_text('manual', timeout=15000)
                 # Simulate only the external provider response, not the booking backend.
+                app.config['GEOAPIFY_API_KEY'] = 'browser-test-only'
+                customer.reload()
                 result = dict(place_name='Hotel fixture untuk uji browser', street='', building_number='',
                               village='Kelurahan fixture', district='Kecamatan fixture', city='Denpasar',
                               province='Bali', postcode='', latitude=-8.65, longitude=115.216,
                               formatted='Hotel fixture untuk uji browser, Bali')
                 customer.route('**/lokasi/cari?*', lambda route: route.fulfill(content_type='application/json', body=json.dumps({'results':[result]})))
-                customer.locator('[data-prefix=pickup] [data-field=kind]').select_option('hotel')
                 customer.locator('[data-prefix=pickup] [data-search]').fill('hotel fixture')
                 customer.locator('[data-prefix=pickup] [data-results] button').click()
                 expect(customer.locator('#pickup-building_number')).to_have_value('')
+                expect(customer.locator('#pickup-place_name')).to_have_value(result['place_name'])
+                # Office selection still locks the admin's address and pin.
+                customer.locator('#pickup-kind').select_option('office')
+                customer.locator('#pickup-office').select_option(index=1)
+                expect(customer.locator('#pickup-place_name')).to_have_attribute('readonly', '')
+                expect(customer.locator('[data-prefix=pickup] [data-manual]')).to_be_hidden()
+                customer.locator('#pickup-kind').select_option('other')
+                expect(customer.locator('#pickup-latitude')).to_have_value('')
+                # Complete the main flow without a geocoding service or administrative fields.
+                app.config['GEOAPIFY_API_KEY'] = ''
+                customer.reload()
+                customer_ctx.grant_permissions(['geolocation'])
+                customer_ctx.set_geolocation({'latitude': -8.65, 'longitude': 115.216, 'accuracy': 10})
+                customer.locator('[data-prefix=pickup] [data-geolocate]').click()
+                expect(customer.locator('#pickup-latitude')).to_have_value('-8.6500000')
+                customer.locator('[data-prefix=pickup] [data-map]').click(position={'x': 70, 'y': 100})
+                customer.locator('#pickup-place_name').fill('Lobi tempat menginap')
+                for key in ['village', 'district', 'city', 'postcode']:
+                    expect(customer.locator(f'#pickup-{key}')).to_have_value('')
                 customer.locator('#pickup-instructions').fill('Lobi fixture. ' + 'Patokan panjang untuk menguji tampilan alamat. ' * 5)
                 customer.locator('#pickup-latitude').fill('-8.651')
                 customer.locator('[data-prefix=pickup] [data-confirm-location]').check()
@@ -88,17 +109,22 @@ def run():
                 customer.locator('[name=end_date]').evaluate('(el, value) => el._flatpickr.setDate(value, true)', end)
                 customer.locator('[name=pickup_time]').fill('09:00')
                 customer.locator('#terms').check()
-                assert customer.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Mobile overflow'
                 customer.screenshot(path=str(artifacts/'bali-booking-mobile.png'), full_page=True)
+                assert customer.evaluate('document.documentElement.scrollWidth <= innerWidth'), customer.evaluate("""() =>
+                    [...document.querySelectorAll('body *')].filter(el => el.getBoundingClientRect().right > innerWidth)
+                    .map(el => [el.tagName, el.className, el.getBoundingClientRect().width]).slice(0, 15)
+                """)
                 customer.locator('[data-booking-form] button[type=submit]').click()
                 customer.wait_for_url('**/pelanggan/pesanan/*')
                 code = customer.locator('h1').inner_text()
                 expect(admin_page.locator('[data-booking-list]')).to_contain_text(code, timeout=10000)
                 customer.goto(customer.url + '/lokasi')
+                expect(customer.locator('[data-same-location]')).to_be_checked()
+                expect(customer.locator('[data-prefix=return]')).to_be_hidden()
                 customer.locator('#pickup-instructions').fill('Instruksi baru dari akun penyewa')
                 customer.locator('[data-prefix=pickup] [data-confirm-location]').check()
                 customer.locator('[data-same-location]').check()
-                customer.locator('button[type=submit]').click()
+                customer.locator('[data-location-update] button[type=submit]').click()
                 customer.wait_for_url('**/pelanggan/pesanan/*')
                 expect(customer.locator('[data-live-locations]')).to_contain_text('Instruksi baru dari akun penyewa')
                 admin_page.get_by_role('link', name=code, exact=True).click()
@@ -115,7 +141,7 @@ def run():
                 admin_page.screenshot(path=str(artifacts/'bali-admin-detail.png'), full_page=True)
                 assert not errors, errors
                 browser.close()
-                print('Browser PASS: autocomplete UI, confirmation, mobile, booking, admin polling, location edit, status sync, offline/reconnect; no JavaScript errors.')
+                print('Browser PASS: simple map flow without geocoder, office selection, optional search, confirmation, mobile, booking, location edit, admin sync, offline/reconnect; no JavaScript errors.')
         finally:
             server.shutdown()
             with app.app_context():

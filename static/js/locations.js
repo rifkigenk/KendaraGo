@@ -3,9 +3,10 @@
   const config = document.getElementById('location-config');
   const keys = ['place_name', 'street', 'building_number', 'village', 'district', 'city', 'province', 'postcode', 'latitude', 'longitude', 'instructions'];
   const pinIcon = () => L.divIcon({className: 'meeting-pin', html: '<span aria-hidden="true">●</span>', iconSize: [28, 28], iconAnchor: [14, 14]});
-  function addTiles(map, message) {
+  function addTiles(map, message, manual) {
     if (config?.dataset.tiles !== 'true') {
       if (message) message.textContent = 'Peta dasar dinonaktifkan. Isi koordinat manual.';
+      if (manual) manual.open = true;
       return;
     }
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -13,6 +14,7 @@
       attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
     }).on('tileerror', () => {
       if (message) message.textContent = 'Peta gagal dimuat. Alamat dan koordinat tetap dapat diisi manual.';
+      if (manual) manual.open = true;
     }).addTo(map);
   }
   window.initSavedMaps = (root = document) => {
@@ -34,6 +36,8 @@
     const admin = root.dataset.admin === 'true';
     const search = root.querySelector('[data-search]');
     const results = root.querySelector('[data-results]');
+    const manual = root.querySelector('[data-manual]');
+    const searchEnabled = config?.dataset.searchEnabled === 'true';
     let officeVersion = '', offices = [], map, marker, revision = 0, timer, controller;
     function value() {
       const data = Object.fromEntries(keys.map(k => [k, field(k).value.trim()]));
@@ -45,11 +49,15 @@
     }
     function preview() {
       const v = value();
-      const address = [v.place_name, [v.street, v.building_number].filter(Boolean).join(' '), v.village, v.district, v.city, v.province, v.postcode].filter(Boolean).join(', ');
-      root.querySelector('[data-preview]').textContent = `${address}\nPin: ${v.latitude || 'belum dipilih'}, ${v.longitude || 'belum dipilih'}\n${v.instructions}`;
+      root.querySelector('[data-preview]').textContent = v.latitude && v.longitude
+        ? 'Titik sudah dipilih. Pastikan pin berada di tempat pertemuan.'
+        : 'Belum ada titik yang dipilih.';
     }
     function invalidate() { confirm.checked = false; revision++; preview(); }
     function isOffice() { return !admin && field('kind').value === 'office'; }
+    function clearAddressDetails() {
+      ['street', 'building_number', 'village', 'district', 'city', 'postcode'].forEach(k => { field(k).value = ''; });
+    }
     function mark(lat, lon, center = true) {
       if (!map || !Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
       if (!marker) {
@@ -63,15 +71,18 @@
       if (center) map.setView([lat, lon], 16);
     }
     function setPoint(lat, lon, center = true) {
+      clearAddressDetails();
       field('latitude').value = Number(lat).toFixed(7);
       field('longitude').value = Number(lon).toFixed(7);
       mark(Number(lat), Number(lon), center); invalidate();
+      message.textContent = 'Titik dipilih. Isi nama tempat, lalu konfirmasi.';
     }
     function apply(data = {}) {
       keys.forEach(k => { field(k).value = data[k] ?? (k === 'province' ? 'Bali' : ''); });
-      if (data.kind) field('kind').value = data.kind;
+      if (data.kind) field('kind').value = data.kind === 'office' ? 'office' : 'other';
       if (officeSelect) officeSelect.value = data.office_id || '';
       officeVersion = data.office_updated_at || '';
+      search.value = '';
       toggle();
       if (data.latitude !== undefined && data.longitude !== undefined) mark(Number(data.latitude), Number(data.longitude));
       else if (marker) { marker.remove(); marker = null; }
@@ -79,17 +90,25 @@
     }
     function toggle() {
       const locked = isOffice();
+      root.querySelector('[data-map-hint]').textContent = locked ? 'Titik kantor ditentukan oleh rental.' : 'Klik peta untuk memilih titik temu.';
       root.querySelector('[data-office-wrap]')?.toggleAttribute('hidden', !locked);
-      root.querySelector('[data-search-wrap]').hidden = locked;
+      root.querySelector('[data-search-wrap]').hidden = locked || !searchEnabled;
+      root.querySelector('[data-geolocate]').hidden = locked;
       root.querySelector('[data-geolocate]').disabled = locked;
+      manual.hidden = locked;
       keys.forEach(k => { field(k).readOnly = k === 'province' || (locked && k !== 'instructions'); });
       if (officeSelect) officeSelect.required = locked;
       if (marker) { if (locked) marker.dragging.disable(); else marker.dragging.enable(); }
     }
     root.querySelectorAll('[data-field]').forEach(el => el.addEventListener('input', () => {
+      if (['latitude', 'longitude'].includes(el.dataset.field)) clearAddressDetails();
       invalidate();
       if (['latitude', 'longitude'].includes(el.dataset.field) && field('latitude').value && field('longitude').value) mark(Number(field('latitude').value), Number(field('longitude').value));
+      else if (['latitude', 'longitude'].includes(el.dataset.field) && marker) { marker.remove(); marker = null; }
     }));
+    root.addEventListener('invalid', event => {
+      if (manual.contains(event.target)) manual.open = true;
+    }, true);
     field('kind').addEventListener('change', () => {
       const kind = field('kind').value; apply({kind}); results.replaceChildren();
     });
@@ -109,10 +128,13 @@
     }).catch(() => { message.textContent = 'Daftar kantor gagal dimuat. Coba muat ulang.'; });
     if (window.L) {
       map = L.map(root.querySelector('[data-map]'), {scrollWheelZoom: false}).setView([-8.45, 115.15], 9);
-      addTiles(map, message);
+      addTiles(map, message, manual);
       map.on('click', event => { if (!isOffice()) setPoint(event.latlng.lat, event.latlng.lng, false); });
       new ResizeObserver(() => map.invalidateSize()).observe(root);
-    } else message.textContent = 'Peta tidak tersedia. Isi alamat dan koordinat manual.';
+    } else {
+      message.textContent = 'Peta tidak tersedia. Gunakan lokasi saya atau isi koordinat manual.';
+      manual.open = true;
+    }
     async function geocode(params, signal) {
       const response = await fetch(`${config.dataset.search}?${new URLSearchParams(params)}`, {signal, cache: 'no-store'});
       if (!response.headers.get('content-type')?.includes('application/json')) throw new Error('Sesi berakhir. Masuk kembali untuk mencari alamat.');
@@ -120,8 +142,8 @@
       if (!response.ok) throw new Error(data.error || 'Pencarian gagal. Isi alamat manual.');
       return data.results;
     }
-    if (config?.dataset.searchEnabled !== 'true') message.textContent = 'Pencarian alamat belum terhubung. Isi alamat dan tentukan pin secara manual.';
     search.addEventListener('input', () => {
+      if (!searchEnabled) return;
       clearTimeout(timer); controller?.abort(); results.replaceChildren(); invalidate();
       const q = search.value.trim();
       if (q.length < 3) return;
@@ -136,11 +158,11 @@
             const button = document.createElement('button'); button.type = 'button'; button.className = 'list-group-item list-group-item-action';
             button.textContent = item.formatted;
             button.addEventListener('click', () => {
-              apply({...item, kind: field('kind').value}); results.replaceChildren();
-              message.textContent = 'Periksa alamat hasil pencarian, lengkapi bagian yang kosong, dan konfirmasi pin.';
+              apply({...item, instructions: field('instructions').value, kind: field('kind').value}); results.replaceChildren();
+              message.textContent = 'Titik ditemukan. Periksa pin, lalu konfirmasi.';
             }); results.append(button);
           });
-          message.textContent = found.length ? 'Pilih hasil pencarian. Detail yang tidak diketahui dibiarkan kosong.' : 'Tidak ditemukan di Bali. Coba nama lain atau isi alamat manual.';
+          message.textContent = found.length ? 'Pilih tempat dari hasil pencarian.' : 'Tidak ditemukan di Bali. Pilih titik langsung di peta.';
         } catch (error) { if (error.name !== 'AbortError') message.textContent = error.message; }
       }, 450);
     });
@@ -148,19 +170,20 @@
       if (!navigator.geolocation) { message.textContent = 'Perangkat tidak mendukung lokasi. Isi alamat dan pin manual.'; return; }
       message.textContent = 'Meminta izin lokasi perangkat…';
       const rev = revision;
-      navigator.geolocation.getCurrentPosition(async position => {
+      navigator.geolocation.getCurrentPosition(position => {
         if (revision !== rev) return;
         if (position.coords.accuracy > 100) { message.textContent = `Lokasi kurang akurat (±${Math.round(position.coords.accuracy)} m). Tentukan pin secara manual.`; return; }
         setPoint(position.coords.latitude, position.coords.longitude);
-        const nextRev = revision;
-        message.textContent = `Akurasi perangkat ±${Math.round(position.coords.accuracy)} m. Periksa titik temu sebelum konfirmasi.`;
-        try {
-          const found = await geocode({latitude: position.coords.latitude, longitude: position.coords.longitude});
-          if (revision === nextRev && found[0]) apply({...found[0], latitude: position.coords.latitude, longitude: position.coords.longitude, kind: field('kind').value});
-        } catch (error) { if (revision === nextRev) message.textContent = error.message; }
-      }, () => { message.textContent = 'Izin ditolak atau lokasi tidak tersedia. Isi alamat dan pilih pin secara manual.'; }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 0});
+        message.textContent = 'Lokasi ditemukan. Isi nama tempat dan periksa pin sebelum konfirmasi.';
+      }, () => { if (revision === rev) message.textContent = 'Lokasi tidak tersedia. Pilih titik di peta atau isi koordinat manual.'; }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 0});
     });
     const editor = {value, apply, root, validate: () => {
+      if (!field('latitude').value || !field('longitude').value) {
+        message.textContent = 'Pilih titik di peta atau gunakan lokasi saya terlebih dahulu.';
+        manual.open = true;
+        field('latitude').focus();
+        return false;
+      }
       if (!confirm.checked) { message.textContent = 'Konfirmasi alamat dan pin terlebih dahulu.'; confirm.focus(); return false; }
       return [...root.querySelectorAll('input,select,textarea')].every(el => el.disabled || el.reportValidity());
     }};

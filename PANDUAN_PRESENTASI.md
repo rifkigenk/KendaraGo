@@ -4,6 +4,25 @@ Dokumen ini adalah catatan singkat untuk menjelaskan kode dan perintah yang
 dipakai dalam proyek. Gunakan sebagai panduan memahami program, bukan sekadar
 teks untuk dihafalkan.
 
+## Demo peta sederhana (sekitar 30 detik)
+
+1. Buka formulir pemesanan, lalu klik titik temu di peta atau tekan **Gunakan lokasi saya**.
+2. Isi **Nama tempat / titik temu**. Tambahkan patokan jika perlu, lalu centang **Titik temu sudah sesuai**.
+3. Biarkan **Kembalikan kendaraan di tempat yang sama** tercentang dan buat pesanan.
+4. Pada detail pesanan, tunjukkan tombol **Buka di Google Maps** untuk membantu menuju lokasi.
+
+Contoh penjelasan:
+
+> "Peta ini membantu pelanggan dan petugas bertemu di lokasi yang sama. Pelanggan
+> cukup memilih titik, memberi nama tempat, dan mengonfirmasi. Lokasinya tersimpan
+> bersama pesanan dan bisa dibuka di Google Maps."
+
+Desa, kecamatan, kode pos, dan koordinat tidak perlu diketik pada alur utama.
+Koordinat manual tersedia jika diperlukan. Pencarian tempat hanya ditampilkan
+jika layanan pencarian sudah dikonfigurasi. Titik tetap diperiksa agar berada di Bali.
+Kode utama ada di `templates/components/location_editor.html`,
+`static/js/locations.js`, dan `services/location_service.py`.
+
 ## Presentasi dashboard admin: kode dahulu, baru tampilan
 
 Mulai dari `app.py`, kemudian fokus pada satu fitur dashboard. Gunakan urutan

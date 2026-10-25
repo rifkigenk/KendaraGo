@@ -62,6 +62,33 @@ def test_no_fabricated_optional_address_fields(app):
         validate_address({**address(), "latitude": -6.2, "longitude": 106.8})
 
 
+def test_simple_meeting_point_booking_and_edit(app, client):
+    user, vehicle, _, _ = rental_data()
+    login(client, user)
+    point = dict(kind='other', confirmed=True, place_name='Lobi tempat menginap',
+                 province='Bali', latitude=-8.65, longitude=115.216)
+    form = {**booking_form(), 'pickup_address': json.dumps(point)}
+    response = client.post(f'/pelanggan/pesan/{vehicle.id}', data=form)
+    assert response.status_code == 201, response.json
+    rental = db.session.get(Rental, response.json['id'])
+    assert rental.pickup_address == rental.return_address
+    assert rental.pickup_address['formatted'] == 'Lobi tempat menginap, Bali'
+    assert all(rental.pickup_address[key] == '' for key in ['village', 'district', 'city', 'postcode'])
+    response = client.post(f'/api/pesanan/{rental.id}/lokasi', json={
+        'version': rental.updated_at.isoformat(), 'pickup_address': point,
+        'return_address': {**point, 'place_name': 'Pintu utama', 'latitude': -8.651},
+        'same_location': False, 'notes': '',
+    })
+    assert response.status_code == 200, response.json
+    db.session.refresh(rental)
+    assert rental.return_address['place_name'] == 'Pintu utama'
+    assert rental.pickup_address['place_name'] == point['place_name']
+    for invalid in [{**point, 'place_name': ' '}, {**point, 'latitude': ''},
+                    {**point, 'confirmed': False}, {**point, 'latitude': -6.2}]:
+        with pytest.raises(ValueError):
+            validate_address(invalid)
+
+
 def test_booking_admin_sync_status_and_owner_security(app, client):
     user, vehicle, _, _ = rental_data()
     admin = User.query.filter_by(role="admin").one()

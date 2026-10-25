@@ -1,49 +1,58 @@
-{# Shared editor. No assumed office, building number, address, or default pin. #}
+{# One meeting point: a pin, a place name, and optional directions. #}
 <div class="location-editor" data-location-editor data-prefix="{{ prefix }}" data-initial='{{ initial_address|default(none)|tojson|forceescape }}' data-admin="{{ 'true' if office_admin|default(false) else 'false' }}">
   <h3 class="h5">{{ heading }}</h3>
-  <div class="row g-3">
-    <div class="col-md-6">
-      <label for="{{ prefix }}-kind">Jenis lokasi</label>
-      <select id="{{ prefix }}-kind" class="form-select" data-field="kind">
-        {% if office_admin|default(false) %}<option value="office">Kantor rental</option>{% else %}
-        <option value="other">Alamat lain di Bali</option><option value="hotel">Hotel / vila</option>
-        <option value="airport">Bandara</option><option value="office">Kantor rental</option>{% endif %}
-      </select>
-    </div>
-    {% if not office_admin|default(false) %}
-    <div class="col-md-6" data-office-wrap hidden>
-      <label for="{{ prefix }}-office">Kantor dari admin</label>
+  <p class="text-muted small">Pilih titik di Bali, isi nama tempat, lalu konfirmasi.</p>
+  {% if office_admin|default(false) %}
+    <input type="hidden" data-field="kind" value="office" />
+  {% else %}
+    <label for="{{ prefix }}-kind">Tempat pertemuan</label>
+    <select id="{{ prefix }}-kind" class="form-select mb-3" data-field="kind">
+      <option value="other">Tentukan lokasi sendiri</option>
+      <option value="office">Kantor rental</option>
+    </select>
+    <div class="mb-3" data-office-wrap hidden>
+      <label for="{{ prefix }}-office">Pilih kantor</label>
       <select id="{{ prefix }}-office" class="form-select" data-office><option value="">Pilih kantor</option></select>
-      <small data-office-empty>Jika belum tersedia, pilih titik temu lain di Bali.</small>
+      <small data-office-empty></small>
     </div>
-    {% endif %}
-    <div class="col-12" data-search-wrap>
-      <label for="{{ prefix }}-search">Cari tempat atau alamat di Bali</label>
-      <input id="{{ prefix }}-search" class="form-control" type="search" autocomplete="off" placeholder="Nama hotel, vila, bandara, atau jalan" data-search maxlength="200" />
-      <div class="list-group mt-2" data-results aria-label="Hasil pencarian"></div>
-      <small>Pencarian: Geoapify / OpenStreetMap. Periksa hasilnya sebelum mengonfirmasi.</small>
-    </div>
-    <div class="col-12"><button class="btn btn-outline-primary btn-sm" type="button" data-geolocate>Gunakan lokasi saya</button>
-      <small class="d-block mt-1">Lokasi perangkat hanya diminta saat tombol ditekan. Tidak ada pelacakan terus-menerus.</small>
-    </div>
-    <div class="col-12"><div class="location-map" data-map aria-label="Peta titik temu; klik atau geser pin"></div>
-      <small>Klik peta atau geser pin. Koordinat juga dapat diisi manual. Batas layanan: © OpenStreetMap contributors / geoBoundaries.</small>
-    </div>
-    {% for key,label,required in [('place_name','Nama tempat / titik temu',true),('street','Jalan',false),('building_number','Nomor bangunan (jika diketahui)',false),('village','Desa / kelurahan',true),('district','Kecamatan',true),('city','Kabupaten / kota',true),('province','Provinsi',true),('postcode','Kode pos (jika diketahui)',false),('latitude','Latitude',true),('longitude','Longitude',true)] %}
-    <div class="col-md-6">
-      <label for="{{ prefix }}-{{ key }}">{{ label }}</label>
-      <input id="{{ prefix }}-{{ key }}" class="form-control" data-field="{{ key }}" {{ 'required' if required }}
-             {% if key == 'province' %}value="Bali" readonly{% endif %}
-             {% if key in ['latitude','longitude'] %}type="number" step="any"{% else %}maxlength="{{ 40 if key == 'building_number' else 250 }}"{% endif %} />
-    </div>
-    {% endfor %}
-    <div class="col-12">
-      <label for="{{ prefix }}-instructions">Detail titik temu dan instruksi</label>
-      <textarea id="{{ prefix }}-instructions" class="form-control" data-field="instructions" maxlength="1000" placeholder="Lobi hotel, terminal, pintu kedatangan, patokan, atau instruksi penjemputan"></textarea>
-    </div>
-    <div class="col-12"><div class="alert alert-light location-preview" data-preview>Lengkapi alamat dan tentukan pin.</div>
-      <label class="d-flex gap-2 align-items-start"><input class="form-check-input flex-shrink-0" type="checkbox" data-confirm-location required /> Saya sudah memeriksa alamat dan pin titik temu ini.</label>
-    </div>
+  {% endif %}
+  <div class="mb-3" data-search-wrap {% if not config.GEOAPIFY_API_KEY %}hidden{% endif %}>
+    <label for="{{ prefix }}-search">Cari tempat di Bali</label>
+    <input id="{{ prefix }}-search" class="form-control" type="search" autocomplete="off" placeholder="Nama hotel, bandara, atau jalan" data-search maxlength="200" />
+    <div class="list-group mt-2" data-results aria-label="Hasil pencarian"></div>
+    <small class="text-muted">Geoapify / © OpenStreetMap contributors</small>
   </div>
-  <p class="small mt-2" data-location-message role="status" aria-live="polite"></p>
+  <div class="location-map-toolbar">
+    <span class="small" data-map-hint>Klik peta untuk memilih titik temu.</span>
+    <button class="btn btn-outline-primary btn-sm" type="button" data-geolocate>Gunakan lokasi saya</button>
+  </div>
+  <div class="location-map" data-map aria-label="Peta titik temu; klik atau geser pin"></div>
+  <p class="location-pin-status small" data-preview role="status">Belum ada titik yang dipilih.</p>
+  <div class="mb-3">
+    <label for="{{ prefix }}-place_name">Nama tempat / titik temu</label>
+    <input id="{{ prefix }}-place_name" class="form-control" data-field="place_name" required maxlength="{{ 120 if office_admin|default(false) else 180 }}" placeholder="Contoh: Hotel tempat menginap atau lobi vila" />
+  </div>
+  <div class="mb-3">
+    <label for="{{ prefix }}-instructions">Patokan atau catatan <span class="text-muted">(opsional)</span></label>
+    <textarea id="{{ prefix }}-instructions" class="form-control" data-field="instructions" rows="2" maxlength="1000" placeholder="Contoh: tunggu di lobi, dekat pintu utama"></textarea>
+  </div>
+  {# Preserve existing address metadata without asking for administrative fields. #}
+  {% for key in ['street','building_number','village','district','city','province','postcode'] %}
+    <input id="{{ prefix }}-{{ key }}" type="hidden" data-field="{{ key }}" value="{{ 'Bali' if key == 'province' else '' }}" />
+  {% endfor %}
+  <details class="location-manual mb-3" data-manual>
+    <summary>Isi koordinat manual jika diperlukan</summary>
+    <div class="row g-2 mt-1">
+      {% for key,label,minimum,maximum in [('latitude','Latitude',-90,90),('longitude','Longitude',-180,180)] %}
+        <div class="col-sm-6">
+          <label for="{{ prefix }}-{{ key }}">{{ label }}</label>
+          <input id="{{ prefix }}-{{ key }}" class="form-control" data-field="{{ key }}" type="number" step="any" min="{{ minimum }}" max="{{ maximum }}" />
+        </div>
+      {% endfor %}
+    </div>
+  </details>
+  <label class="location-confirm d-flex gap-2 align-items-start">
+    <input class="form-check-input flex-shrink-0" type="checkbox" data-confirm-location required /> Titik temu sudah sesuai.
+  </label>
+  <p class="small mt-2 mb-0" data-location-message role="status" aria-live="polite"></p>
 </div>

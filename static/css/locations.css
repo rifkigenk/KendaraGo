@@ -1,6 +1,10 @@
 .location-editor {border:1px solid var(--bs-border-color,#dce3e8);border-radius:1rem;padding:1.25rem;margin-block:1rem;background:var(--bs-body-bg,#fff)}
 .location-map {height:300px;min-height:240px;width:100%;border-radius:.75rem;background:#e4eee9;isolation:isolate;z-index:0}
 .location-map-small {height:220px;min-height:180px}
+.location-map-toolbar {display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem}
+.location-pin-status {margin:.65rem 0 1rem;color:var(--bs-secondary-color,#52655f)}
+.location-manual summary {cursor:pointer;font-size:.85rem;color:var(--bs-secondary-color,#52655f)}
+.location-confirm {padding:.85rem;border-radius:.65rem;background:var(--bs-tertiary-bg,#f1f6f3)}
 .meeting-pin {color:#164d42;font-size:30px;line-height:28px;text-align:center;text-shadow:0 0 3px white,0 0 6px white;cursor:grab}
 .location-preview,.preserve-lines {white-space:pre-wrap;overflow-wrap:anywhere}
 .location-details,.location-details p,.location-details dd,.location-details a,[data-results] button {overflow-wrap:anywhere;white-space:normal;min-width:0}
