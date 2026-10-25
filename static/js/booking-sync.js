@@ -43,7 +43,7 @@
         version = data.updated_at; root.dataset.version = version;
         if (form) {
           const select = form.elements.status; select.replaceChildren(new Option('Pilih status', ''));
-          data.transitions.forEach(status => select.add(new Option(status, status)));
+          data.transitions.forEach(status => select.add(new Option(status === 'Menunggu pembayaran' ? 'Setujui pesanan' : status === 'Ditolak' ? 'Tolak pesanan' : status, status)));
         }
       }
     });

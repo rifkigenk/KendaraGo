@@ -27,28 +27,36 @@
       </div>
       <div class="col-lg-8">
         <h1>Detail pemesanan</h1>
-        <p class="text-muted">Pelanggan dengan minimal satu penyewaan selesai mendapat diskon loyalitas otomatis 10% (maksimal Rp150.000, minimum transaksi Rp300.000). Jika memakai kode promo, diskon loyalitas tidak ditumpuk. Harga final disimpan saat pesanan dibuat.</p>
-        <form method="post" class="card card-body" data-booking-form>
+        <p class="text-muted">Pesan tanpa wajib login. Admin atau petugas akan memeriksa dan menyetujui pesanan Anda sebelum pembayaran.</p>
+        {% if booking_error %}<div class="alert alert-danger" role="alert">{{ booking_error }}</div>{% endif %}
+        <form method="post" action="{{ url_for('public.rental_request', vehicle_id=vehicle.id) }}" class="card card-body" data-booking-form>
+          <input type="hidden" name="response_mode" value="html" />
+          <input type="hidden" name="pickup_address" />
+          <input type="hidden" name="return_address" />
           <input type="hidden" name="request_key" value="{{ request_key }}" />
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <div class="row g-3">
+            {% if guest_booking %}
+            <div class="col-md-6"><label for="booking-name">Nama penyewa</label><input id="booking-name" class="form-control" name="full_name" autocomplete="name" minlength="3" maxlength="120" required value="{{ form_data.get('full_name', '') }}" /></div>
+            <div class="col-md-6"><label for="booking-phone">Nomor WhatsApp</label><input id="booking-phone" class="form-control" name="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="081234567890" required value="{{ form_data.get('phone', '') }}" /></div>
+            {% endif %}
             <div class="col-md-6">
-              <label>Tanggal mulai</label><input class="form-control datepicker" name="start_date" required />
+              <label>Tanggal mulai</label><input class="form-control datepicker" name="start_date" required value="{{ form_data.get('start_date', '') }}" />
             </div>
             <div class="col-md-6">
-              <label>Tanggal selesai</label><input class="form-control datepicker" name="end_date" required />
+              <label>Tanggal selesai</label><input class="form-control datepicker" name="end_date" required value="{{ form_data.get('end_date', '') }}" />
             </div>
             <div class="col-md-6">
-              <label>Waktu pengambilan</label><input type="time" class="form-control" name="pickup_time" required />
+              <label>Waktu pengambilan</label><input type="time" class="form-control" name="pickup_time" required value="{{ form_data.get('pickup_time', '') }}" />
             </div>
-            <div class="col-md-6">
-              <label>Kode promo</label><input class="form-control" name="promo_code" placeholder="Opsional" />
-            </div>
+            {% if not guest_booking %}<div class="col-md-6">
+              <label>Kode promo</label><input class="form-control" name="promo_code" placeholder="Opsional" value="{{ form_data.get('promo_code', '') }}" />
+            </div>{% endif %}
             <div class="col-12">
-              {% set prefix = 'pickup' %}{% set heading = 'Lokasi Pengambilan' %}
+              {% set prefix = 'pickup' %}{% set heading = 'Lokasi Pengambilan' %}{% set initial_address = pickup_address %}
               {% include 'components/location_editor.html' %}
-              <label class="d-flex gap-2"><input type="checkbox" name="same_location" value="1" checked data-same-location /> Kembalikan kendaraan di tempat yang sama</label>
-              {% set prefix = 'return' %}{% set heading = 'Lokasi Pengembalian' %}
+              <label class="d-flex gap-2"><input type="checkbox" name="same_location" value="1" {{ 'checked' if request.method == 'GET' or form_data.get('same_location') }} data-same-location /> Kembalikan kendaraan di tempat yang sama</label>
+              {% set prefix = 'return' %}{% set heading = 'Lokasi Pengembalian' %}{% set initial_address = return_address %}
               {% include 'components/location_editor.html' %}
             </div>
             <div class="col-12">
@@ -56,18 +64,18 @@
                 <input type="checkbox"
                        class="form-check-input"
                        name="with_driver"
-                       id="withDriver" /><label class="form-check-label" for="withDriver">Gunakan pengemudi</label>
+                       id="withDriver" {{ 'checked' if form_data.get('with_driver') }} /><label class="form-check-label" for="withDriver">Gunakan pengemudi</label>
               </div>
-              <select class="form-select mt-2" name="driver_id" id="driverSelect" disabled>
+              <select class="form-select mt-2" name="driver_id" id="driverSelect" {{ 'disabled' if not form_data.get('with_driver') }}>
                 {% for driver in drivers %}
-                  <option value="{{ driver.id }}">
+                  <option value="{{ driver.id }}" {{ 'selected' if form_data.get('driver_id') == driver.id|string }}>
                     {{ driver.name }} — Rp {{ '{:,.0f}'.format(driver.daily_rate) }}/hari
                   </option>
                 {% endfor %}
               </select>
             </div>
             <div class="col-12">
-              <label>Catatan</label><textarea class="form-control" name="notes"></textarea>
+              <label>Catatan</label><textarea class="form-control" name="notes" maxlength="1000">{{ form_data.get('notes', '') }}</textarea>
             </div>
             <div class="col-12 form-check ms-2">
               <input class="form-check-input" type="checkbox" required id="terms" name="terms" value="1" /><label class="form-check-label" for="terms">Saya menyetujui syarat dan ketentuan.</label>

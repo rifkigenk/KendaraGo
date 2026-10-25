@@ -71,7 +71,7 @@ def apply_security_headers(response):
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: blob: https://tile.openstreetmap.org; "
         "font-src 'self'; "
-        "connect-src 'self'; "
+        "connect-src 'self' https://tiles.openfreemap.org; "
         "media-src 'self'; "
         "worker-src 'self' blob:; "
         "manifest-src 'self'"

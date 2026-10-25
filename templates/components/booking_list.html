@@ -1,11 +1,11 @@
 {% for item in rentals %}
 <article class="card card-body mb-3 location-details">
   <div class="d-flex flex-wrap gap-2 justify-content-between">
-    <a class="fw-bold" href="{{ url_for('booking_sync.admin_detail', rental_id=item.id) if current_user.role == 'admin' else url_for('customer.rental_detail', rental_id=item.id) }}">{{ item.booking_code }}</a>
+    <a class="fw-bold" href="{{ url_for('booking_sync.admin_detail', rental_id=item.id) if current_user.role in ['admin','petugas'] else (url_for('customer.rental_detail', rental_id=item.id) if item.customer_id else url_for('public.guest_detail', rental_id=item.id)) }}">{{ item.booking_code }}</a>
     <span class="badge text-bg-primary">{{ item.status }}</span>
   </div>
   <p class="mb-1 mt-2">{{ item.vehicle.name }} · {{ item.start_date }} – {{ item.end_date }} · {{ item.pickup_time.strftime('%H:%M') }}</p>
-  {% if current_user.role == 'admin' %}<p class="mb-1">{{ item.customer.name }} · {{ item.customer.email }} · {{ item.customer.phone or '-' }}</p>{% endif %}
+  {% if current_user.role in ['admin','petugas'] %}<p class="mb-1">{{ item.customer_name }} · {{ item.customer_phone or '-' }}</p>{% endif %}
   <p class="mb-1"><strong>Pengambilan:</strong> {{ item.pickup_address.formatted if item.pickup_address else 'Data lokasi lama — lihat detail' }}</p>
   <p class="mb-1"><strong>Pengembalian:</strong> {{ item.return_address.formatted if item.return_address else 'Data lokasi lama — lihat detail' }}</p>
   <small>Rp {{ '{:,.0f}'.format(item.total_payment) }} · Diperbarui {{ local_datetime(item.updated_at) }} WIB</small>

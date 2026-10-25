@@ -12,6 +12,11 @@
   <div class="dashboard-shell">
     {% include "components/dashboard_nav.html" %}
     <section class="dashboard-content">
+      <section class="dashboard-panel mb-4" id="pesanan-masuk">
+        <div class="d-flex flex-wrap gap-2 justify-content-between"><h2>Pesanan masuk</h2><a class="btn btn-accent" href="{{ url_for('public.vehicles') }}">Tambah pesanan</a></div>
+        <p>Pesanan baru muncul otomatis. Buka kode pesanan untuk menyetujui atau menolak.</p>
+        {% include 'components/live_bookings.html' %}
+      </section>
       <div class="dashboard-page-heading">
         <div>
           <span class="dashboard-eyebrow">OPERASIONAL</span>
@@ -49,7 +54,7 @@
               {% for item in pickups %}
                 <div class="operation-item">
                   <div>
-                    <strong>{{ item.booking_code }}</strong><small>{{ item.vehicle.name }} · {{ item.customer.name }}</small>
+                    <strong>{{ item.booking_code }}</strong><small>{{ item.vehicle.name }} · {{ item.customer_name }}</small>
                   </div>
                   <a class="btn btn-primary btn-sm"
                      href="{{ url_for('staff.pickup', rental_id=item.id) }}">Proses</a>

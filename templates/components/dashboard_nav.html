@@ -22,6 +22,7 @@
       <a class="{{ 'active' if request.endpoint == 'admin.verifications' }}"
          href="{{ url_for('admin.verifications') }}"><i class="bi bi-person-check"></i><span>Verifikasi</span></a>
     {% elif current_user.role == "petugas" %}
+      <a href="{{ url_for('staff.dashboard') }}#pesanan-masuk"><i class="bi bi-receipt"></i><span>Pesanan masuk</span></a>
       <a class="{{ 'active' if request.endpoint == 'staff.dashboard' }}"
          href="{{ url_for('staff.dashboard') }}"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
       <a href="{{ url_for('staff.dashboard') }}#pengambilan"><i class="bi bi-box-arrow-right"></i><span>Pengambilan</span></a>

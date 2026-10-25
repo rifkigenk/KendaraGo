@@ -16,15 +16,16 @@
       <small data-office-empty></small>
     </div>
   {% endif %}
-  <div class="mb-3" data-search-wrap {% if not config.GEOAPIFY_API_KEY %}hidden{% endif %}>
+  <div class="mb-3" data-search-wrap>
     <label for="{{ prefix }}-search">Cari tempat di Bali</label>
-    <input id="{{ prefix }}-search" class="form-control" type="search" autocomplete="off" placeholder="Nama hotel, bandara, atau jalan" data-search maxlength="200" />
+    <div class="input-group"><input id="{{ prefix }}-search" class="form-control" type="search" autocomplete="off" placeholder="Nama hotel, bandara, atau jalan" data-search maxlength="200" /><button class="btn btn-primary" type="button" data-search-button>Cari</button></div>
     <div class="list-group mt-2" data-results aria-label="Hasil pencarian"></div>
-    <small class="text-muted">Geoapify / © OpenStreetMap contributors</small>
+    <small class="text-muted">{{ 'Geoapify' if config.GEOAPIFY_API_KEY else 'Photon' }} / © OpenStreetMap contributors</small>
   </div>
   <div class="location-map-toolbar">
     <span class="small" data-map-hint>Klik peta untuk memilih titik temu.</span>
     <button class="btn btn-outline-primary btn-sm" type="button" data-geolocate>Gunakan lokasi saya</button>
+    <button class="btn btn-outline-primary btn-sm" type="button" data-map-3d aria-pressed="true">3D aktif</button>
   </div>
   <div class="location-map" data-map aria-label="Peta titik temu; klik atau geser pin"></div>
   <p class="location-pin-status small" data-preview role="status">Belum ada titik yang dipilih.</p>

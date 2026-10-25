@@ -34,7 +34,7 @@ def rentals_excel(rentals):
         sheet.append(
             [
                 excel_safe(item.booking_code),
-                excel_safe(item.customer.name),
+                excel_safe(item.customer_name),
                 excel_safe(item.vehicle.name),
                 item.start_date,
                 item.end_date,
@@ -62,7 +62,7 @@ def invoice_pdf(rental):
     canvas.setFont("Helvetica", 11)
     lines = [
         f"Invoice: {rental.booking_code}",
-        f"Pelanggan: {rental.customer.name}",
+        f"Pelanggan: {rental.customer_name}",
         f"Kendaraan: {rental.vehicle.name} ({rental.vehicle.license_plate})",
         f"Periode: {rental.start_date:%d-%m-%Y} s/d {rental.end_date:%d-%m-%Y}",
         f"Durasi: {rental.duration_days} hari",

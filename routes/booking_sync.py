@@ -2,38 +2,47 @@
 
 import hashlib
 import json
+from datetime import date, timedelta
 
 from flask import Blueprint, abort, jsonify, render_template, request
 from flask_login import current_user
 from sqlalchemy.orm import selectinload
 
 from extensions import db
-from models import Rental
+from models import Rental, Vehicle, Driver, PromotionUsage
 from models.entities import now
 from services.location_service import validate_address
-from services.rental_service import cancel_rental, change_status
+from services.rental_service import cancel_rental, change_status, utc_now
+from services.availability_service import vehicle_is_available, driver_is_available
+from flask import current_app
+from routes.booking_form import guest_session_key
 from utils.decorators import roles_required
 
 bp = Blueprint("booking_sync", __name__, url_prefix="/api/pesanan")
 TRANSITIONS = {
+    "Menunggu persetujuan": ["Menunggu pembayaran", "Ditolak"],
     "Menunggu pembayaran": ["Dibatalkan admin"],
     "Menunggu verifikasi pembayaran": ["Dibatalkan admin"],
     "Dikonfirmasi": ["Siap diambil"],
     "Siap diambil": ["Dikonfirmasi"],
 }
-EDITABLE = {"Menunggu pembayaran", "Menunggu verifikasi pembayaran", "Dikonfirmasi"}
+EDITABLE = {"Menunggu persetujuan", "Menunggu pembayaran", "Menunggu verifikasi pembayaran", "Dikonfirmasi"}
 
 
 @bp.before_request
-@roles_required("admin", "pelanggan")
 def guard():
-    if not current_user.is_active:
+    if not current_user.is_authenticated:
+        if not guest_session_key():
+            abort(401)
+    elif not current_user.is_active:
         abort(403)
 
 
 def scoped_query():
     query = Rental.query
-    if current_user.role != "admin":
+    if not current_user.is_authenticated:
+        query = query.filter_by(customer_id=None, guest_session_key=guest_session_key())
+    elif current_user.role not in {"admin", "petugas"}:
         query = query.filter_by(customer_id=current_user.id)
     return query
 
@@ -44,7 +53,7 @@ def serialize(r):
         booking_code=r.booking_code,
         status=r.status,
         customer_id=r.customer_id,
-        customer_name=r.customer.name,
+        customer_name=r.customer_name,
         vehicle_id=r.vehicle_id,
         vehicle_name=r.vehicle.name,
         start_date=r.start_date.isoformat(),
@@ -81,7 +90,7 @@ def detail(rental_id):
     return jsonify(
         **serialize(rental),
         html=render_template("components/booking_locations.html", rental=rental),
-        transitions=TRANSITIONS.get(rental.status, []),
+        transitions=allowed_transitions(rental),
     )
 
 
@@ -122,9 +131,12 @@ def update_locations(rental_id):
 
 
 @bp.post("/<int:rental_id>/status")
-@roles_required("admin")
+@roles_required("admin", "petugas")
 def status(rental_id):
-    rental = Rental.query.filter_by(id=rental_id).with_for_update().first_or_404()
+    rental = Rental.query.filter_by(id=rental_id).first_or_404()
+    # Serialize approvals on the vehicle before inspecting overlapping reservations.
+    db.session.execute(db.select(Vehicle).where(Vehicle.id == rental.vehicle_id).with_for_update()).scalar_one()
+    rental = Rental.query.filter_by(id=rental_id).populate_existing().with_for_update().first_or_404()
     data = request.get_json(silent=True) or {}
     # Retrying an already applied transition is harmless.
     if data.get("status") == rental.status:
@@ -132,14 +144,28 @@ def status(rental_id):
     if data.get("version") != rental.updated_at.isoformat():
         return jsonify(error="Status berubah. Muat ulang sebelum mencoba kembali."), 409
     target = data.get("status")
-    if target not in TRANSITIONS.get(rental.status, []):
+    if target not in allowed_transitions(rental):
         return (
             jsonify(
                 error="Perubahan status tidak diizinkan. Gunakan verifikasi pembayaran atau pemeriksaan petugas."
             ),
             422,
         )
-    if target == "Dibatalkan admin":
+    if rental.status == 'Menunggu persetujuan':
+        if target == 'Menunggu pembayaran':
+            if rental.start_date < date.today() or not rental.vehicle.is_active or rental.vehicle.status in {'Perawatan', 'Tidak aktif'}:
+                return jsonify(error='Jadwal sudah lewat atau kendaraan tidak aktif.'), 409
+            if not vehicle_is_available(rental.vehicle_id, rental.start_date, rental.end_date, rental.id, lock=True):
+                return jsonify(error='Kendaraan sudah dipesan pada periode ini. Pesanan belum disetujui.'), 409
+            if rental.driver_id:
+                driver = db.session.execute(db.select(Driver).where(Driver.id == rental.driver_id).with_for_update()).scalar_one()
+                if not driver.is_active or not driver_is_available(driver.id, rental.start_date, rental.end_date, rental.id, lock=True):
+                    return jsonify(error='Pengemudi tidak tersedia pada periode ini.'), 409
+            rental.payment_due_at = utc_now() + timedelta(hours=current_app.config['PAYMENT_DEADLINE_HOURS'])
+        else:
+            PromotionUsage.query.filter_by(rental_id=rental.id).delete()
+        change_status(rental, target, current_user, 'Pesanan disetujui' if target == 'Menunggu pembayaran' else 'Pesanan ditolak')
+    elif target == "Dibatalkan admin":
         cancel_rental(rental, current_user)
     else:
         change_status(
@@ -151,11 +177,19 @@ def status(rental_id):
 
 
 @bp.get("/<int:rental_id>/admin")
-@roles_required("admin")
+@roles_required("admin", "petugas")
 def admin_detail(rental_id):
     rental = Rental.query.get_or_404(rental_id)
     return render_template(
         "admin/rental_detail.html",
         rental=rental,
-        transitions=TRANSITIONS.get(rental.status, []),
+        transitions=allowed_transitions(rental),
     )
+
+
+def allowed_transitions(rental):
+    if not current_user.is_authenticated or current_user.role not in {'admin', 'petugas'}:
+        return []
+    if current_user.role == 'petugas' and rental.status != 'Menunggu persetujuan':
+        return []
+    return TRANSITIONS.get(rental.status, [])

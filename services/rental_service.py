@@ -128,13 +128,15 @@ def create_rental(
     return_address=None,
     request_key=None,
     request_hash=None,
+    pending_approval=False,
+    guest=None,
 ):
     """Memvalidasi permintaan lalu menyimpan pesanan dalam satu transaksi."""
     if start_date < date.today():
         raise ValueError("Tanggal mulai tidak boleh sudah lewat.")
     if start_date == date.today() and pickup_time <= datetime.now().time():
         raise ValueError("Waktu pengambilan hari ini harus berada di masa depan.")
-    if not customer.profile or customer.profile.verification_status != "Terverifikasi":
+    if not pending_approval and (not customer or not customer.profile or customer.profile.verification_status != "Terverifikasi"):
         raise ValueError("Dokumen pelanggan harus terverifikasi sebelum memesan.")
 
     # Kunci baris armada sebelum mengecek jadwal. Request kedua untuk unit yang
@@ -146,7 +148,8 @@ def create_rental(
         raise ValueError("Kendaraan tidak ditemukan.")
     if request_key:
         previous = (
-            Rental.query.filter_by(customer_id=customer.id, request_key=request_key)
+            Rental.query.filter_by(customer_id=customer.id if customer else None, request_key=request_key,
+                                   **({"guest_session_key": guest['session_key']} if not customer else {}))
             .with_for_update()
             .first()
         )
@@ -193,7 +196,7 @@ def create_rental(
         driver,
         promo_code,
         lock_promotion=True,
-        loyal_customer=Rental.query.filter_by(
+        loyal_customer=bool(customer) and Rental.query.filter_by(
             customer_id=customer.id, status="Selesai"
         ).count()
         > 0,
@@ -201,7 +204,11 @@ def create_rental(
     promotion = prices.pop("promotion")
     rental = Rental(
         booking_code=f"KG-{date.today():%Y%m%d}-{token_hex(8).upper()}",
-        customer_id=customer.id,
+        customer_id=customer.id if customer else None,
+        guest_name=guest['name'] if guest else None,
+        guest_phone=guest['phone'] if guest else None,
+        guest_session_key=guest['session_key'] if guest else None,
+        status='Menunggu persetujuan' if pending_approval else 'Menunggu pembayaran',
         vehicle_id=vehicle.id,
         driver_id=driver.id if driver else None,
         promotion_id=promotion.id if promotion else None,
@@ -226,11 +233,11 @@ def create_rental(
         RentalStatusLog(
             rental_id=rental.id,
             new_status=rental.status,
-            changed_by_id=customer.id,
+            changed_by_id=customer.id if customer else None,
             notes="Pemesanan dibuat",
         )
     )
-    if promotion:
+    if promotion and customer:
         db.session.add(
             PromotionUsage(
                 promotion_id=promotion.id,
@@ -239,12 +246,9 @@ def create_rental(
                 discount_amount=rental.discount,
             )
         )
-    notify(
-        customer.id,
-        "Pemesanan berhasil",
-        f"Pesanan {rental.booking_code} berhasil dibuat.",
-        f"/pelanggan/pesanan/{rental.id}",
-    )
+    if customer:
+        notify(customer.id, "Pemesanan berhasil", f"Pesanan {rental.booking_code} berhasil dibuat.",
+               f"/pelanggan/pesanan/{rental.id}")
     queue_rental_update(rental)
     try:
         db.session.commit()
@@ -276,12 +280,9 @@ def change_status(rental, new_status, user, notes=None):
             notes=notes,
         )
     )
-    notify(
-        rental.customer_id,
-        "Status pesanan diperbarui",
-        f"{rental.booking_code}: {new_status}",
-        f"/pelanggan/pesanan/{rental.id}",
-    )
+    if rental.customer_id:
+        notify(rental.customer_id, "Status pesanan diperbarui", f"{rental.booking_code}: {new_status}",
+               f"/pelanggan/pesanan/{rental.id}")
 
 
 # ==========================================================
@@ -290,7 +291,7 @@ def change_status(rental, new_status, user, notes=None):
 # ==========================================================
 def cancel_rental(rental, user=None, *, automatic=False):
     """Membatalkan reservasi, membebaskan promo, dan menutup pembayaran tertunda."""
-    allowed = {"Menunggu pembayaran", "Menunggu verifikasi pembayaran"}
+    allowed = {"Menunggu persetujuan", "Menunggu pembayaran", "Menunggu verifikasi pembayaran"}
     if rental.status not in allowed:
         raise ValueError("Pesanan tidak dapat dibatalkan pada status saat ini.")
     for payment in rental.payments:

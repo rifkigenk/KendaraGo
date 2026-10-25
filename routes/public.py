@@ -22,6 +22,7 @@ from models import (
     Driver,
     Location,
     RentalInquiry,
+    Rental,
     Review,
     Vehicle,
     VehicleSpecification,
@@ -285,9 +286,29 @@ def vehicle_detail(vehicle_id):
 @limiter.limit("5 per 10 minutes", methods=["POST"])
 @limiter.limit("20 per day", methods=["POST"])
 def rental_request(vehicle_id):
-    Vehicle.query.filter_by(id=vehicle_id, is_active=True).first_or_404()
-    # All new bookings belong to an authenticated customer; historical inquiries remain.
-    return redirect(url_for("customer.book", vehicle_id=vehicle_id), code=303)
+    from routes.booking_form import booking_form
+    return booking_form(vehicle_id)
+
+
+@bp.get('/pesanan')
+def guest_orders():
+    from routes.booking_form import guest_session_key
+    from flask_login import current_user
+    if current_user.is_authenticated and current_user.role == 'pelanggan':
+        return redirect(url_for('customer.dashboard'))
+    key = guest_session_key()
+    rentals = Rental.query.filter_by(guest_session_key=key).order_by(Rental.id.desc()).all() if key else []
+    return render_template('public/guest_orders.html', rentals=rentals)
+
+
+@bp.get('/pesanan/<int:rental_id>')
+def guest_detail(rental_id):
+    from routes.booking_form import guest_session_key
+    key = guest_session_key()
+    if not key:
+        abort(404)
+    rental = Rental.query.filter_by(id=rental_id, guest_session_key=key).first_or_404()
+    return render_template('public/guest_detail.html', rental=rental)
 
 
 # ==========================================================
@@ -310,7 +331,7 @@ def how_to():
     return render_template(
         "public/content.html",
         title="Cara Menyewa",
-        content="Pilih kendaraan, isi formulir penyewaan lengkap tanpa login, lalu kirim pesan yang telah disiapkan melalui WhatsApp. Admin akan memeriksa ketersediaan, dokumen, dan mengonfirmasi pembayaran serta jadwal pengambilan.",
+        content="Pilih kendaraan, isi nama dan nomor kontak tanpa wajib login, tentukan jadwal serta titik temu, lalu kirim pesanan. Admin atau petugas memeriksa ketersediaan dan menyetujui pesanan. Pantau status melalui menu Pesanan; pembayaran dilakukan setelah pesanan disetujui.",
     )
 
 

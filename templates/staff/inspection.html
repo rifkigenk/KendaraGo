@@ -13,7 +13,7 @@
     {% include "components/dashboard_nav.html" %}
     <section class="dashboard-content">
       <h1>{{ 'Pengambilan' if mode == 'pickup' else 'Pengembalian' }} Kendaraan</h1>
-      <p>{{ rental.booking_code }} · {{ rental.vehicle.name }} · {{ rental.customer.name }}</p>
+      <p>{{ rental.booking_code }} · {{ rental.vehicle.name }} · {{ rental.customer_name }}</p>
       <form method="post" enctype="multipart/form-data" class="card card-body">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         <div class="row g-3">

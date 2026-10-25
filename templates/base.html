@@ -79,6 +79,7 @@
             </ul>
 
             <div class="navbar-account">
+              {% if not current_user.is_authenticated %}<a class="btn btn-ghost-light btn-sm" href="{{ url_for('public.guest_orders') }}">Pesanan</a>{% endif %}
               {% if current_user.is_authenticated %}
                 {% if current_user.role == "admin" %}
                   {% set dashboard_url = url_for('admin.dashboard') %}
@@ -217,9 +218,12 @@
             src="{{ url_for('static', filename='js/app.js') }}"></script>
 
     <div id="location-config" hidden data-tiles="{{ 'true' if config.MAP_TILES_ENABLED else 'false' }}"
-         data-search-enabled="{{ 'true' if config.GEOAPIFY_API_KEY else 'false' }}"
+         data-search-enabled="true"
          data-search="{{ url_for('locations.search') }}" data-offices="{{ url_for('locations.offices') }}"></div>
     <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/maplibre/maplibre-gl.css') }}" />
+    <script src="{{ url_for('static', filename='vendor/maplibre/maplibre-gl.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/meeting-map.js') }}"></script>
     <script src="{{ url_for('static', filename='js/locations.js') }}"></script>
     <script src="{{ url_for('static', filename='js/booking-sync.js') }}"></script>
     {% block scripts %}{% endblock %}

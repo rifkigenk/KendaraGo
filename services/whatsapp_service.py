@@ -58,7 +58,7 @@ def queue_rental_update(rental):
     config = current_app.config
     if not config["WHATSAPP_ENABLED"] or not config["WHATSAPP_TEMPLATE_NAME"]:
         return
-    phone = phone_number(rental.customer.phone)
+    phone = phone_number(rental.customer_phone)
     contact = db.session.get(WhatsAppContact, phone) if phone else None
     if not contact or not contact.opted_in:
         return

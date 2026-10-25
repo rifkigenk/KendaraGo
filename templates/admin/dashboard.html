@@ -61,7 +61,7 @@
                   {% for item in recent %}
                     <tr>
                       <td><strong>{{ item.booking_code }}</strong></td>
-                      <td>{{ item.customer.name }}</td>
+                      <td>{{ item.customer_name }}</td>
                       <td><span class="dashboard-status">{{ item.status }}</span></td>
                       <td>Rp {{ '{:,.0f}'.format(item.total_payment) }}</td>
                     </tr>

@@ -335,12 +335,16 @@ class Rental(TimestampMixin, db.Model):
     )
     __table_args__ = (
         db.UniqueConstraint("customer_id", "request_key", name="uq_rental_request"),
+        db.UniqueConstraint("guest_session_key", "request_key", name="uq_guest_rental_request"),
     )
     id = db.Column(db.Integer, primary_key=True)
     booking_code = db.Column(db.String(30), unique=True, nullable=False, index=True)
     customer_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=False, index=True
+        db.Integer, db.ForeignKey("users.id"), nullable=True, index=True
     )
+    guest_name = db.Column(db.String(120))
+    guest_phone = db.Column(db.String(20))
+    guest_session_key = db.Column(db.String(64), index=True)
     vehicle_id = db.Column(
         db.Integer, db.ForeignKey("vehicles.id"), nullable=False, index=True
     )
@@ -389,6 +393,14 @@ class Rental(TimestampMixin, db.Model):
     )
 
     # Menjumlahkan nominal seluruh denda pada transaksi penyewaan.
+    @property
+    def customer_name(self):
+        return self.customer.name if self.customer else self.guest_name
+
+    @property
+    def customer_phone(self):
+        return self.customer.phone if self.customer else self.guest_phone
+
     @property
     def total_fines(self):
         return sum((f.amount for f in self.fines), Decimal("0"))

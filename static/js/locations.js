@@ -2,29 +2,11 @@
 (() => {
   const config = document.getElementById('location-config');
   const keys = ['place_name', 'street', 'building_number', 'village', 'district', 'city', 'province', 'postcode', 'latitude', 'longitude', 'instructions'];
-  const pinIcon = () => L.divIcon({className: 'meeting-pin', html: '<span aria-hidden="true">●</span>', iconSize: [28, 28], iconAnchor: [14, 14]});
-  function addTiles(map, message, manual) {
-    if (config?.dataset.tiles !== 'true') {
-      if (message) message.textContent = 'Peta dasar dinonaktifkan. Isi koordinat manual.';
-      if (manual) manual.open = true;
-      return;
-    }
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, referrerPolicy: 'strict-origin-when-cross-origin',
-      attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
-    }).on('tileerror', () => {
-      if (message) message.textContent = 'Peta gagal dimuat. Alamat dan koordinat tetap dapat diisi manual.';
-      if (manual) manual.open = true;
-    }).addTo(map);
-  }
   window.initSavedMaps = (root = document) => {
-    if (!window.L) return;
     root.querySelectorAll('[data-saved-map]').forEach(el => {
       if (el._meetingMap) return;
-      const map = L.map(el, {scrollWheelZoom: false}).setView([Number(el.dataset.lat), Number(el.dataset.lon)], 15);
-      el._meetingMap = map;
-      addTiles(map);
-      L.marker(map.getCenter(), {icon: pinIcon()}).addTo(map);
+      const map = window.createMeetingMap(el, {center: [Number(el.dataset.lon), Number(el.dataset.lat)], zoom: 16});
+      map.setLocked(true); map.setPoint(Number(el.dataset.lat), Number(el.dataset.lon), false);
     });
   };
   const editors = [];
@@ -38,7 +20,7 @@
     const results = root.querySelector('[data-results]');
     const manual = root.querySelector('[data-manual]');
     const searchEnabled = config?.dataset.searchEnabled === 'true';
-    let officeVersion = '', offices = [], map, marker, revision = 0, timer, controller;
+    let officeVersion = '', offices = [], map, revision = 0, timer, controller;
     function value() {
       const data = Object.fromEntries(keys.map(k => [k, field(k).value.trim()]));
       data.kind = field('kind').value;
@@ -59,16 +41,8 @@
       ['street', 'building_number', 'village', 'district', 'city', 'postcode'].forEach(k => { field(k).value = ''; });
     }
     function mark(lat, lon, center = true) {
-      if (!map || !Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
-      if (!marker) {
-        marker = L.marker([lat, lon], {draggable: !isOffice(), icon: pinIcon()}).addTo(map);
-        marker.on('dragend', () => {
-          const point = marker.getLatLng(); setPoint(point.lat, point.lng, false);
-          message.textContent = 'Pin berubah. Periksa kembali alamat dan konfirmasi titik temu.';
-        });
-      } else marker.setLatLng([lat, lon]);
-      if (isOffice()) marker.dragging.disable(); else marker.dragging.enable();
-      if (center) map.setView([lat, lon], 16);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
+      map?.setPoint(lat, lon, center);
     }
     function setPoint(lat, lon, center = true) {
       clearAddressDetails();
@@ -85,7 +59,7 @@
       search.value = '';
       toggle();
       if (data.latitude !== undefined && data.longitude !== undefined) mark(Number(data.latitude), Number(data.longitude));
-      else if (marker) { marker.remove(); marker = null; }
+      else map?.clearPin();
       invalidate();
     }
     function toggle() {
@@ -98,13 +72,13 @@
       manual.hidden = locked;
       keys.forEach(k => { field(k).readOnly = k === 'province' || (locked && k !== 'instructions'); });
       if (officeSelect) officeSelect.required = locked;
-      if (marker) { if (locked) marker.dragging.disable(); else marker.dragging.enable(); }
+      map?.setLocked(locked);
     }
     root.querySelectorAll('[data-field]').forEach(el => el.addEventListener('input', () => {
       if (['latitude', 'longitude'].includes(el.dataset.field)) clearAddressDetails();
       invalidate();
       if (['latitude', 'longitude'].includes(el.dataset.field) && field('latitude').value && field('longitude').value) mark(Number(field('latitude').value), Number(field('longitude').value));
-      else if (['latitude', 'longitude'].includes(el.dataset.field) && marker) { marker.remove(); marker = null; }
+      else if (['latitude', 'longitude'].includes(el.dataset.field)) map?.clearPin();
     }));
     root.addEventListener('invalid', event => {
       if (manual.contains(event.target)) manual.open = true;
@@ -126,27 +100,27 @@
       if (initial?.office_id && revision === 1) officeSelect.value = initial.office_id;
       root.querySelector('[data-office-empty]').textContent = offices.length ? 'Alamat dan pin dikelola oleh admin.' : 'Belum ada kantor terkonfirmasi. Pilih alamat lain di Bali.';
     }).catch(() => { message.textContent = 'Daftar kantor gagal dimuat. Coba muat ulang.'; });
-    if (window.L) {
-      map = L.map(root.querySelector('[data-map]'), {scrollWheelZoom: false}).setView([-8.45, 115.15], 9);
-      addTiles(map, message, manual);
-      map.on('click', event => { if (!isOffice()) setPoint(event.latlng.lat, event.latlng.lng, false); });
-      new ResizeObserver(() => map.invalidateSize()).observe(root);
-    } else {
-      message.textContent = 'Peta tidak tersedia. Gunakan lokasi saya atau isi koordinat manual.';
-      manual.open = true;
-    }
+    map = window.createMeetingMap(root.querySelector('[data-map]'), {
+      modeButton: root.querySelector('[data-map-3d]'),
+      onPick: (lat, lon, name) => {
+        if (isOffice()) return;
+        if (name) field('place_name').value = name;
+        setPoint(lat, lon, false);
+      },
+      onError: text => { message.textContent = text; }
+    });
     async function geocode(params, signal) {
       const response = await fetch(`${config.dataset.search}?${new URLSearchParams(params)}`, {signal, cache: 'no-store'});
-      if (!response.headers.get('content-type')?.includes('application/json')) throw new Error('Sesi berakhir. Masuk kembali untuk mencari alamat.');
+      if (!response.headers.get('content-type')?.includes('application/json')) throw new Error('Pencarian belum dapat dihubungi. Coba lagi.');
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Pencarian gagal. Isi alamat manual.');
       return data.results;
     }
-    search.addEventListener('input', () => {
+    function searchPlaces() {
       if (!searchEnabled) return;
       clearTimeout(timer); controller?.abort(); results.replaceChildren(); invalidate();
       const q = search.value.trim();
-      if (q.length < 3) return;
+      if (q.length < 3) { message.textContent = 'Ketik nama tempat minimal 3 karakter.'; return; }
       const rev = revision;
       timer = setTimeout(async () => {
         controller = new AbortController();
@@ -164,8 +138,11 @@
           });
           message.textContent = found.length ? 'Pilih tempat dari hasil pencarian.' : 'Tidak ditemukan di Bali. Pilih titik langsung di peta.';
         } catch (error) { if (error.name !== 'AbortError') message.textContent = error.message; }
-      }, 450);
-    });
+      }, 0);
+    }
+    search.addEventListener('input', () => { clearTimeout(timer); controller?.abort(); results.replaceChildren(); invalidate(); });
+    root.querySelector('[data-search-button]').addEventListener('click', searchPlaces);
+    search.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); searchPlaces(); } });
     root.querySelector('[data-geolocate]').addEventListener('click', () => {
       if (!navigator.geolocation) { message.textContent = 'Perangkat tidak mendukung lokasi. Isi alamat dan pin manual.'; return; }
       message.textContent = 'Meminta izin lokasi perangkat…';
@@ -201,22 +178,19 @@
     same.addEventListener('change', toggle); toggle();
   }
   const bookingForm = document.querySelector('[data-booking-form]');
-  bookingForm?.addEventListener('submit', async event => {
-    event.preventDefault();
-    if (!editors[0].validate() || (!same.checked && !editors[1].validate())) return;
-    const message = bookingForm.querySelector('[data-save-message]');
-    const button = bookingForm.querySelector('[type="submit"]');
-    button.disabled = true; message.textContent = 'Menyimpan pesanan…';
-    const body = new FormData(bookingForm);
-    body.set('pickup_address', JSON.stringify(editors[0].value()));
-    body.set('return_address', JSON.stringify(same.checked ? editors[0].value() : editors[1].value()));
-    try {
-      const response = await fetch(bookingForm.action, {method: 'POST', body, signal: AbortSignal.timeout(20000)});
-      if (response.redirected || !response.headers.get('content-type')?.includes('application/json')) throw new Error('Sesi atau token formulir berakhir. Masuk kembali lalu periksa Pesanan saya sebelum mencoba ulang.');
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Pesanan gagal disimpan.');
-      message.textContent = 'Pesanan berhasil disimpan.'; window.location.assign(data.url);
-    } catch (error) { message.textContent = navigator.onLine ? `Gagal menyimpan: ${error.message} Anda dapat mencoba ulang; kunci pesanan tetap sama.` : 'Koneksi terputus. Coba ulang setelah tersambung; kunci pesanan tetap sama.'; button.disabled = false; }
+  bookingForm?.addEventListener('submit', event => {
+    if (!editors[0].validate() || (!same.checked && !editors[1].validate())) {
+      event.preventDefault(); return;
+    }
+    bookingForm.elements.pickup_address.value = JSON.stringify(editors[0].value());
+    bookingForm.elements.return_address.value = JSON.stringify(same.checked ? editors[0].value() : editors[1].value());
+    bookingForm.querySelector('[data-save-message]').textContent = 'Menyimpan pesanan…';
+    bookingForm.querySelector('[type="submit"]').disabled = true;
+    // Native same-origin POST: success redirects only after the database commit.
+  });
+  window.addEventListener('pageshow', () => {
+    const button = bookingForm?.querySelector('[type="submit"]');
+    if (button) button.disabled = false;
   });
   const editForm = document.querySelector('[data-location-update]');
   editForm?.addEventListener('submit', async event => {

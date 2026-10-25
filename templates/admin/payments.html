@@ -46,7 +46,7 @@
                 <td>
                   {{ item.rental.booking_code }}
                   <br />
-                  <small class="text-muted">{{ item.rental.customer.name }}</small>
+                  <small class="text-muted">{{ item.rental.customer_name }}</small>
                 </td>
                 <td>{{ item.payment_date.strftime("%d/%m/%Y %H:%M") }}</td>
                 <td><strong>Rp {{ '{:,.0f}'.format(item.amount) }}</strong></td>

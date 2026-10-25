@@ -2,7 +2,9 @@
 
 import json
 from urllib.parse import urlencode
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
+from functools import lru_cache
+from time import time
 from urllib.error import URLError
 
 from flask import Blueprint, current_app, jsonify, render_template, request
@@ -18,9 +20,8 @@ bp = Blueprint("locations", __name__, url_prefix="/lokasi")
 
 
 @bp.before_request
-@roles_required("admin", "pelanggan")
 def guard():
-    if not current_user.is_active:
+    if current_user.is_authenticated and not current_user.is_active:
         return jsonify(error="Akun tidak aktif."), 403
 
 
@@ -34,12 +35,7 @@ def offices():
 def search():
     key = current_app.config.get("GEOAPIFY_API_KEY")
     if not key:
-        return (
-            jsonify(
-                error="Pencarian alamat belum terhubung. Isi alamat dan pin secara manual."
-            ),
-            503,
-        )
+        return photon_search()
     params = {"apiKey": key, "format": "json", "lang": "id", "limit": 5}
     reverse = request.args.get("latitude") is not None
     if reverse:
@@ -97,6 +93,42 @@ def search():
         results=addresses,
         attribution="Powered by Geoapify | © OpenStreetMap contributors",
     )
+
+
+@lru_cache(maxsize=256)
+def photon_results(query, reverse, cache_period):
+    endpoint = 'reverse' if reverse else 'api'
+    req = Request(f'https://photon.komoot.io/{endpoint}/?{query}', headers={'User-Agent': 'KendaraGo/1.0 (Bali rental location search)'})
+    with urlopen(req, timeout=8) as response:
+        return json.load(response).get('features', [])
+
+
+def photon_search():
+    reverse = request.args.get('latitude') is not None
+    if reverse:
+        if not in_bali(request.args.get('latitude'), request.args.get('longitude')):
+            return jsonify(error='Titik layanan harus berada di Bali.'), 422
+        params = dict(lat=request.args['latitude'], lon=request.args['longitude'], limit=1)
+    else:
+        query = request.args.get('q', '').strip()
+        if not 3 <= len(query) <= 200:
+            return jsonify(error='Ketik nama tempat minimal 3 karakter.'), 422
+        params = dict(q=query, limit=5, bbox='114.4,-9.1,115.8,-7.9', lat=-8.65, lon=115.216)
+    try:
+        features = photon_results(urlencode(params), reverse, int(time() // 600))
+    except (URLError, TimeoutError, ValueError, OSError):
+        return jsonify(error='Pencarian sedang tidak tersedia. Pilih titik di peta dan isi nama tempat secara manual.'), 503
+    addresses = []
+    for feature in features:
+        lon, lat = feature['geometry']['coordinates'][:2]
+        if not in_bali(lat, lon):
+            continue
+        p = feature.get('properties', {})
+        name = p.get('name') or p.get('street') or p.get('city') or 'Titik temu'
+        formatted = ', '.join(dict.fromkeys(filter(None, [name, p.get('street'), p.get('district'), p.get('city'), 'Bali'])))
+        addresses.append(dict(place_name=name, street=p.get('street', ''), city=p.get('city', ''),
+                              province='Bali', latitude=lat, longitude=lon, formatted=formatted))
+    return jsonify(results=addresses, attribution='Photon / © OpenStreetMap contributors')
 
 
 @bp.get("/admin")
