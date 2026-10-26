@@ -101,14 +101,14 @@ def rental_data():
 
 
 # Membuat transaksi uji dengan jadwal mendatang dan promo opsional.
-def test_public_rental_requires_customer_account(app, client):
+def test_public_rental_form_supports_guest_booking(app, client):
     _, vehicle, _, _ = rental_data()
     response = client.get(f"/kendaraan/{vehicle.id}/pesan")
-    assert response.status_code == 303
-    assert response.location.endswith(f"/pelanggan/pesan/{vehicle.id}")
-    login = client.get(response.location)
-    assert login.status_code == 302
-    assert "/auth/login" in login.location
+    assert response.status_code == 200
+    assert b'name="full_name"' in response.data
+    assert b'name="phone"' in response.data
+    with client.session_transaction() as session:
+        assert session["booking_guest_key"]
     assert Rental.query.count() == 0
 
 

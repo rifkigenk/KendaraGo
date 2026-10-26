@@ -3,9 +3,9 @@ import hmac
 import json
 import time
 from datetime import timedelta
-from types import SimpleNamespace
 
 from extensions import db
+from models import Rental, User
 from models.entities import now
 from models.whatsapp import WhatsAppContact, WhatsAppEvent, WhatsAppOutbox
 from services.whatsapp_service import queue_rental_update
@@ -91,8 +91,8 @@ def test_signature_csrf_dedup_and_phone_filter(app, client):
 
 def test_consent_transaction_and_opt_out(app, client):
     setup_meta(app)
-    rental = SimpleNamespace(
-        customer=SimpleNamespace(phone="08123456789"),
+    rental = Rental(
+        customer=User(phone="08123456789"),
         booking_code="BOOK-1",
         status="Dikonfirmasi",
         total_payment=100000,

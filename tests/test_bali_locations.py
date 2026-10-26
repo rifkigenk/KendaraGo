@@ -195,6 +195,14 @@ def test_booking_admin_sync_status_and_owner_security(app, client):
     assert update.status_code == 200, update.json
     admin_detail = admin_client.get(f"/api/pesanan/{rental_id}").json
     assert admin_detail["return_address"]["instructions"] == "Pintu fixture"
+    assert admin_detail["status"] == "Menunggu persetujuan"
+    approved = admin_client.post(
+        f"/api/pesanan/{rental_id}/status",
+        json={"version": admin_detail["updated_at"], "status": "Menunggu pembayaran"},
+    )
+    assert approved.status_code == 200, approved.json
+    admin_detail = admin_client.get(f"/api/pesanan/{rental_id}").json
+    assert admin_detail["status"] == "Menunggu pembayaran"
     changed = admin_client.post(
         f"/api/pesanan/{rental_id}/status",
         json={"version": admin_detail["updated_at"], "status": "Dibatalkan admin"},
@@ -256,12 +264,77 @@ def test_office_requires_admin_and_preserves_snapshot(app, client):
         validate_address(payload)
 
 
-def test_geocoder_unconfigured_and_anonymous_api(app, client):
+def test_guest_booking_ownership_retry_and_approval(app, client):
+    _, vehicle, _, _ = rental_data()
+    form = {**booking_form(), "full_name": "Tamu Fixture", "phone": "081234567890"}
+    created = client.post(f"/kendaraan/{vehicle.id}/pesan", data=form)
+    assert created.status_code == 201, created.json
+    rental_id = created.json["id"]
+    saved = db.session.get(Rental, rental_id)
+    assert saved.customer_id is None
+    assert saved.customer_name == form["full_name"]
+    assert saved.customer_phone == form["phone"]
+    assert saved.status == "Menunggu persetujuan"
+    assert client.get(created.json["url"]).status_code == 200
+    assert client.get("/pesanan").status_code == 200
+    assert client.get("/api/pesanan").json["rentals"][0]["id"] == rental_id
+    retry = client.post(f"/kendaraan/{vehicle.id}/pesan", data=form)
+    assert retry.status_code == 200
+    assert retry.json["id"] == rental_id
+    assert Rental.query.count() == 1
+    assert (
+        client.post(
+            f"/api/pesanan/{rental_id}/status", json={"status": "Menunggu pembayaran"}
+        ).status_code
+        == 401
+    )
+
+    other = app.test_client()
+    assert other.get(created.json["url"]).status_code == 404
+    assert other.get(f"/api/pesanan/{rental_id}").status_code == 401
+    assert other.get(f"/kendaraan/{vehicle.id}/pesan").status_code == 200
+    assert other.get(f"/api/pesanan/{rental_id}").status_code == 404
+    assert other.get("/api/pesanan").json["rentals"] == []
+
+    admin_client = app.test_client()
+    login(admin_client, User.query.filter_by(role="admin").one())
+    detail = admin_client.get(f"/api/pesanan/{rental_id}").json
+    response = admin_client.post(
+        f"/api/pesanan/{rental_id}/status",
+        json={"version": detail["updated_at"], "status": "Menunggu pembayaran"},
+    )
+    assert response.status_code == 200, response.json
+    assert (
+        client.get(f"/api/pesanan/{rental_id}").json["status"] == "Menunggu pembayaran"
+    )
+
+
+def test_geocoder_fallback_and_anonymous_api(app, client, monkeypatch):
     assert client.get("/api/pesanan").status_code == 401
-    assert client.get("/lokasi/cari?q=hotel").status_code == 401
+    app.config["GEOAPIFY_API_KEY"] = ""
+    monkeypatch.setattr(
+        "routes.locations.photon_results",
+        lambda *args: [
+            {
+                "geometry": {"coordinates": [115.216, -8.65]},
+                "properties": {"name": "Hotel fixture", "city": "Denpasar"},
+            }
+        ],
+    )
+    response = client.get("/lokasi/cari?q=hotel")
+    assert response.status_code == 200
+    assert response.json["results"][0]["place_name"] == "Hotel fixture"
+    assert client.get("/lokasi/admin").status_code == 401
+
+    def unavailable(*args):
+        raise TimeoutError()
+
+    monkeypatch.setattr("routes.locations.photon_results", unavailable)
+    response = client.get("/lokasi/cari?q=hotel")
+    assert response.status_code == 503
+    assert "manual" in response.json["error"]
     user, _, _, _ = rental_data()
     login(client, user)
-    app.config["GEOAPIFY_API_KEY"] = ""
     response = client.get("/lokasi/cari?q=hotel")
     assert response.status_code == 503
     assert "manual" in response.json["error"]

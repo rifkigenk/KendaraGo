@@ -52,13 +52,26 @@ Untuk Command Prompt:
 py -m venv venv
 venv\Scripts\activate.bat
 python -m pip install -r requirements.txt
+python -m flask --app app db upgrade
 python seed.py
 python app.py
 ```
 
 Buka `http://127.0.0.1:5000`.
 
-> Pada komputer ini, `venv`, seluruh dependensi, database, dan data awal sudah dibuat. Cukup pastikan MySQL XAMPP aktif lalu jalankan `.\venv\Scripts\python.exe app.py`.
+> Pada komputer ini, `venv`, seluruh dependensi, database, dan data awal sudah dibuat. Pastikan MySQL XAMPP aktif lalu jalankan `powershell -ExecutionPolicy Bypass -File .\start.ps1`. Script menerapkan migrasi yang belum dijalankan sebelum membuka server di `http://localhost:5000`.
+
+Jika semua halaman menampilkan error 500 setelah kode diperbarui, periksa log terminal.
+Pesan `Unknown column 'rentals.guest_name'` berarti skema database belum mengikuti
+fitur pesanan tamu. Jalankan `start.ps1`, atau jalankan migrasi secara manual sebelum server:
+
+```powershell
+.\venv\Scripts\python.exe -m flask --app app db upgrade
+.\venv\Scripts\python.exe app.py
+```
+
+Cadangkan database sebelum migrasi. Jangan menghapus tabel atau mengimpor ulang
+`database.sql` untuk mengatasi error ini; migrasi mempertahankan data yang sudah ada.
 
 ## Konfigurasi
 
