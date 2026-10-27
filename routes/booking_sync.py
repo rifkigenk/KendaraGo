@@ -26,7 +26,12 @@ TRANSITIONS = {
     "Dikonfirmasi": ["Siap diambil"],
     "Siap diambil": ["Dikonfirmasi"],
 }
-EDITABLE = {"Menunggu persetujuan", "Menunggu pembayaran", "Menunggu verifikasi pembayaran", "Dikonfirmasi"}
+EDITABLE = {
+    "Menunggu persetujuan",
+    "Menunggu pembayaran",
+    "Menunggu verifikasi pembayaran",
+    "Dikonfirmasi",
+}
 
 
 @bp.before_request
@@ -135,8 +140,15 @@ def update_locations(rental_id):
 def status(rental_id):
     rental = Rental.query.filter_by(id=rental_id).first_or_404()
     # Serialize approvals on the vehicle before inspecting overlapping reservations.
-    db.session.execute(db.select(Vehicle).where(Vehicle.id == rental.vehicle_id).with_for_update()).scalar_one()
-    rental = Rental.query.filter_by(id=rental_id).populate_existing().with_for_update().first_or_404()
+    db.session.execute(
+        db.select(Vehicle).where(Vehicle.id == rental.vehicle_id).with_for_update()
+    ).scalar_one()
+    rental = (
+        Rental.query.filter_by(id=rental_id)
+        .populate_existing()
+        .with_for_update()
+        .first_or_404()
+    )
     data = request.get_json(silent=True) or {}
     # Retrying an already applied transition is harmless.
     if data.get("status") == rental.status:
@@ -151,20 +163,58 @@ def status(rental_id):
             ),
             422,
         )
-    if rental.status == 'Menunggu persetujuan':
-        if target == 'Menunggu pembayaran':
-            if rental.start_date < date.today() or not rental.vehicle.is_active or rental.vehicle.status in {'Perawatan', 'Tidak aktif'}:
-                return jsonify(error='Jadwal sudah lewat atau kendaraan tidak aktif.'), 409
-            if not vehicle_is_available(rental.vehicle_id, rental.start_date, rental.end_date, rental.id, lock=True):
-                return jsonify(error='Kendaraan sudah dipesan pada periode ini. Pesanan belum disetujui.'), 409
+    if rental.status == "Menunggu persetujuan":
+        if target == "Menunggu pembayaran":
+            if (
+                rental.start_date < date.today()
+                or not rental.vehicle.is_active
+                or rental.vehicle.status in {"Perawatan", "Tidak aktif"}
+            ):
+                return (
+                    jsonify(error="Jadwal sudah lewat atau kendaraan tidak aktif."),
+                    409,
+                )
+            if not vehicle_is_available(
+                rental.vehicle_id,
+                rental.start_date,
+                rental.end_date,
+                rental.id,
+                lock=True,
+            ):
+                return (
+                    jsonify(
+                        error="Kendaraan sudah dipesan pada periode ini. Pesanan belum disetujui."
+                    ),
+                    409,
+                )
             if rental.driver_id:
-                driver = db.session.execute(db.select(Driver).where(Driver.id == rental.driver_id).with_for_update()).scalar_one()
-                if not driver.is_active or not driver_is_available(driver.id, rental.start_date, rental.end_date, rental.id, lock=True):
-                    return jsonify(error='Pengemudi tidak tersedia pada periode ini.'), 409
-            rental.payment_due_at = utc_now() + timedelta(hours=current_app.config['PAYMENT_DEADLINE_HOURS'])
+                driver = db.session.execute(
+                    db.select(Driver)
+                    .where(Driver.id == rental.driver_id)
+                    .with_for_update()
+                ).scalar_one()
+                if not driver.is_active or not driver_is_available(
+                    driver.id, rental.start_date, rental.end_date, rental.id, lock=True
+                ):
+                    return (
+                        jsonify(error="Pengemudi tidak tersedia pada periode ini."),
+                        409,
+                    )
+            rental.payment_due_at = utc_now() + timedelta(
+                hours=current_app.config["PAYMENT_DEADLINE_HOURS"]
+            )
         else:
             PromotionUsage.query.filter_by(rental_id=rental.id).delete()
-        change_status(rental, target, current_user, 'Pesanan disetujui' if target == 'Menunggu pembayaran' else 'Pesanan ditolak')
+        change_status(
+            rental,
+            target,
+            current_user,
+            (
+                "Pesanan disetujui"
+                if target == "Menunggu pembayaran"
+                else "Pesanan ditolak"
+            ),
+        )
     elif target == "Dibatalkan admin":
         cancel_rental(rental, current_user)
     else:
@@ -188,8 +238,11 @@ def admin_detail(rental_id):
 
 
 def allowed_transitions(rental):
-    if not current_user.is_authenticated or current_user.role not in {'admin', 'petugas'}:
+    if not current_user.is_authenticated or current_user.role not in {
+        "admin",
+        "petugas",
+    }:
         return []
-    if current_user.role == 'petugas' and rental.status != 'Menunggu persetujuan':
+    if current_user.role == "petugas" and rental.status != "Menunggu persetujuan":
         return []
     return TRANSITIONS.get(rental.status, [])
