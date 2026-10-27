@@ -9,6 +9,7 @@
   <p>{{ rental.vehicle.name }} · {{ rental.start_date }} – {{ rental.end_date }} · {{ rental.pickup_time.strftime('%H:%M') }}</p>
   <p><strong>Total: Rp {{ '{:,.0f}'.format(rental.total_payment) }}</strong> (termasuk deposit)</p>
   <p class="small" data-sync-message role="status" aria-live="polite">Menghubungkan pembaruan status…</p>
+  {% include 'components/booking_identity.html' %}
   <div data-live-locations>{% include 'components/booking_locations.html' %}</div>
   <a class="btn btn-accent mt-4" href="{{ url_for('public.vehicles') }}">Tambah pesanan</a>
 </section>

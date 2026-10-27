@@ -1,13 +1,18 @@
 {% for item in rentals %}
-<article class="card card-body mb-3 location-details">
-  <div class="d-flex flex-wrap gap-2 justify-content-between">
-    <a class="fw-bold" href="{{ url_for('booking_sync.admin_detail', rental_id=item.id) if current_user.role in ['admin','petugas'] else (url_for('customer.rental_detail', rental_id=item.id) if item.customer_id else url_for('public.guest_detail', rental_id=item.id)) }}">{{ item.booking_code }}</a>
-    <span class="badge text-bg-primary">{{ item.status }}</span>
+{% set detail_url = url_for('booking_sync.admin_detail', rental_id=item.id) if current_user.role in ['admin','petugas'] else (url_for('customer.rental_detail', rental_id=item.id) if item.customer_id else url_for('public.guest_detail', rental_id=item.id)) %}
+{% set tone = 'pending' if item.status == 'Menunggu persetujuan' else ('success' if item.status in ['Selesai', 'Dikonfirmasi', 'Siap diambil'] else ('muted' if item.status in ['Ditolak', 'Dibatalkan admin', 'Dibatalkan pelanggan', 'Kedaluwarsa'] else 'active')) %}
+<article class="booking-card location-details" data-booking-card data-status="{{ item.status }}">
+  <div class="booking-card-heading">
+    <a class="booking-code" href="{{ detail_url }}">{{ item.booking_code }}</a>
+    <span class="booking-status booking-status-{{ tone }}">{{ item.status }}</span>
   </div>
-  <p class="mb-1 mt-2">{{ item.vehicle.name }} · {{ item.start_date }} – {{ item.end_date }} · {{ item.pickup_time.strftime('%H:%M') }}</p>
-  {% if current_user.role in ['admin','petugas'] %}<p class="mb-1">{{ item.customer_name }} · {{ item.customer_phone or '-' }}</p>{% endif %}
-  <p class="mb-1"><strong>Pengambilan:</strong> {{ item.pickup_address.formatted if item.pickup_address else 'Data lokasi lama — lihat detail' }}</p>
-  <p class="mb-1"><strong>Pengembalian:</strong> {{ item.return_address.formatted if item.return_address else 'Data lokasi lama — lihat detail' }}</p>
-  <small>Rp {{ '{:,.0f}'.format(item.total_payment) }} · Diperbarui {{ local_datetime(item.updated_at) }} WIB</small>
+  <h3 class="booking-vehicle">{{ item.vehicle.name }}</h3>
+  <p class="booking-period"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ item.start_date.strftime('%d %b %Y') }} – {{ item.end_date.strftime('%d %b %Y') }} <span>· {{ item.pickup_time.strftime('%H:%M') }}</span></p>
+  {% if current_user.role in ['admin','petugas'] %}<p class="booking-customer"><i class="bi bi-person" aria-hidden="true"></i> {{ item.customer_name }} <span>· {{ item.customer_phone or 'Nomor belum tersedia' }}</span></p>{% endif %}
+  <dl class="booking-route">
+    <div><dt><i class="bi bi-geo-alt" aria-hidden="true"></i> Ambil</dt><dd>{{ item.pickup_address.formatted if item.pickup_address else (item.pickup_location.name if item.pickup_location else 'Lihat detail lokasi') }}</dd></div>
+    <div><dt><i class="bi bi-arrow-return-left" aria-hidden="true"></i> Kembali</dt><dd>{{ item.return_address.formatted if item.return_address else (item.return_location.name if item.return_location else 'Lihat detail lokasi') }}</dd></div>
+  </dl>
+  <div class="booking-card-footer"><div><small>Total termasuk deposit</small><strong>Rp {{ '{:,.0f}'.format(item.total_payment) }}</strong></div><a class="btn btn-outline-primary btn-sm" href="{{ detail_url }}">Lihat detail <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div>
 </article>
-{% else %}<p class="text-muted">Belum ada pesanan.</p>{% endfor %}
+{% else %}<div class="booking-empty"><i class="bi bi-inbox" aria-hidden="true"></i><strong>Belum ada pesanan</strong><p>Pesanan baru akan muncul di sini.</p></div>{% endfor %}

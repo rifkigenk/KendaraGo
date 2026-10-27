@@ -13,7 +13,7 @@
     async function tick() {
       if (busy || document.hidden) return;
       busy = true;
-      try { await update(); message.textContent = `Tersinkron · ${new Date().toLocaleTimeString('id-ID')} · pembaruan otomatis setiap 3 detik`; }
+      try { await update(); message.textContent = `Diperbarui ${new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})} · otomatis`; }
       catch (error) { message.textContent = `Koneksi terputus / sinkronisasi gagal. ${error.message} Mencoba kembali otomatis.`; }
       finally { busy = false; }
     }
@@ -23,9 +23,39 @@
   }
   document.querySelectorAll('[data-booking-feed]').forEach(root => {
     let revision;
+    const list = root.querySelector('[data-booking-list]');
+    const search = root.querySelector('[data-booking-search]');
+    const filter = root.querySelector('[data-booking-filter]');
+    const groups = {
+      pending: ['Menunggu persetujuan'],
+      payment: ['Menunggu pembayaran', 'Menunggu verifikasi pembayaran'],
+      active: ['Dikonfirmasi', 'Siap diambil', 'Sedang disewa', 'Menunggu pemeriksaan pengembalian'],
+      completed: ['Selesai']
+    };
+    function filterCards() {
+      const query = search?.value.trim().toLocaleLowerCase('id-ID') || '';
+      const group = filter?.value || 'all';
+      const cards = [...list.querySelectorAll('[data-booking-card]')];
+      let visible = 0;
+      cards.forEach(card => {
+        const status = card.dataset.status;
+        const matches = group === 'all' || (group === 'closed'
+          ? !Object.values(groups).flat().includes(status)
+          : groups[group]?.includes(status));
+        card.hidden = !matches || !card.textContent.toLocaleLowerCase('id-ID').includes(query);
+        if (!card.hidden) visible++;
+      });
+      root.querySelector('[data-booking-count]').textContent = `${visible} pesanan`;
+      root.querySelector('[data-booking-empty]').hidden = !cards.length || visible > 0;
+    }
+    search?.addEventListener('input', filterCards);
+    filter?.addEventListener('change', filterCards);
     poll(root, async () => {
       const data = await read(root.dataset.bookingFeed);
-      if (data.revision !== revision) { root.querySelector('[data-booking-list]').innerHTML = data.html; revision = data.revision; }
+      if (data.revision !== revision) {
+        list.innerHTML = data.html; revision = data.revision;
+        list.setAttribute('aria-busy', 'false'); filterCards();
+      }
     });
   });
   document.querySelectorAll('[data-booking-detail]').forEach(root => {

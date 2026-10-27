@@ -1,0 +1,11 @@
+<section class="card card-body my-4" aria-label="Identitas penyewa">
+  <h2 class="h5">Identitas penyewa</h2>
+  {% if rental.identity_type %}
+    <dl class="row mb-0">
+      <dt class="col-sm-4">Jenis dokumen</dt><dd class="col-sm-8">{{ {'NIK':'NIK / KTP','NISN':'NISN (pelajar)','PASSPORT':'Paspor / Passport'}.get(rental.identity_type, rental.identity_type) }}</dd>
+      <dt class="col-sm-4">Nomor identitas</dt><dd class="col-sm-8 text-break">{{ rental.identity_number if current_user.is_authenticated and current_user.role in ['admin','petugas'] else rental.masked_identity_number }}</dd>
+      <dt class="col-sm-4">Negara penerbit</dt><dd class="col-sm-8">{{ rental.identity_country or '-' }}</dd>
+    </dl>
+    {% if current_user.is_authenticated and current_user.role in ['admin','petugas'] %}<small class="text-muted">Cocokkan data ini dengan dokumen asli penyewa saat pemeriksaan.</small>{% endif %}
+  {% else %}<p class="text-muted mb-0">Identitas belum dicatat pada pesanan lama ini.</p>{% endif %}
+</section>

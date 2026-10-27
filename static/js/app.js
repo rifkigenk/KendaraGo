@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
      ========================================================== */
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const revealTargets = document.querySelectorAll(
-    "main > section, main > .page-header, .catalog-section, .dashboard-content > *",
+    "main > .hero-section, main > .page-header, .catalog-section",
   );
   if (!reduceMotion && "IntersectionObserver" in window && revealTargets.length) {
     document.body.classList.add("reveal-ready");

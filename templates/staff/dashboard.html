@@ -12,11 +12,6 @@
   <div class="dashboard-shell">
     {% include "components/dashboard_nav.html" %}
     <section class="dashboard-content">
-      <section class="dashboard-panel mb-4" id="pesanan-masuk">
-        <div class="d-flex flex-wrap gap-2 justify-content-between"><h2>Pesanan masuk</h2><a class="btn btn-accent" href="{{ url_for('public.vehicles') }}">Tambah pesanan</a></div>
-        <p>Pesanan baru muncul otomatis. Buka kode pesanan untuk menyetujui atau menolak.</p>
-        {% include 'components/live_bookings.html' %}
-      </section>
       <div class="dashboard-page-heading">
         <div>
           <span class="dashboard-eyebrow">OPERASIONAL</span>
@@ -31,7 +26,7 @@
 
       <div class="row g-3 mb-4">
         {% for label,value,icon in [('Pengambilan',pickups|length,'box-arrow-right'),('Pengembalian',returns|length,'box-arrow-in-left'),('Sedang disewa',active|length,'key'),('Terlambat',overdue|length,'exclamation-triangle')] %}
-          <div class="col-sm-6 col-xl-3">
+          <div class="col-6 col-xl-3">
             <div class="stat-card stat-tone-{{ loop.index0 }}">
               <i class="bi bi-{{ icon }}" aria-hidden="true"></i>
               <div><small>{{ label }}</small><strong>{{ value }}</strong></div>
@@ -39,6 +34,14 @@
           </div>
         {% endfor %}
       </div>
+
+      <section class="dashboard-panel mb-4" id="pesanan-masuk">
+        <div class="panel-heading">
+          <div><span>PERLU DITINJAU</span><h2>Pesanan masuk</h2><p>Periksa jadwal dan titik temu sebelum menyetujui pesanan.</p></div>
+          <a class="btn btn-primary" href="{{ url_for('public.vehicles') }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Tambah pesanan</a>
+        </div>
+        {% with booking_filter = 'pending' %}{% include 'components/live_bookings.html' %}{% endwith %}
+      </section>
 
       <div class="row g-4">
         <div class="col-lg-6">
@@ -73,7 +76,8 @@
             <div class="panel-heading">
               <div>
                 <span>ARMADA AKTIF</span>
-                <h2>Sedang disewa</h2>
+                <h2>Pengembalian kendaraan</h2>
+                <p>{{ returns|length }} dijadwalkan kembali hari ini.</p>
               </div>
               <i class="bi bi-key" aria-hidden="true"></i>
             </div>
@@ -82,6 +86,8 @@
                 <div class="operation-item">
                   <div>
                     <strong>{{ item.booking_code }}</strong><small>Kembali {{ item.end_date.strftime("%d/%m/%Y") }}</small>
+                    <small>{{ item.vehicle.name }} · {{ item.customer_name }}</small>
+                    {% if item in overdue %}<span class="badge text-bg-danger mt-1">Terlambat dikembalikan</span>{% endif %}
                   </div>
                   <a class="btn btn-warning btn-sm"
                      href="{{ url_for('staff.vehicle_return', rental_id=item.id) }}">Pengembalian</a>

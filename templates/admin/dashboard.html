@@ -26,7 +26,7 @@
 
       <div class="row g-3 mb-4">
         {% for label,key,icon in [('Total kendaraan','vehicles','car-front'),('Tersedia','available','check-circle'),('Sedang disewa','rented','key'),('Perawatan','maintenance','tools'),('Pelanggan','customers','people'),('Verifikasi antre','pending_profiles','person-check'),('Transaksi bulan ini','monthly_rentals','receipt'),('Pembayaran antre','pending_payments','credit-card')] %}
-          <div class="col-sm-6 col-xl-3">
+          <div class="col-6 col-xl-3">
             <div class="stat-card stat-tone-{{ loop.index0 % 4 }}">
               <i class="bi bi-{{ icon }}" aria-hidden="true"></i>
               <div><small>{{ label }}</small><strong>{{ stats[key] }}</strong></div>

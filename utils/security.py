@@ -61,17 +61,31 @@ def create_csp_nonce():
 # Memasang kebijakan CSP, pembatasan browser, dan kontrol cache respons HTML.
 def apply_security_headers(response):
     nonce = getattr(g, "csp_nonce", "")
+    google_enabled = bool(current_app.config.get("GOOGLE_MAPS_API_KEY"))
+    google_scripts = (
+        " https://maps.googleapis.com https://maps.gstatic.com 'unsafe-eval'"
+        if google_enabled
+        else ""
+    )
+    google_assets = (
+        " https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.googleusercontent.com"
+        if google_enabled
+        else ""
+    )
+    google_fonts = " https://fonts.gstatic.com" if google_enabled else ""
+    google_styles = " https://fonts.googleapis.com" if google_enabled else ""
     policy = (
         "default-src 'self'; "
         "base-uri 'self'; "
         "object-src 'none'; "
         "frame-ancestors 'none'; "
         "form-action 'self'; "
-        f"script-src 'self' 'nonce-{nonce}'; "
-        "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: blob: https://tile.openstreetmap.org; "
-        "font-src 'self'; "
-        "connect-src 'self' https://tiles.openfreemap.org; "
+        f"script-src 'self' 'nonce-{nonce}'{google_scripts}; "
+        f"style-src 'self' 'unsafe-inline'{google_styles}; "
+        f"img-src 'self' data: blob: https://tile.openstreetmap.org{google_assets}; "
+        f"font-src 'self'{google_fonts}; "
+        f"connect-src 'self' data: blob:{google_assets}; "
+        f"frame-src 'self'{(' https://*.google.com' if google_enabled else '')}; "
         "media-src 'self'; "
         "worker-src 'self' blob:; "
         "manifest-src 'self'"
@@ -84,7 +98,7 @@ def apply_security_headers(response):
     response.headers["Content-Security-Policy"] = policy
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = (
         "camera=(), microphone=(), geolocation=(self), payment=(), usb=(), "
         "interest-cohort=()"

@@ -7,6 +7,9 @@ Sistem informasi penyewaan mobil dan sepeda motor berbasis Flask dan MySQL. Apli
 
 Integrasi WhatsApp Meta: lihat [PANDUAN_WHATSAPP.md](PANDUAN_WHATSAPP.md).
 
+Google Maps resmi, kantor utama Denpasar, dan identitas penyewa:
+lihat [PANDUAN_GOOGLE_MAPS.md](PANDUAN_GOOGLE_MAPS.md).
+
 ## Fitur yang tersedia
 
 - Halaman publik, katalog kendaraan, pencarian, filter, sorting, pagination, dan detail kendaraan.

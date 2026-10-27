@@ -118,6 +118,10 @@ class Config:
     APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Asia/Jakarta")
     GEOAPIFY_API_KEY = os.getenv("GEOAPIFY_API_KEY", "")
     MAP_TILES_ENABLED = env_bool("MAP_TILES_ENABLED", True)
+    GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "").strip()
+    GOOGLE_MAPS_MAP_ID = (
+        os.getenv("GOOGLE_MAPS_MAP_ID", "DEMO_MAP_ID").strip() or "DEMO_MAP_ID"
+    )
 
 
 class TestingConfig(Config):

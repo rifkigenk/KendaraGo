@@ -12,8 +12,13 @@ from flask_login import current_user
 from sqlalchemy.exc import IntegrityError
 
 from extensions import db, limiter
-from models import Location
-from services.location_service import in_bali, office_options, validate_address
+from models import AppSetting, Location
+from services.location_service import (
+    in_bali,
+    office_options,
+    primary_office,
+    validate_address,
+)
 from utils.decorators import roles_required
 
 bp = Blueprint("locations", __name__, url_prefix="/lokasi")
@@ -97,46 +102,74 @@ def search():
 
 @lru_cache(maxsize=256)
 def photon_results(query, reverse, cache_period):
-    endpoint = 'reverse' if reverse else 'api'
-    req = Request(f'https://photon.komoot.io/{endpoint}/?{query}', headers={'User-Agent': 'KendaraGo/1.0 (Bali rental location search)'})
+    endpoint = "reverse" if reverse else "api"
+    req = Request(
+        f"https://photon.komoot.io/{endpoint}/?{query}",
+        headers={"User-Agent": "KendaraGo/1.0 (Bali rental location search)"},
+    )
     with urlopen(req, timeout=8) as response:
-        return json.load(response).get('features', [])
+        return json.load(response).get("features", [])
 
 
 def photon_search():
-    reverse = request.args.get('latitude') is not None
+    reverse = request.args.get("latitude") is not None
     if reverse:
-        if not in_bali(request.args.get('latitude'), request.args.get('longitude')):
-            return jsonify(error='Titik layanan harus berada di Bali.'), 422
-        params = dict(lat=request.args['latitude'], lon=request.args['longitude'], limit=1)
+        if not in_bali(request.args.get("latitude"), request.args.get("longitude")):
+            return jsonify(error="Titik layanan harus berada di Bali."), 422
+        params = dict(
+            lat=request.args["latitude"], lon=request.args["longitude"], limit=1
+        )
     else:
-        query = request.args.get('q', '').strip()
+        query = request.args.get("q", "").strip()
         if not 3 <= len(query) <= 200:
-            return jsonify(error='Ketik nama tempat minimal 3 karakter.'), 422
-        params = dict(q=query, limit=5, bbox='114.4,-9.1,115.8,-7.9', lat=-8.65, lon=115.216)
+            return jsonify(error="Ketik nama tempat minimal 3 karakter."), 422
+        params = dict(
+            q=query, limit=5, bbox="114.4,-9.1,115.8,-7.9", lat=-8.65, lon=115.216
+        )
     try:
         features = photon_results(urlencode(params), reverse, int(time() // 600))
     except (URLError, TimeoutError, ValueError, OSError):
-        return jsonify(error='Pencarian sedang tidak tersedia. Pilih titik di peta dan isi nama tempat secara manual.'), 503
+        return (
+            jsonify(
+                error="Pencarian sedang tidak tersedia. Pilih titik di peta dan isi nama tempat secara manual."
+            ),
+            503,
+        )
     addresses = []
     for feature in features:
-        lon, lat = feature['geometry']['coordinates'][:2]
+        lon, lat = feature["geometry"]["coordinates"][:2]
         if not in_bali(lat, lon):
             continue
-        p = feature.get('properties', {})
-        name = p.get('name') or p.get('street') or p.get('city') or 'Titik temu'
-        formatted = ', '.join(dict.fromkeys(filter(None, [name, p.get('street'), p.get('district'), p.get('city'), 'Bali'])))
-        addresses.append(dict(place_name=name, street=p.get('street', ''), city=p.get('city', ''),
-                              province='Bali', latitude=lat, longitude=lon, formatted=formatted))
-    return jsonify(results=addresses, attribution='Photon / © OpenStreetMap contributors')
+        p = feature.get("properties", {})
+        name = p.get("name") or p.get("street") or p.get("city") or "Titik temu"
+        formatted = ", ".join(
+            dict.fromkeys(
+                filter(
+                    None,
+                    [name, p.get("street"), p.get("district"), p.get("city"), "Bali"],
+                )
+            )
+        )
+        addresses.append(
+            dict(
+                place_name=name,
+                street=p.get("street", ""),
+                city=p.get("city", ""),
+                province="Bali",
+                latitude=lat,
+                longitude=lon,
+                formatted=formatted,
+            )
+        )
+    return jsonify(
+        results=addresses, attribution="Photon / © OpenStreetMap contributors"
+    )
 
 
 @bp.get("/admin")
 @roles_required("admin")
 def manage():
-    return render_template(
-        "admin/locations.html", offices=Location.query.order_by(Location.name).all()
-    )
+    return render_template("admin/locations.html", office=primary_office())
 
 
 @bp.post("/admin")
@@ -147,13 +180,17 @@ def save_office():
         address = validate_address(data.get("address"), office_admin=True)
         if address["kind"] != "office":
             raise ValueError("Jenis lokasi harus kantor rental.")
+        primary = primary_office()
+        if data.get("id") and (primary is None or data["id"] != primary.id):
+            return (
+                jsonify(error="Hanya kantor utama Denpasar yang dapat dikelola."),
+                422,
+            )
         office = (
-            Location.query.filter_by(id=data["id"]).with_for_update().first()
-            if data.get("id")
+            Location.query.filter_by(id=primary.id).with_for_update().first()
+            if primary
             else Location()
         )
-        if office is None:
-            return jsonify(error="Kantor tidak ditemukan."), 404
         if office.id and data.get("version") != office.updated_at.isoformat():
             return (
                 jsonify(error="Data kantor berubah. Muat ulang sebelum menyimpan."),
@@ -167,6 +204,14 @@ def save_office():
         office.is_active = data.get("active") is True
         office.verified_by_id = current_user.id
         db.session.add(office)
+        db.session.flush()
+        setting = AppSetting.query.filter_by(setting_key="primary_office_id").first()
+        if setting is None:
+            setting = AppSetting(
+                setting_key="primary_office_id", description="Kantor utama rental Bali"
+            )
+            db.session.add(setting)
+        setting.setting_value = str(office.id)
         db.session.commit()
         return jsonify(message="Alamat kantor berhasil disimpan.", id=office.id)
     except (ValueError, TypeError, IntegrityError):

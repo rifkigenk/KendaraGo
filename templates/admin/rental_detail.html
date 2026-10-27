@@ -4,14 +4,17 @@
 <div class="dashboard-shell">
   {% include 'components/dashboard_nav.html' %}
   <section class="dashboard-content" data-booking-detail="{{ url_for('booking_sync.detail', rental_id=rental.id) }}" data-version="{{ rental.updated_at.isoformat() }}">
-    <a href="{{ url_for('admin.rentals') if current_user.role == 'admin' else url_for('staff.dashboard') }}">← Pemesanan</a>
-    <h1>{{ rental.booking_code }}</h1>
-    <span class="badge text-bg-primary" data-live-status>{{ rental.status }}</span>
-    <p class="mt-3">{{ rental.customer_name }} · {{ rental.customer_phone or '-' }}</p>
-    <p>{{ rental.vehicle.name }} · {{ rental.start_date }} – {{ rental.end_date }} · {{ rental.pickup_time.strftime('%H:%M') }}</p>
+    <a class="detail-back" href="{{ url_for('admin.rentals') if current_user.role == 'admin' else url_for('staff.dashboard') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Kembali ke pemesanan</a>
+    <div class="detail-heading"><div><span class="dashboard-eyebrow">DETAIL PESANAN</span><h1>{{ rental.booking_code }}</h1></div><span class="badge text-bg-primary" data-live-status>{{ rental.status }}</span></div>
+    <div class="detail-summary">
+      <div><small>Penyewa</small><strong>{{ rental.customer_name }}</strong><p>{{ rental.customer_phone or 'Nomor belum tersedia' }}</p></div>
+      <div><small>Kendaraan &amp; jadwal</small><strong>{{ rental.vehicle.name }}</strong><p>{{ rental.start_date.strftime('%d %b %Y') }} – {{ rental.end_date.strftime('%d %b %Y') }} · {{ rental.pickup_time.strftime('%H:%M') }}</p></div>
+      <div><small>Total termasuk deposit</small><strong>Rp {{ '{:,.0f}'.format(rental.total_payment) }}</strong><p>{{ rental.duration_days }} hari penyewaan</p></div>
+    </div>
     <p class="small" data-sync-message role="status" aria-live="polite">Menghubungkan sinkronisasi…</p>
+    {% include 'components/booking_identity.html' %}
     <div data-live-locations>{% include 'components/booking_locations.html' %}</div>
-    <form class="card card-body mt-4" data-status-form action="{{ url_for('booking_sync.status', rental_id=rental.id) }}" method="post">
+    <form class="card card-body mt-4 status-action-form" data-status-form action="{{ url_for('booking_sync.status', rental_id=rental.id) }}" method="post">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <label for="next-status">Tindakan pesanan</label>
       <select class="form-select" id="next-status" name="status"><option value="">Pilih tindakan</option>{% for status in transitions %}<option value="{{ status }}">{{ 'Setujui pesanan' if status == 'Menunggu pembayaran' else ('Tolak pesanan' if status == 'Ditolak' else status) }}</option>{% endfor %}</select>

@@ -16,15 +16,15 @@
          href="{{ url_for('admin.vehicles') }}"><i class="bi bi-car-front"></i><span>Kendaraan</span></a>
       <a class="{{ 'active' if request.endpoint == 'admin.rentals' }}"
          href="{{ url_for('admin.rentals') }}"><i class="bi bi-receipt"></i><span>Pemesanan</span></a>
-      <a href="{{ url_for('locations.manage') }}"><i class="bi bi-geo-alt"></i><span>Kantor rental Bali</span></a>
+      <a class="{{ 'active' if request.endpoint == 'locations.manage' }}" href="{{ url_for('locations.manage') }}"><i class="bi bi-geo-alt"></i><span>Kantor rental Bali</span></a>
       <a class="{{ 'active' if request.endpoint == 'admin.payments' }}"
          href="{{ url_for('admin.payments') }}"><i class="bi bi-credit-card"></i><span>Pembayaran</span></a>
       <a class="{{ 'active' if request.endpoint == 'admin.verifications' }}"
          href="{{ url_for('admin.verifications') }}"><i class="bi bi-person-check"></i><span>Verifikasi</span></a>
     {% elif current_user.role == "petugas" %}
-      <a href="{{ url_for('staff.dashboard') }}#pesanan-masuk"><i class="bi bi-receipt"></i><span>Pesanan masuk</span></a>
       <a class="{{ 'active' if request.endpoint == 'staff.dashboard' }}"
          href="{{ url_for('staff.dashboard') }}"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+      <a class="{{ 'active' if request.endpoint == 'booking_sync.admin_detail' }}" href="{{ url_for('staff.dashboard') }}#pesanan-masuk"><i class="bi bi-receipt"></i><span>Pesanan masuk</span></a>
       <a href="{{ url_for('staff.dashboard') }}#pengambilan"><i class="bi bi-box-arrow-right"></i><span>Pengambilan</span></a>
       <a href="{{ url_for('staff.dashboard') }}#armada-aktif"><i class="bi bi-key"></i><span>Pengembalian</span></a>
     {% else %}
@@ -38,7 +38,7 @@
        href="{{ url_for('auth.change_password') }}"><i class="bi bi-key"></i><span>Ubah password</span></a>
   </nav>
   {% if current_user.role == "admin" %}
-    <div class="admin-signature"><small>Administrator</small><strong>Made Lutfi</strong></div>
+    <div class="admin-signature"><small>Administrator</small><strong>{{ current_user.name }}</strong></div>
   {% elif current_user.role == "pelanggan" %}
     <div class="sidebar-account-status">
       <small>STATUS VERIFIKASI</small>

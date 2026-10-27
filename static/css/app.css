@@ -1241,6 +1241,9 @@ label {
   padding: 28px 16px;
   border-right: 1px solid #e8edf3;
   background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 .sidebar-heading {
   display: flex;
@@ -1303,11 +1306,7 @@ label {
   text-align: center;
 }
 .admin-signature {
-  position: absolute;
-  right: 16px;
-  bottom: 24px;
-  left: 16px;
-  margin: 0;
+  margin: auto 0 0;
   padding: 13px 14px;
   border-radius: 12px;
   color: #b8d2ec;
@@ -1324,10 +1323,7 @@ label {
   font-size: 0.86rem;
 }
 .sidebar-account-status {
-  position: absolute;
-  right: 16px;
-  bottom: 24px;
-  left: 16px;
+  margin-top: auto;
   padding: 13px 14px;
   border: 1px solid #dce8f4;
   border-radius: 12px;
@@ -1351,14 +1347,28 @@ label {
 }
 .dashboard-content {
   width: calc(100% - 260px);
+  min-width: 0;
+  flex: 1;
   padding: 38px clamp(22px, 3vw, 48px) 60px;
 }
+.dashboard-content > h1,
+.dashboard-content h1 {
+  overflow-wrap: anywhere;
+  font-size: clamp(1.6rem, 2.7vw, 2.3rem);
+}
+.dashboard-content > .d-flex {
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.dashboard-content .row > * { min-width: 0; }
+.dashboard-content .badge { white-space: normal; text-align: left; line-height: 1.4; }
 .dashboard-page-heading {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 28px;
+  flex-wrap: wrap;
 }
 .dashboard-page-heading h1 {
   margin: 4px 0;
@@ -1432,6 +1442,7 @@ label {
   color: var(--blue);
   background: #eaf3ff;
   font-size: 1.5rem;
+  flex-shrink: 0;
 }
 .stat-card small,
 .stat-card strong {
@@ -1457,13 +1468,18 @@ label {
   background: #fff2df;
 }
 .dashboard-panel {
-  height: 100%;
+  height: auto;
+  min-width: 0;
   overflow: hidden;
   border: 1px solid #e3eaf2;
   border-radius: var(--radius-lg);
   background: #fff;
   box-shadow: var(--shadow-sm);
 }
+.row > [class*="col-"] > .dashboard-panel { height: 100%; }
+.panel-heading { flex-wrap: wrap; }
+.panel-heading p { margin: 6px 0 0; font-size: .88rem; color: var(--muted); }
+.dashboard-panel[id] { scroll-margin-top: 140px; }
 .panel-heading {
   display: flex;
   align-items: center;
@@ -1602,6 +1618,8 @@ label {
 .operation-item small {
   display: block;
 }
+.operation-item > div { min-width: 0; overflow-wrap: anywhere; }
+.operation-item > .btn { flex-shrink: 0; }
 .operation-item small {
   margin-top: 3px;
   color: var(--muted);
@@ -2003,12 +2021,14 @@ label {
     display: block;
   }
   .sidebar {
+    display: block;
     top: 64px;
     z-index: 20;
     width: 100%;
     height: auto;
     padding: 10px 15px;
     overflow-x: auto;
+    overflow-y: hidden;
     border-right: 0;
     border-bottom: 1px solid #e3eaf2;
     box-shadow: 0 5px 15px rgba(17, 45, 79, 0.05);

@@ -1,6 +1,12 @@
 .location-editor {border:1px solid var(--bs-border-color,#dce3e8);border-radius:1rem;padding:1.25rem;margin-block:1rem;background:var(--bs-body-bg,#fff)}
 .location-map {height:380px;min-height:240px;width:100%;border-radius:.75rem;background:#e4eee9;isolation:isolate;z-index:0}
 .location-map-small {height:220px;min-height:180px}
+.meeting-map-frame {position:relative;min-width:0;width:100%;isolation:isolate}
+.meeting-map-state {position:absolute;z-index:800;top:12px;right:12px;max-width:calc(100% - 72px);display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 12px;border:1px solid #dce5ef;border-radius:10px;background:rgba(255,255,255,.96);box-shadow:0 3px 12px #17243a12;color:#40546c;font-size:.78rem;line-height:1.5}
+.meeting-map-state[hidden] {display:none}
+.meeting-map-state .btn {font-size:.75rem;min-height:32px}
+.location-map .leaflet-tile {max-width:none!important;max-height:none!important}
+.location-map .leaflet-container {font-family:inherit}
 .location-map-toolbar {display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem}
 .location-pin-status {margin:.65rem 0 1rem;color:var(--bs-secondary-color,#52655f)}
 .location-manual summary {cursor:pointer;font-size:.85rem;color:var(--bs-secondary-color,#52655f)}
@@ -10,4 +16,4 @@
 .location-details,.location-details p,.location-details dd,.location-details a,[data-results] button {overflow-wrap:anywhere;white-space:normal;min-width:0}
 .location-details .badge {white-space:normal;text-align:left;line-height:1.4}
 [data-save-message],[data-sync-message],[data-location-message] {overflow-wrap:anywhere}
-@media(max-width:576px){.location-editor{padding:1rem}.location-map{height:250px}.location-details .btn{width:100%}}
+@media(max-width:576px){.location-editor{padding:1rem}.location-map{height:280px}.location-map-small{height:220px}.location-details .btn{width:100%}.location-map-toolbar{gap:.5rem}.location-map-toolbar [data-map-hint]{flex-basis:100%}.location-map-toolbar .btn{min-height:40px}.location-editor .input-group{flex-wrap:nowrap}.location-editor .input-group .form-control{min-width:0}}

@@ -5,7 +5,7 @@ import math
 from functools import lru_cache
 from pathlib import Path
 
-from models import Location
+from models import AppSetting, Location
 
 FIELDS = {
     "place_name": 180,
@@ -86,7 +86,14 @@ def validate_address(raw, *, office_admin=False):
         office = Location.query.filter_by(
             id=raw.get("office_id"), is_active=True
         ).first()
-        if not office or not office.verified_by_id or not office.address_data:
+        primary = primary_office()
+        if (
+            not office
+            or not primary
+            or office.id != primary.id
+            or not office.verified_by_id
+            or not office.address_data
+        ):
             raise ValueError("Kantor belum dikonfirmasi admin atau sudah tidak aktif.")
         # Never trust a submitted office address: snapshot the admin's current record.
         if raw.get("office_updated_at") != office.updated_at.isoformat():
@@ -126,16 +133,34 @@ def validate_address(raw, *, office_admin=False):
     return data
 
 
+def primary_office():
+    """Select the single Bali office; retain legacy locations for old rentals."""
+    setting = AppSetting.query.filter_by(setting_key="primary_office_id").first()
+    if setting:
+        try:
+            return Location.query.filter_by(id=int(setting.setting_value)).first()
+        except (TypeError, ValueError):
+            return None
+    denpasar = Location.query.filter_by(name="Denpasar").first()
+    if denpasar:
+        return denpasar
+    for office in Location.query.filter(Location.verified_by_id.is_not(None)).order_by(
+        Location.id
+    ):
+        address = office.address_data or {}
+        if in_bali(address.get("latitude"), address.get("longitude")):
+            return office
+    return None
+
+
 def bookable_offices():
-    return (
-        Location.query.filter(
-            Location.is_active.is_(True),
-            Location.verified_by_id.is_not(None),
-            Location.address_data.is_not(None),
-        )
-        .order_by(Location.name)
-        .all()
-    )
+    office = primary_office()
+    if office and office.is_active and office.verified_by_id and office.address_data:
+        if in_bali(
+            office.address_data.get("latitude"), office.address_data.get("longitude")
+        ):
+            return [office]
+    return []
 
 
 def office_options():

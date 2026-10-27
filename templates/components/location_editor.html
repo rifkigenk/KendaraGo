@@ -25,7 +25,8 @@
   <div class="location-map-toolbar">
     <span class="small" data-map-hint>Klik peta untuk memilih titik temu.</span>
     <button class="btn btn-outline-primary btn-sm" type="button" data-geolocate>Gunakan lokasi saya</button>
-    <button class="btn btn-outline-primary btn-sm" type="button" data-map-3d aria-pressed="true">3D aktif</button>
+    <button class="btn btn-outline-primary btn-sm" type="button" data-map-3d aria-pressed="false" {{ 'hidden' if not config.GOOGLE_MAPS_API_KEY }}>Lihat 3D</button>
+    <a class="btn btn-outline-primary btn-sm" data-google-maps-link href="https://www.google.com/maps/search/?api=1&amp;query=-8.65,115.216" target="_blank" rel="noopener noreferrer">Buka Google Maps</a>
   </div>
   <div class="location-map" data-map aria-label="Peta titik temu; klik atau geser pin"></div>
   <p class="location-pin-status small" data-preview role="status">Belum ada titik yang dipilih.</p>

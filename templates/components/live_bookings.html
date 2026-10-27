@@ -1,4 +1,16 @@
-<section class="mt-4" data-booking-feed="{{ url_for('booking_sync.feed') }}">
-  <p class="small" data-sync-message role="status" aria-live="polite">Menghubungkan sinkronisasi pesanan…</p>
-  <div data-booking-list></div>
+<section class="booking-feed" data-booking-feed="{{ url_for('booking_sync.feed') }}" aria-label="Daftar pesanan">
+  <div class="booking-toolbar">
+    <label class="booking-search"><span>Cari pesanan</span><input class="form-control" type="search" data-booking-search placeholder="Kode pesanan atau kendaraan" /></label>
+    <label class="booking-filter"><span>Status</span><select class="form-select" data-booking-filter>
+      <option value="all">Semua status</option>
+      <option value="pending" {{ 'selected' if booking_filter|default('all') == 'pending' }}>Menunggu persetujuan</option>
+      <option value="payment">Pembayaran</option>
+      <option value="active">Perjalanan aktif</option>
+      <option value="completed">Selesai</option>
+      <option value="closed">Ditolak / dibatalkan</option>
+    </select></label>
+  </div>
+  <div class="booking-feed-meta"><span data-booking-count></span><p data-sync-message role="status">Memuat pesanan…</p></div>
+  <div class="booking-grid" data-booking-list aria-busy="true"><p class="text-muted py-3">Menyiapkan daftar pesanan Anda…</p></div>
+  <div class="booking-empty" data-booking-empty hidden><i class="bi bi-inbox" aria-hidden="true"></i><strong>Tidak ada pesanan yang cocok</strong><p>Coba kata kunci atau status lain.</p></div>
 </section>

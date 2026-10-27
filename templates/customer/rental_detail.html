@@ -66,6 +66,7 @@
       </div>
 
       <p class="small mt-4" data-sync-message role="status" aria-live="polite">Menghubungkan sinkronisasi?</p>
+      {% include 'components/booking_identity.html' %}
       <div data-live-locations>{% include 'components/booking_locations.html' %}</div>
       <a class="btn btn-outline-primary mt-3" href="{{ url_for('customer.edit_locations', rental_id=rental.id) }}">Ubah lokasi dan catatan</a>
       <!-- =====================================================

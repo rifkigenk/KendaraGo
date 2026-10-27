@@ -28,7 +28,7 @@
 
       <div class="row g-3 mb-4">
         {% for label,value,icon in [('Total pesanan',rentals|length,'receipt'),('Perlu dibayar',pending,'wallet2'),('Perjalanan aktif',active,'car-front'),('Selesai',completed,'check-circle')] %}
-          <div class="col-sm-6 col-xl-3">
+          <div class="col-6 col-xl-3">
             <div class="stat-card stat-tone-{{ loop.index0 }}">
               <i class="bi bi-{{ icon }}" aria-hidden="true"></i>
               <div><small>{{ label }}</small><strong>{{ value }}</strong></div>

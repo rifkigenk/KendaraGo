@@ -335,7 +335,9 @@ class Rental(TimestampMixin, db.Model):
     )
     __table_args__ = (
         db.UniqueConstraint("customer_id", "request_key", name="uq_rental_request"),
-        db.UniqueConstraint("guest_session_key", "request_key", name="uq_guest_rental_request"),
+        db.UniqueConstraint(
+            "guest_session_key", "request_key", name="uq_guest_rental_request"
+        ),
     )
     id = db.Column(db.Integer, primary_key=True)
     booking_code = db.Column(db.String(30), unique=True, nullable=False, index=True)
@@ -345,6 +347,9 @@ class Rental(TimestampMixin, db.Model):
     guest_name = db.Column(db.String(120))
     guest_phone = db.Column(db.String(20))
     guest_session_key = db.Column(db.String(64), index=True)
+    identity_type = db.Column(db.String(12))
+    identity_number = db.Column(db.String(32))
+    identity_country = db.Column(db.String(80))
     vehicle_id = db.Column(
         db.Integer, db.ForeignKey("vehicles.id"), nullable=False, index=True
     )
@@ -400,6 +405,11 @@ class Rental(TimestampMixin, db.Model):
     @property
     def customer_phone(self):
         return self.customer.phone if self.customer else self.guest_phone
+
+    @property
+    def masked_identity_number(self):
+        value = self.identity_number or ""
+        return "*" * max(0, len(value) - 4) + value[-4:] if value else "Belum dicatat"
 
     @property
     def total_fines(self):

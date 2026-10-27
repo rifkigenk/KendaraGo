@@ -1,27 +1,27 @@
 {% extends 'base.html' %}
-{% block title %}Kantor rental Bali{% endblock %}
+{% block title %}Kantor utama Denpasar{% endblock %}
 {% block content %}
 <div class="dashboard-shell">
   {% include 'components/dashboard_nav.html' %}
   <section class="dashboard-content">
-    <h1>Kantor rental Bali</h1>
-    <p>Isi alamat kantor milik rental yang benar, tentukan pin, lalu konfirmasi. Data lama belum dapat dipilih penyewa sampai diverifikasi di sini.</p>
-    <div class="row g-3">
-    {% for office in offices %}
-      <div class="col-md-6"><article class="card card-body h-100 location-details">
-        <h2 class="h5">{{ office.name }}</h2><p>{{ office.address }}</p>
-        <small>{{ 'Aktif dan terkonfirmasi' if office.verified_by_id and office.is_active else 'Belum terkonfirmasi / tidak aktif' }}</small>
-        <button type="button" class="btn btn-outline-primary mt-2" data-edit-office='{{ {"id":office.id,"name":office.name,"version":office.updated_at.isoformat(),"address":office.address_data,"active":office.is_active}|tojson|forceescape }}'>Edit dan konfirmasi</button>
-      </article></div>
-    {% endfor %}
+    <div class="dashboard-page-heading"><div><span class="dashboard-eyebrow">LOKASI RENTAL</span><h1>Kantor utama Denpasar</h1><p>Satu kantor untuk layanan KendaraGo di Bali.</p></div></div>
+    <div class="card card-body mb-4 location-details">
+      <h2 class="h5">{{ office.name if office else 'Kantor KendaraGo Denpasar' }}</h2>
+      {% if office and office.verified_by_id %}
+        <p>{{ office.address }}</p>
+        <span class="badge text-bg-success align-self-start">{{ 'Aktif untuk pemesanan' if office.is_active else 'Tidak aktif' }}</span>
+      {% else %}
+        <p class="mb-0">Alamat dan titik kantor belum dikonfirmasi. Isi lokasi kantor yang sebenarnya sebelum mengaktifkannya untuk pelanggan.</p>
+      {% endif %}
     </div>
-    <form class="mt-4" method="post" action="{{ url_for('locations.save_office') }}" data-office-form>
+    <form method="post" action="{{ url_for('locations.save_office') }}" data-office-form
+          data-office-id="{{ office.id if office else '' }}" data-office-version="{{ office.updated_at.isoformat() if office else '' }}">
       <input name="csrf_token" type="hidden" value="{{ csrf_token() }}" />
-      <button type="button" class="btn btn-outline-primary" data-new-office>Kantor baru</button>
-      {% set prefix = 'office' %}{% set heading = 'Alamat kantor' %}{% set office_admin = true %}
+      {% set prefix = 'office' %}{% set heading = 'Alamat kantor utama' %}{% set office_admin = true %}
+      {% set initial_address = office.address_data if office and office.address_data else {'kind':'office','place_name':'Kantor KendaraGo Denpasar','province':'Bali'} %}
       {% include 'components/location_editor.html' %}
-      <label class="d-flex gap-2"><input name="active" type="checkbox" checked /> Aktif untuk pemesanan</label>
-      <button type="submit" class="btn btn-primary mt-3">Simpan kantor</button>
+      <label class="d-flex gap-2"><input name="active" type="checkbox" {{ 'checked' if office and office.is_active }} /> Aktif untuk pemesanan setelah alamat dikonfirmasi</label>
+      <button type="submit" class="btn btn-primary mt-3">Simpan kantor utama</button>
       <p data-save-message role="status" aria-live="polite"></p>
     </form>
   </section>

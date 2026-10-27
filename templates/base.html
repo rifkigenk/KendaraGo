@@ -19,12 +19,12 @@
           rel="stylesheet" />
     <link href="{{ url_for('static', filename='vendor/flatpickr/flatpickr.min.css') }}"
           rel="stylesheet" />
-    <link href="{{ url_for('static', filename='css/app.css') }}"
+    <link href="{{ url_for('static', filename='css/app.css', v='20261027') }}"
           rel="stylesheet" />
-    <link href="{{ url_for('static', filename='css/enhancements.css') }}"
+    <link href="{{ url_for('static', filename='css/enhancements.css', v='20261027') }}"
           rel="stylesheet" />
     <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/locations.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/locations.css', v='20261027') }}" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
@@ -215,17 +215,18 @@
     <script nonce="{{ csp_nonce }}"
             src="{{ url_for('static', filename='vendor/chartjs/chart.umd.min.js') }}"></script>
     <script nonce="{{ csp_nonce }}"
-            src="{{ url_for('static', filename='js/app.js') }}"></script>
+            src="{{ url_for('static', filename='js/app.js', v='20261027') }}"></script>
 
     <div id="location-config" hidden data-tiles="{{ 'true' if config.MAP_TILES_ENABLED else 'false' }}"
+         data-google-key="{{ config.GOOGLE_MAPS_API_KEY }}"
+         data-google-map-id="{{ config.GOOGLE_MAPS_MAP_ID }}"
          data-search-enabled="true"
          data-search="{{ url_for('locations.search') }}" data-offices="{{ url_for('locations.offices') }}"></div>
     <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/maplibre/maplibre-gl.css') }}" />
-    <script src="{{ url_for('static', filename='vendor/maplibre/maplibre-gl.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/meeting-map.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/locations.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/booking-sync.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/google-meeting-map.js', v='20261027-2') }}"></script>
+    <script src="{{ url_for('static', filename='js/meeting-map.js', v='20261027-2') }}"></script>
+    <script src="{{ url_for('static', filename='js/locations.js', v='20261027-2') }}"></script>
+    <script src="{{ url_for('static', filename='js/booking-sync.js', v='20261027') }}"></script>
     {% block scripts %}{% endblock %}
   </body>
 </html>

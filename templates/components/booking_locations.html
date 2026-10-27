@@ -1,5 +1,6 @@
 <div class="row g-3 location-details">
 {% for label,address,legacy in [('Lokasi Pengambilan',rental.pickup_address,rental.pickup_location),('Lokasi Pengembalian',rental.return_address,rental.return_location)] %}
+  {% set address = address or (legacy.address_data if legacy and legacy.verified_by_id else none) %}
   <div class="col-lg-6"><div class="card card-body h-100">
     <h3 class="h5">{{ label }}</h3>
     {% if address %}
@@ -8,7 +9,7 @@
       <div class="location-map location-map-small" data-saved-map data-lat="{{ address.latitude }}" data-lon="{{ address.longitude }}" aria-label="Pin {{ label }}"></div>
       <a class="btn btn-outline-primary mt-2 align-self-start" target="_blank" rel="noopener noreferrer"
          href="https://www.google.com/maps/search/?api=1&amp;query={{ address.latitude }},{{ address.longitude }}">Buka di Google Maps</a>
-    {% else %}<p>{{ legacy.name if legacy else 'Lokasi belum tersedia' }}{% if legacy %} — {{ legacy.address }}{% endif %}</p>
+    {% else %}<div class="booking-empty"><i class="bi bi-geo-alt" aria-hidden="true"></i><strong>{{ legacy.name if legacy else 'Titik temu belum ditentukan' }}</strong><p>{{ legacy.address if legacy else 'Koordinat belum tersimpan untuk pesanan ini.' }}</p><p>Peta akan muncul setelah titik temu dikonfirmasi.</p></div>
       {% endif %}
   </div></div>
 {% endfor %}

@@ -43,6 +43,8 @@
     function mark(lat, lon, center = true) {
       if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
       map?.setPoint(lat, lon, center);
+      const googleLink = root.querySelector('[data-google-maps-link]');
+      if (googleLink) googleLink.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
     }
     function setPoint(lat, lon, center = true) {
       clearAddressDetails();
@@ -209,14 +211,14 @@
   });
   const officeForm = document.querySelector('[data-office-form]');
   if (officeForm) {
-    let id = null, version = null;
+    let id = Number(officeForm.dataset.officeId) || null, version = officeForm.dataset.officeVersion || null;
     document.querySelectorAll('[data-edit-office]').forEach(button => button.addEventListener('click', () => {
       const data = JSON.parse(button.dataset.editOffice); id = data.id; version = data.version;
       editors[0].apply(data.address || {kind: 'office', place_name: data.name});
       officeForm.querySelector('[name="active"]').checked = data.active;
       officeForm.scrollIntoView({behavior: 'smooth'});
     }));
-    officeForm.querySelector('[data-new-office]').addEventListener('click', () => { id = null; version = null; editors[0].apply({kind: 'office'}); });
+    officeForm.querySelector('[data-new-office]')?.addEventListener('click', () => { id = null; version = null; editors[0].apply({kind: 'office'}); });
     officeForm.addEventListener('submit', async event => {
       event.preventDefault(); if (!editors[0].validate()) return;
       const message = officeForm.querySelector('[data-save-message]'), button = officeForm.querySelector('[type="submit"]');

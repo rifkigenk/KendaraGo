@@ -59,6 +59,8 @@ def booking_form():
         end_date=str(date.today() + timedelta(days=3)),
         pickup_time="09:00",
         terms="1",
+        identity_type="NIK",
+        identity_number="1234567890123456",
         pickup_address=json.dumps(address()),
         same_location="1",
         notes="Catatan fixture",

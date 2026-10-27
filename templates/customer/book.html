@@ -38,8 +38,25 @@
           <div class="row g-3">
             {% if guest_booking %}
             <div class="col-md-6"><label for="booking-name">Nama penyewa</label><input id="booking-name" class="form-control" name="full_name" autocomplete="name" minlength="3" maxlength="120" required value="{{ form_data.get('full_name', '') }}" /></div>
-            <div class="col-md-6"><label for="booking-phone">Nomor WhatsApp</label><input id="booking-phone" class="form-control" name="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="081234567890" required value="{{ form_data.get('phone', '') }}" /></div>
+            <div class="col-md-6"><label for="booking-phone">Nomor WhatsApp</label><input id="booking-phone" class="form-control" name="phone" type="tel" autocomplete="tel" maxlength="32" placeholder="081234567890 / +447123456789" required value="{{ form_data.get('phone', '') }}" /><small class="text-muted">Untuk nomor luar negeri, sertakan + dan kode negara.</small></div>
             {% endif %}
+            {% set identity_type = form_data.get('identity_type', 'NIK') %}
+            <div class="col-md-6">
+              <label for="booking-identity-type">Jenis identitas penyewa</label>
+              <select id="booking-identity-type" class="form-select" name="identity_type" data-identity-type required>
+                {% for value,label in [('NIK','NIK / KTP'),('NISN','NISN (pelajar)'),('PASSPORT','Paspor / Passport')] %}<option value="{{ value }}" {{ 'selected' if identity_type == value }}>{{ label }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="booking-identity-number">Nomor identitas</label>
+              <input id="booking-identity-number" class="form-control" name="identity_number" data-identity-number required maxlength="32" autocomplete="off" spellcheck="false"
+                     value="{{ form_data.get('identity_number', (current_user.profile.ktp_number or '') if current_user.is_authenticated and current_user.role == 'pelanggan' and current_user.profile else '') }}" aria-describedby="identity-help" />
+              <small id="identity-help" class="text-muted" data-identity-help>Isi nomor sesuai dokumen penyewa.</small>
+            </div>
+            <div class="col-md-6" data-passport-country {{ 'hidden' if identity_type != 'PASSPORT' }}>
+              <label for="booking-identity-country">Negara penerbit paspor / Issuing country</label>
+              <input id="booking-identity-country" class="form-control" name="identity_country" maxlength="80" minlength="2" value="{{ form_data.get('identity_country', '') }}" placeholder="Contoh: Australia" {{ 'required' if identity_type == 'PASSPORT' else 'disabled' }} />
+            </div>
             <div class="col-md-6">
               <label>Tanggal mulai</label><input class="form-control datepicker" name="start_date" required value="{{ form_data.get('start_date', '') }}" />
             </div>
@@ -91,6 +108,7 @@
 {% endblock %}
 
 {% block scripts %}
+  <script src="{{ url_for('static', filename='js/booking-identity.js', v='20261027') }}"></script>
 
   <script nonce="{{ csp_nonce }}">
       document
