@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. FORMULIR PEMESANAN BERSAMA
+# Menangani pesanan pelanggan, tamu, dan petugas dengan validasi serta pencegahan kiriman ganda.
+# ==========================================================
+
 """One booking form for customers, guests, and counter bookings by staff."""
 
 import hashlib
@@ -20,11 +25,15 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from extensions import db
 from models import Driver, Rental, Vehicle
-from services.rental_service import create_rental
+from services.rental_service import PICKUP_CLOSE_TIME, PICKUP_OPEN_TIME, create_rental
 from services.identity_service import normalize_booking_phone, validate_identity
 from utils.validators import limited_text
 
 
+# ==========================================================
+# 02. KUNCI AKSES PESANAN TAMU
+# Menyimpan token acak di sesi dan memakai hash token sebagai pengenal pesanan di database.
+# ==========================================================
 def guest_session_key(create=False):
     key = session.get("booking_guest_key")
     if not key and create:
@@ -33,6 +42,10 @@ def guest_session_key(create=False):
     return hashlib.sha256(key.encode()).hexdigest() if key else None
 
 
+# ==========================================================
+# 03. MEMPROSES FORMULIR PESANAN
+# Menampilkan formulir, memeriksa kiriman ulang dan identitas, lalu membuat pesanan menunggu persetujuan.
+# ==========================================================
 def booking_form(vehicle_id):
     vehicle = Vehicle.query.filter_by(id=vehicle_id, is_active=True).first_or_404()
     customer = (
@@ -60,6 +73,8 @@ def booking_form(vehicle_id):
                 guest_booking=not customer,
                 form_data=request.form,
                 booking_error=error,
+                pickup_open_time=PICKUP_OPEN_TIME.strftime("%H:%M"),
+                pickup_close_time=PICKUP_CLOSE_TIME.strftime("%H:%M"),
                 **initial,
             ),
             status,

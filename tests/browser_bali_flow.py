@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. PENGUJIAN ALUR PEMESANAN DI BROWSER
+# Memeriksa interaksi lokasi dan pesanan dengan Playwright, SQLite sementara, dan hasil pencarian simulasi.
+# ==========================================================
+
 """Run explicitly: python tests/browser_bali_flow.py (requires Playwright + Chrome).
 
 Uses an isolated SQLite database. Provider results are simulated only for UI coverage.
@@ -161,7 +166,7 @@ def run():
                 customer.locator("[name=end_date]").evaluate(
                     "(el, value) => el._flatpickr.setDate(value, true)", end
                 )
-                customer.locator("[name=pickup_time]").fill("09:00")
+                customer.locator("[name=pickup_time]").fill("10:00")
                 customer.locator("#terms").check()
                 customer.screenshot(
                     path=str(artifacts / "bali-booking-mobile.png"), full_page=True

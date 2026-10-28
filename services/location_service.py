@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. VALIDASI TITIK TEMU DI BALI
+# Memeriksa batas wilayah dari GeoJSON dan membentuk salinan alamat kantor atau titik pilihan penyewa.
+# ==========================================================
+
 """Bali-only meeting points, independent of a geocoding provider or browser input."""
 
 import json
@@ -21,6 +26,10 @@ FIELDS = {
 KINDS = {"office", "airport", "hotel", "other"}
 
 
+# ==========================================================
+# 02. MEMUAT BATAS WILAYAH
+# Membaca geometri Bali dari berkas GeoJSON lokal dan menyimpan hasilnya dalam cache.
+# ==========================================================
 @lru_cache(maxsize=1)
 def bali_geometry():
     return json.loads(
@@ -30,6 +39,10 @@ def bali_geometry():
     )["geometry"]
 
 
+# ==========================================================
+# 03. PEMERIKSAAN TITIK DALAM POLIGON
+# Menghitung persilangan garis untuk menentukan apakah koordinat berada di dalam satu cincin batas.
+# ==========================================================
 def in_ring(x, y, ring):
     inside = False
     for a, b in zip(ring, ring[1:]):
@@ -39,6 +52,10 @@ def in_ring(x, y, ring):
     return inside
 
 
+# ==========================================================
+# 04. PEMERIKSAAN CAKUPAN LAYANAN
+# Menolak koordinat tidak valid dan memeriksa poligon Bali beserta area lubang di dalamnya.
+# ==========================================================
 def in_bali(latitude, longitude):
     try:
         lat, lon = float(latitude), float(longitude)
@@ -58,6 +75,10 @@ def in_bali(latitude, longitude):
     )
 
 
+# ==========================================================
+# 05. PENYUSUNAN ALAMAT TAMPILAN
+# Menggabungkan bagian alamat yang terisi menjadi teks ringkas untuk pengguna.
+# ==========================================================
 def format_address(data):
     street = " ".join(filter(None, [data.get("street"), data.get("building_number")]))
     return ", ".join(
@@ -76,6 +97,10 @@ def format_address(data):
     )
 
 
+# ==========================================================
+# 06. VALIDASI DAN SALINAN ALAMAT
+# Memeriksa konfirmasi, jenis, isi, dan koordinat; alamat kantor diambil dari data admin yang berlaku.
+# ==========================================================
 def validate_address(raw, *, office_admin=False):
     if not isinstance(raw, dict) or raw.get("confirmed") is not True:
         raise ValueError("Periksa alamat dan konfirmasi titik temu terlebih dahulu.")
@@ -133,6 +158,10 @@ def validate_address(raw, *, office_admin=False):
     return data
 
 
+# ==========================================================
+# 07. PEMILIHAN KANTOR UTAMA
+# Membaca pengaturan kantor utama dengan cadangan lokasi Denpasar atau kantor terverifikasi di Bali.
+# ==========================================================
 def primary_office():
     """Select the single Bali office; retain legacy locations for old rentals."""
     setting = AppSetting.query.filter_by(setting_key="primary_office_id").first()
@@ -153,6 +182,10 @@ def primary_office():
     return None
 
 
+# ==========================================================
+# 08. KANTOR YANG BISA DIPESAN
+# Menyertakan kantor utama hanya jika aktif, terverifikasi, memiliki alamat, dan berada di Bali.
+# ==========================================================
 def bookable_offices():
     office = primary_office()
     if office and office.is_active and office.verified_by_id and office.address_data:
@@ -163,6 +196,10 @@ def bookable_offices():
     return []
 
 
+# ==========================================================
+# 09. DATA PILIHAN KANTOR
+# Membentuk ID, nama, alamat, dan versi waktu untuk pilihan kantor pada formulir.
+# ==========================================================
 def office_options():
     return [
         {

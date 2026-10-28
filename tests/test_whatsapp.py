@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. PENGUJIAN INTEGRASI WHATSAPP
+# Memeriksa verifikasi webhook, persetujuan kontak, deduplikasi, dan pengiriman antrean dengan jaringan tiruan.
+# ==========================================================
+
 import hashlib
 import hmac
 import json

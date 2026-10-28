@@ -1,3 +1,7 @@
+{# ==========================================================
+   01. KARTU DAFTAR PESANAN
+   Merender ringkasan pesanan dan tautan detail sesuai peran pengguna untuk pembaruan daftar.
+   ========================================================== #}
 {% for item in rentals %}
 {% set detail_url = url_for('booking_sync.admin_detail', rental_id=item.id) if current_user.role in ['admin','petugas'] else (url_for('customer.rental_detail', rental_id=item.id) if item.customer_id else url_for('public.guest_detail', rental_id=item.id)) %}
 {% set tone = 'pending' if item.status == 'Menunggu persetujuan' else ('success' if item.status in ['Selesai', 'Dikonfirmasi', 'Siap diambil'] else ('muted' if item.status in ['Ditolak', 'Dibatalkan admin', 'Dibatalkan pelanggan', 'Kedaluwarsa'] else 'active')) %}

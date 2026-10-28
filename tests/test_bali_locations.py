@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. PENGUJIAN LOKASI DAN PESANAN BALI
+# Memeriksa batas wilayah, alamat kantor, akses pesanan, persetujuan, dan pencarian lokasi.
+# ==========================================================
+
 """Integration coverage for address confirmation, durable bookings, ownership and sync."""
 
 import json
@@ -57,7 +62,7 @@ def booking_form():
         request_key=str(uuid4()),
         start_date=str(date.today() + timedelta(days=2)),
         end_date=str(date.today() + timedelta(days=3)),
-        pickup_time="09:00",
+        pickup_time="10:00",
         terms="1",
         identity_type="NIK",
         identity_number="1234567890123456",

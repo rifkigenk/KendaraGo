@@ -1,3 +1,8 @@
+/* ==========================================================
+   01. PETA TITIK TEMU GOOGLE MAPS
+   Memuat SDK Google Maps, mengelola pin dan mode 3D, serta menampilkan kegagalan pemuatan peta.
+   ========================================================== */
+
 /* Official Google Maps JavaScript API. The browser key must have referrer restrictions. */
 (() => {
   const config = document.getElementById('location-config');
@@ -7,6 +12,10 @@
     authenticationFailed = true;
     window.dispatchEvent(new Event('kendarago-google-map-error'));
   };
+  /* ==========================================================
+     02. MEMUAT SDK SATU KALI
+     Memakai promise bersama untuk pemuatan SDK serta menangani batas waktu dan kegagalan autentikasi.
+     ========================================================== */
   function loadGoogle() {
     if (authenticationFailed) return Promise.reject(new Error('Google Maps belum dapat diakses. Gunakan tautan Google Maps atau isi koordinat.'));
     if (window.google?.maps?.Map && window.google.maps.marker?.AdvancedMarkerElement) return Promise.resolve();
@@ -34,6 +43,10 @@
     return loader;
   }
 
+  /* ==========================================================
+     03. MEMBUAT WADAH DAN KONTROL PETA
+     Menyiapkan indikator pemuatan, tombol coba lagi, dan status dukungan tampilan 3D.
+     ========================================================== */
   window.createGoogleMeetingMap = (element, {onPick, onError, modeButton, center = [115.216, -8.65], zoom = 12} = {}) => {
     let engine, marker, point, locked = false, removed = false, loading = false, timer, generation = 0;
     const frame = document.createElement('div'); frame.className = 'meeting-map-frame';
@@ -68,6 +81,10 @@
       state('error', 'Google Maps belum dapat diakses. Gunakan tautan Google Maps atau isi koordinat.');
       label();
     }
+    /* ==========================================================
+       04. PENGENDALIAN PIN DAN MASA PAKAI PETA
+       Menyediakan operasi pemilihan titik, penguncian marker, dan pelepasan listener saat peta dihapus.
+       ========================================================== */
     const api = {
       setPoint(lat, lon, recenter = true) {
         point = {lat, lng: lon};
@@ -91,6 +108,10 @@
       get engine() { return engine; },
       get is3D() { return !!engine && engine.getTilt() > 0; }
     };
+    /* ==========================================================
+       05. INISIALISASI DAN PEMUATAN GAMBAR PETA
+       Membuat peta setelah SDK siap serta mengabaikan hasil pemuatan yang sudah tidak berlaku.
+       ========================================================== */
     async function initialize() {
       if (removed || loading) return;
       loading = true; const current = ++generation;
@@ -130,6 +151,10 @@
         loading = false; state('error', error.message); onError?.(error.message);
       }
     }
+    /* ==========================================================
+       06. PERALIHAN TAMPILAN 2D DAN 3D
+       Mengubah kemiringan serta tingkat zoom jika perangkat menggunakan peta vektor.
+       ========================================================== */
     function toggleMode() {
       if (!engine || loading || authenticationFailed) return;
       if (engine.getRenderingType() !== google.maps.RenderingType.VECTOR) return;
@@ -137,6 +162,10 @@
       else { engine.setMapTypeId('roadmap'); engine.setZoom(Math.max(17, engine.getZoom())); engine.setTilt(60); }
       label();
     }
+    /* ==========================================================
+       07. PEMUATAN ULANG DAN PERUBAHAN UKURAN
+       Menghubungkan tombol kontrol dan memulai atau menyesuaikan peta ketika wadahnya memiliki ukuran.
+       ========================================================== */
     retry.addEventListener('click', () => { clearTimeout(timer); initialize(); });
     modeButton?.addEventListener('click', toggleMode);
     window.addEventListener('kendarago-google-map-error', authError);

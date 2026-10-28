@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. PENGUJIAN TATA LETAK RESPONSIF
+# Memeriksa halaman pada ukuran layar berbeda dengan Playwright dan data pengujian terisolasi.
+# ==========================================================
+
 """Responsive UI regression checks using isolated data, Playwright and Chrome.
 
 Run explicitly: python tests/browser_ui_layout.py
@@ -60,7 +65,7 @@ def run():
                     vehicle,
                     start,
                     start + timedelta(days=1),
-                    time(9),
+                    time(10),
                     office.id,
                     office.id,
                 )

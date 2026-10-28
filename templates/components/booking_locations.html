@@ -1,3 +1,7 @@
+{# ==========================================================
+   01. RINGKASAN TITIK PENGAMBILAN DAN PENGEMBALIAN
+   Menampilkan alamat tersimpan, peta, dan tautan lokasi atau keterangan untuk pesanan lama.
+   ========================================================== #}
 <div class="row g-3 location-details">
 {% for label,address,legacy in [('Lokasi Pengambilan',rental.pickup_address,rental.pickup_location),('Lokasi Pengembalian',rental.return_address,rental.return_location)] %}
   {% set address = address or (legacy.address_data if legacy and legacy.verified_by_id else none) %}

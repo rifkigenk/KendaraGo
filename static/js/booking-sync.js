@@ -1,5 +1,14 @@
+/* ==========================================================
+   01. PEMBARUAN PESANAN BERKALA
+   Menyinkronkan daftar dan detail pesanan dengan data server serta menyediakan pencarian dan tindakan status.
+   ========================================================== */
+
 /* No geolocation here: only committed order data is synchronized. */
 (() => {
+  /* ==========================================================
+     02. MEMBACA RESPONS API
+     Menerapkan batas waktu, memeriksa format JSON, dan meneruskan pesan kesalahan server.
+     ========================================================== */
   async function read(url, options = {}) {
     const response = await fetch(url, {cache: 'no-store', signal: AbortSignal.timeout(12000), ...options});
     if (response.redirected || !response.headers.get('content-type')?.includes('application/json')) throw new Error('Sesi berakhir atau server tidak tersedia. Masuk kembali.');
@@ -7,6 +16,10 @@
     if (!response.ok) throw new Error(data.error || 'Sinkronisasi gagal.');
     return data;
   }
+  /* ==========================================================
+     03. PENJADWALAN SINKRONISASI
+     Memperbarui data setiap tiga detik saat halaman terlihat dan mencegah permintaan bertumpuk.
+     ========================================================== */
   function poll(root, update) {
     let busy = false;
     const message = root.querySelector('[data-sync-message]');
@@ -21,6 +34,10 @@
     window.addEventListener('offline', () => { message.textContent = 'Koneksi terputus. Data terakhir tetap ditampilkan.'; });
     document.addEventListener('visibilitychange', tick); tick(); return tick;
   }
+  /* ==========================================================
+     04. PENCARIAN DAN PEMBARUAN DAFTAR
+     Memfilter kartu berdasarkan teks serta status dan mengganti daftar saat revisi server berubah.
+     ========================================================== */
   document.querySelectorAll('[data-booking-feed]').forEach(root => {
     let revision;
     const list = root.querySelector('[data-booking-list]');
@@ -58,6 +75,10 @@
       }
     });
   });
+  /* ==========================================================
+     05. PEMBARUAN DETAIL PESANAN
+     Menyegarkan status, lokasi, dan pilihan tindakan berdasarkan versi terbaru dari server.
+     ========================================================== */
   document.querySelectorAll('[data-booking-detail]').forEach(root => {
     let version = root.dataset.version;
     const form = root.querySelector('[data-status-form]');
@@ -77,6 +98,10 @@
         }
       }
     });
+    /* ==========================================================
+       06. PENGIRIMAN TINDAKAN STATUS
+       Mengirim status pilihan beserta versi pesanan dan token CSRF, lalu menyegarkan tampilan.
+       ========================================================== */
     form?.addEventListener('submit', async event => {
       event.preventDefault();
       const message = form.querySelector('[data-save-message]'), button = form.querySelector('button');

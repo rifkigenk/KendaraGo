@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. MIGRASI PEMESANAN TAMU
+# Mengizinkan pesanan tanpa akun serta menyimpan kontak dan kunci sesi tamu untuk membatasi akses.
+# ==========================================================
+
 """Guest bookings share the rental and approval workflow."""
 
 from alembic import op

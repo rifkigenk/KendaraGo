@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. VALIDASI IDENTITAS PENYEWA
+# Memeriksa format NIK, NISN, paspor, negara penerbit, dan nomor WhatsApp sebelum pesanan disimpan.
+# ==========================================================
+
 """Validate booking identity format and keep a snapshot for authorized staff."""
 
 import re
@@ -6,6 +11,10 @@ import re
 IDENTITY_LABELS = {"NIK": "NIK / KTP", "NISN": "NISN", "PASSPORT": "Paspor"}
 
 
+# ==========================================================
+# 02. PEMERIKSAAN NOMOR DOKUMEN
+# Memvalidasi panjang dan karakter identitas serta mewajibkan negara penerbit untuk paspor.
+# ==========================================================
 def validate_identity(kind, number, country=""):
     if kind not in IDENTITY_LABELS:
         raise ValueError("Pilih jenis identitas: NIK / KTP, NISN, atau paspor.")
@@ -29,6 +38,10 @@ def validate_identity(kind, number, country=""):
     return {"type": kind, "number": number, "country": country}
 
 
+# ==========================================================
+# 03. PEMERIKSAAN NOMOR WHATSAPP
+# Menghapus spasi, tanda kurung, dan tanda hubung sebelum memeriksa format nomor Indonesia atau internasional.
+# ==========================================================
 def normalize_booking_phone(value):
     """Accept Indonesian local mobiles and international numbers with country code."""
     if not isinstance(value, str) or len(value) > 32:

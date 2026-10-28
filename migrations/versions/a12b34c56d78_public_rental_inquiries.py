@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. MIGRASI PERMINTAAN SEWA PUBLIK
+# Menambahkan penyimpanan permintaan sewa awal yang dikirim melalui halaman publik.
+# ==========================================================
+
 """Store public rental requests for admin follow-up."""
 
 from alembic import op

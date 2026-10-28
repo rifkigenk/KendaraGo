@@ -1,3 +1,8 @@
+/* ==========================================================
+   01. SIMULASI SDK GOOGLE MAPS UNTUK PENGUJIAN
+   Menyediakan peta, marker, dan event tiruan untuk pengujian browser; tidak dipakai sebagai peta aplikasi.
+   ========================================================== */
+
 /* Test-only SDK contract double. Never served by the application. */
 (() => {
   class Events {

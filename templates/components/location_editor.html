@@ -1,3 +1,7 @@
+{# ==========================================================
+   01. FORMULIR PEMILIHAN TITIK TEMU
+   Menyediakan pilihan kantor, pencarian tempat, peta, koordinat manual, dan konfirmasi lokasi.
+   ========================================================== #}
 {# One meeting point: a pin, a place name, and optional directions. #}
 <div class="location-editor" data-location-editor data-prefix="{{ prefix }}" data-initial='{{ initial_address|default(none)|tojson|forceescape }}' data-admin="{{ 'true' if office_admin|default(false) else 'false' }}">
   <h3 class="h5">{{ heading }}</h3>

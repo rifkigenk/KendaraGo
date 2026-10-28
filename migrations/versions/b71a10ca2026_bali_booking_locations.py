@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. MIGRASI ALAMAT TITIK TEMU BALI
+# Menambahkan salinan alamat, verifikasi kantor, versi waktu presisi, dan penanda pengiriman pesanan.
+# ==========================================================
+
 """Bali location snapshots and retry-safe bookings; preserve historical data."""
 
 from alembic import op

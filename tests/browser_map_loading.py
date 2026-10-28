@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. PENGUJIAN PEMUATAN PETA DI BROWSER
+# Memeriksa integrasi dan status pemuatan peta memakai tile serta SDK simulasi, bukan kredensial Google aktif.
+# ==========================================================
+
 """Run: python tests/browser_map_loading.py (Playwright + Chrome).
 
 Tests real browser integration with simulated OSM tiles / Google SDK contracts.
@@ -114,7 +119,7 @@ def run():
                             "(el, value) => el._flatpickr.setDate(value, true)",
                             str(date.today() + timedelta(days=days)),
                         )
-                    page.locator('[name="pickup_time"]').fill("09:00")
+                    page.locator('[name="pickup_time"]').fill("10:00")
                     pickup.click(position={"x": 100, "y": 100})
                     page.locator("#pickup-place_name").fill("Lobby fixture Bali")
                     page.locator(

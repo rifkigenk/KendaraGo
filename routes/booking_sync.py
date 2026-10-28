@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. SINKRONISASI DAN PERUBAHAN PESANAN
+# Menyediakan data pesanan sesuai hak akses serta pembaruan lokasi dan status dengan pemeriksaan versi.
+# ==========================================================
+
 """Short polling across WSGI workers, always reading committed database state."""
 
 import hashlib
@@ -34,6 +39,10 @@ EDITABLE = {
 }
 
 
+# ==========================================================
+# 02. PEMERIKSAAN SESI PENGAKSES
+# Memerlukan sesi tamu untuk pengunjung anonim dan menolak akun yang tidak aktif.
+# ==========================================================
 @bp.before_request
 def guard():
     if not current_user.is_authenticated:
@@ -43,6 +52,10 @@ def guard():
         abort(403)
 
 
+# ==========================================================
+# 03. PEMBATASAN KEPEMILIKAN PESANAN
+# Membatasi query ke sesi tamu atau pelanggan; admin dan petugas dapat mengakses seluruh pesanan.
+# ==========================================================
 def scoped_query():
     query = Rental.query
     if not current_user.is_authenticated:
@@ -52,6 +65,10 @@ def scoped_query():
     return query
 
 
+# ==========================================================
+# 04. DATA PESANAN UNTUK SINKRONISASI
+# Membentuk respons JSON berisi ringkasan, alamat, status, dan versi waktu perubahan.
+# ==========================================================
 def serialize(r):
     return dict(
         id=r.id,
@@ -72,6 +89,10 @@ def serialize(r):
     )
 
 
+# ==========================================================
+# 05. DAFTAR PESANAN DAN PENANDA REVISI
+# Mengambil pesanan yang boleh diakses serta hash data untuk mendeteksi perubahan daftar.
+# ==========================================================
 @bp.get("")
 def feed():
     rentals = (
@@ -89,6 +110,10 @@ def feed():
     )
 
 
+# ==========================================================
+# 06. DETAIL DAN PILIHAN TINDAKAN
+# Mengirim satu pesanan, HTML lokasi, dan perubahan status yang tersedia bagi pengguna.
+# ==========================================================
 @bp.get("/<int:rental_id>")
 def detail(rental_id):
     rental = scoped_query().filter_by(id=rental_id).first_or_404()
@@ -99,6 +124,10 @@ def detail(rental_id):
     )
 
 
+# ==========================================================
+# 07. MENYIMPAN PERUBAHAN TITIK TEMU
+# Memeriksa versi dan status pesanan, memvalidasi alamat, lalu menyimpan lokasi serta catatan.
+# ==========================================================
 @bp.post("/<int:rental_id>/lokasi")
 def update_locations(rental_id):
     rental = scoped_query().filter_by(id=rental_id).with_for_update().first_or_404()
@@ -135,6 +164,10 @@ def update_locations(rental_id):
         return jsonify(error=str(error)), 422
 
 
+# ==========================================================
+# 08. PERSETUJUAN DAN PERUBAHAN STATUS
+# Mengunci data terkait, memeriksa jadwal dan ketersediaan, lalu menerapkan tindakan yang diizinkan.
+# ==========================================================
 @bp.post("/<int:rental_id>/status")
 @roles_required("admin", "petugas")
 def status(rental_id):
@@ -226,6 +259,10 @@ def status(rental_id):
     return jsonify(message="Status berhasil disimpan.")
 
 
+# ==========================================================
+# 09. HALAMAN DETAIL UNTUK PENGELOLA
+# Merender rincian pesanan bagi admin atau petugas yang memiliki hak akses.
+# ==========================================================
 @bp.get("/<int:rental_id>/admin")
 @roles_required("admin", "petugas")
 def admin_detail(rental_id):
@@ -237,6 +274,10 @@ def admin_detail(rental_id):
     )
 
 
+# ==========================================================
+# 10. ATURAN PILIHAN STATUS
+# Membatasi tindakan menurut peran dan status saat ini; petugas hanya memproses persetujuan awal.
+# ==========================================================
 def allowed_transitions(rental):
     if not current_user.is_authenticated or current_user.role not in {
         "admin",

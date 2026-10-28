@@ -1,6 +1,6 @@
 """Logika bisnis inti untuk menghitung harga dan mengelola penyewaan."""
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 from secrets import token_hex
 
@@ -21,6 +21,9 @@ from models import (
 from services.availability_service import driver_is_available, vehicle_is_available
 from services.notification_service import notify
 from services.whatsapp_service import queue_rental_update
+
+PICKUP_OPEN_TIME = time(10, 0)
+PICKUP_CLOSE_TIME = time(21, 0)
 
 
 # ==========================================================
@@ -133,6 +136,10 @@ def create_rental(
     identity=None,
 ):
     """Memvalidasi permintaan lalu menyimpan pesanan dalam satu transaksi."""
+    if not PICKUP_OPEN_TIME <= pickup_time <= PICKUP_CLOSE_TIME:
+        raise ValueError(
+            "Waktu pengambilan harus antara pukul 10.00 dan 21.00 sesuai jam operasional."
+        )
     if identity is not None:
         from services.identity_service import validate_identity
 

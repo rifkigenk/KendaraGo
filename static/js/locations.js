@@ -1,7 +1,16 @@
+/* ==========================================================
+   01. EDITOR TITIK TEMU PENYEWA
+   Menghubungkan pencarian tempat, pin peta, konfirmasi alamat, dan pengiriman formulir lokasi.
+   ========================================================== */
+
 /* Bali meeting-point editor. All server writes validate the polygon again. */
 (() => {
   const config = document.getElementById('location-config');
   const keys = ['place_name', 'street', 'building_number', 'village', 'district', 'city', 'province', 'postcode', 'latitude', 'longitude', 'instructions'];
+  /* ==========================================================
+     02. MENAMPILKAN TITIK TEMU TERSIMPAN
+     Membuat peta ringkasan dengan pin terkunci berdasarkan koordinat yang sudah disimpan.
+     ========================================================== */
   window.initSavedMaps = (root = document) => {
     root.querySelectorAll('[data-saved-map]').forEach(el => {
       if (el._meetingMap) return;
@@ -10,6 +19,10 @@
     });
   };
   const editors = [];
+  /* ==========================================================
+     03. MENYIAPKAN EDITOR ALAMAT
+     Menghubungkan isian, pin, konfirmasi, dan revisi lokal agar perubahan alamat perlu diperiksa kembali.
+     ========================================================== */
   document.querySelectorAll('[data-location-editor]').forEach(root => {
     const field = key => root.querySelector(`[data-field="${key}"]`);
     const confirm = root.querySelector('[data-confirm-location]');
@@ -111,6 +124,10 @@
       },
       onError: text => { message.textContent = text; }
     });
+    /* ==========================================================
+       04. PENCARIAN TEMPAT MELALUI SERVER
+       Mengambil hasil geocoding melalui API aplikasi dan meneruskan kesalahan pencarian ke pengguna.
+       ========================================================== */
     async function geocode(params, signal) {
       const response = await fetch(`${config.dataset.search}?${new URLSearchParams(params)}`, {signal, cache: 'no-store'});
       if (!response.headers.get('content-type')?.includes('application/json')) throw new Error('Pencarian belum dapat dihubungi. Coba lagi.');
@@ -118,6 +135,10 @@
       if (!response.ok) throw new Error(data.error || 'Pencarian gagal. Isi alamat manual.');
       return data.results;
     }
+    /* ==========================================================
+       05. MEMILIH HASIL PENCARIAN
+       Membatalkan permintaan lama dan mengabaikan hasil yang tidak lagi sesuai revisi isian.
+       ========================================================== */
     function searchPlaces() {
       if (!searchEnabled) return;
       clearTimeout(timer); controller?.abort(); results.replaceChildren(); invalidate();
@@ -145,6 +166,10 @@
     search.addEventListener('input', () => { clearTimeout(timer); controller?.abort(); results.replaceChildren(); invalidate(); });
     root.querySelector('[data-search-button]').addEventListener('click', searchPlaces);
     search.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); searchPlaces(); } });
+    /* ==========================================================
+       06. MENGGUNAKAN LOKASI PERANGKAT
+       Meminta koordinat setelah tombol ditekan dan menolak hasil dengan ketidakpastian lebih dari 100 meter.
+       ========================================================== */
     root.querySelector('[data-geolocate]').addEventListener('click', () => {
       if (!navigator.geolocation) { message.textContent = 'Perangkat tidak mendukung lokasi. Isi alamat dan pin manual.'; return; }
       message.textContent = 'Meminta izin lokasi perangkat…';
@@ -156,6 +181,10 @@
         message.textContent = 'Lokasi ditemukan. Isi nama tempat dan periksa pin sebelum konfirmasi.';
       }, () => { if (revision === rev) message.textContent = 'Lokasi tidak tersedia. Pilih titik di peta atau isi koordinat manual.'; }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 0});
     });
+    /* ==========================================================
+       07. VALIDASI SEBELUM PENGIRIMAN
+       Memastikan koordinat tersedia, alamat sudah dikonfirmasi, dan seluruh isian aktif memenuhi aturan HTML.
+       ========================================================== */
     const editor = {value, apply, root, validate: () => {
       if (!field('latitude').value || !field('longitude').value) {
         message.textContent = 'Pilih titik di peta atau gunakan lokasi saya terlebih dahulu.';
@@ -170,6 +199,10 @@
     const initial = JSON.parse(root.dataset.initial || 'null');
     if (initial) apply(initial);
   });
+  /* ==========================================================
+     08. LOKASI PENGEMBALIAN YANG SAMA
+     Menyembunyikan dan menonaktifkan editor pengembalian saat pengguna memilih lokasi yang sama.
+     ========================================================== */
   const same = document.querySelector('[data-same-location]');
   if (same) {
     const returnRoot = document.querySelector('[data-prefix="return"]');
@@ -179,6 +212,10 @@
     };
     same.addEventListener('change', toggle); toggle();
   }
+  /* ==========================================================
+     09. MENYIAPKAN PESANAN BARU
+     Mengisi alamat dalam bentuk JSON sebelum formulir dikirim dan mencegah tombol ditekan berulang.
+     ========================================================== */
   const bookingForm = document.querySelector('[data-booking-form]');
   bookingForm?.addEventListener('submit', event => {
     if (!editors[0].validate() || (!same.checked && !editors[1].validate())) {
@@ -194,6 +231,10 @@
     const button = bookingForm?.querySelector('[type="submit"]');
     if (button) button.disabled = false;
   });
+  /* ==========================================================
+     10. MENYIMPAN PERUBAHAN LOKASI
+     Mengirim alamat dan versi pesanan dengan token CSRF, lalu membuka kembali detail setelah berhasil.
+     ========================================================== */
   const editForm = document.querySelector('[data-location-update]');
   editForm?.addEventListener('submit', async event => {
     event.preventDefault();
@@ -209,6 +250,10 @@
       message.textContent = data.message; window.location.assign(editForm.dataset.returnUrl);
     } catch (error) { message.textContent = `Gagal menyimpan: ${error.message} Periksa detail pesanan jika koneksi terputus saat menyimpan.`; button.disabled = false; }
   });
+  /* ==========================================================
+     11. MENYIMPAN PENGATURAN KANTOR
+     Mengirim identitas kantor, versi, alamat, dan status aktif dari formulir admin.
+     ========================================================== */
   const officeForm = document.querySelector('[data-office-form]');
   if (officeForm) {
     let id = Number(officeForm.dataset.officeId) || null, version = officeForm.dataset.officeVersion || null;

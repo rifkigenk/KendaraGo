@@ -119,7 +119,7 @@ def make_rental(user, vehicle, location, promo="HEMAT"):
         vehicle,
         start,
         start + timedelta(days=1),
-        time(9, 0),
+        time(10, 0),
         location.id,
         location.id,
         promo_code=promo,

@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. PENERIMA WEBHOOK WHATSAPP
+# Memverifikasi permintaan Meta, menyaring pesan ganda, dan menyimpan balasan ke antrean database.
+# ==========================================================
+
 """Signed Meta webhook; replies are queued durably before acknowledging."""
 
 import hashlib
@@ -15,6 +20,10 @@ from services.whatsapp_service import bot_reply, phone_number, queue_message
 bp = Blueprint("whatsapp", __name__)
 
 
+# ==========================================================
+# 02. VERIFIKASI DAN PENERIMAAN PESAN META
+# Memeriksa token GET atau signature POST, menyaring pesan, dan mengantrekan balasan sebelum respons sukses.
+# ==========================================================
 @bp.route("/webhooks/whatsapp", methods=["GET", "POST"])
 @csrf.exempt
 def webhook():

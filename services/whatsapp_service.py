@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. LAYANAN BOT DAN ANTREAN WHATSAPP
+# Menyusun balasan dan notifikasi, lalu mengirim antrean melalui perintah CLI terpisah dari pemesanan.
+# ==========================================================
+
 """Meta Cloud API bot and outbox. Never send network requests inside bookings."""
 
 import json
@@ -14,6 +19,10 @@ from models.entities import now
 from models.whatsapp import WhatsAppContact, WhatsAppOutbox
 
 
+# ==========================================================
+# 02. NORMALISASI NOMOR TUJUAN
+# Mengambil digit nomor dan mengganti awalan lokal nol menjadi kode negara Indonesia.
+# ==========================================================
 def phone_number(value):
     digits = re.sub(r"\D", "", value or "")
     if digits.startswith("0"):
@@ -21,10 +30,18 @@ def phone_number(value):
     return digits if re.fullmatch(r"[1-9][0-9]{7,14}", digits) else None
 
 
+# ==========================================================
+# 03. MENAMBAHKAN PESAN KE ANTREAN
+# Menambahkan baris outbox ke transaksi database tanpa langsung menghubungi Meta.
+# ==========================================================
 def queue_message(phone, payload, expires_at):
     db.session.add(WhatsAppOutbox(phone=phone, payload=payload, expires_at=expires_at))
 
 
+# ==========================================================
+# 04. BALASAN MENU DAN PERSETUJUAN
+# Memproses perintah MULAI atau STOP serta pilihan katalog, status pesanan, dan kontak.
+# ==========================================================
 def bot_reply(phone, body):
     command = body.strip().upper()
     base = current_app.config["WHATSAPP_PUBLIC_URL"].rstrip("/")
@@ -54,6 +71,10 @@ def bot_reply(phone, body):
     )
 
 
+# ==========================================================
+# 05. NOTIFIKASI PERUBAHAN PENYEWAAN
+# Mengantrekan template transaksi hanya jika integrasi aktif dan kontak menyetujui notifikasi.
+# ==========================================================
 def queue_rental_update(rental):
     config = current_app.config
     if not config["WHATSAPP_ENABLED"] or not config["WHATSAPP_TEMPLATE_NAME"]:
@@ -86,6 +107,10 @@ def queue_rental_update(rental):
     queue_message(phone, payload, now() + timedelta(hours=24))
 
 
+# ==========================================================
+# 06. PENGIRIMAN KE META CLOUD API
+# Menyusun permintaan HTTP dari baris antrean dan mengambil ID pesan yang diterima Meta.
+# ==========================================================
 def send_message(row):
     config = current_app.config
     version = config["WHATSAPP_API_VERSION"]
@@ -106,6 +131,10 @@ def send_message(row):
         return json.load(response)["messages"][0]["id"]
 
 
+# ==========================================================
+# 07. PEMROSES ANTREAN MELALUI CLI
+# Mengklaim pesan secara atomik, memeriksa masa berlaku dan persetujuan, lalu mencatat hasil kirim.
+# ==========================================================
 @click.command("whatsapp-send")
 @click.option("--limit", default=50, type=click.IntRange(1, 500))
 def send_pending(limit):

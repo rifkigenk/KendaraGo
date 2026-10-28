@@ -1,6 +1,15 @@
+/* ==========================================================
+   01. PEMILIH PENYEDIA PETA TITIK TEMU
+   Memakai Google Maps sesuai konfigurasi atau peta Leaflet 2D dengan pin dan pemuatan ulang.
+   ========================================================== */
+
 /* Use official Google Maps when configured; keep a compliant 2D map otherwise. */
 (() => {
   const config = document.getElementById('location-config');
+  /* ==========================================================
+     02. MEMILIH GOOGLE MAPS ATAU LEAFLET
+     Menggunakan Google Maps saat kunci dan tile aktif; konfigurasi lainnya memakai Leaflet 2D.
+     ========================================================== */
   window.createMeetingMap = (element, options = {}) => {
     if (config?.dataset.googleKey && config.dataset.tiles === 'true') {
       return window.createGoogleMeetingMap(element, options);
@@ -23,6 +32,10 @@
       message.textContent = text; retry.hidden = !['error', 'slow'].includes(value);
     }
     state('loading', 'Memuat peta Bali…');
+    /* ==========================================================
+       03. KONTROL PIN LEAFLET
+       Menyimpan titik pilihan, mengatur apakah pin boleh digeser, dan membersihkan peta saat dilepas.
+       ========================================================== */
     const api = {
       setPoint(lat, lon, recenter = true) {
         point = [lat, lon];
@@ -42,6 +55,10 @@
       get engine() { return engine; },
       get is3D() { return false; }
     };
+    /* ==========================================================
+       04. PEMUATAN PETA DAN TILE
+       Membuat peta 2D serta menangani tile berhasil, gagal, atau lambat dimuat.
+       ========================================================== */
     function initialize() {
       if (removed) return;
       const current = ++generation; clearTimeout(timer);
@@ -68,6 +85,10 @@
       engine.on('click', e => { if (!locked) onPick?.(e.latlng.lat, e.latlng.lng); });
       if (point) api.setPoint(point[0], point[1], false);
     }
+    /* ==========================================================
+       05. MENCOBA ULANG DAN MENYESUAIKAN UKURAN
+       Mempertahankan posisi tampilan saat mencoba ulang dan memperbarui ukuran peta saat wadah berubah.
+       ========================================================== */
     retry.addEventListener('click', () => {
       if (engine) { const view = engine.getCenter(); center = [view.lng, view.lat]; zoom = engine.getZoom(); }
       initialize();

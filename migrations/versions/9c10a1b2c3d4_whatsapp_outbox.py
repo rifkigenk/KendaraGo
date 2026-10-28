@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. MIGRASI TABEL WHATSAPP
+# Menambahkan tabel kontak, penanda pesan masuk, dan antrean pengiriman WhatsApp.
+# ==========================================================
+
 """Add WhatsApp consent, deduplication and outbox tables."""
 
 from alembic import op

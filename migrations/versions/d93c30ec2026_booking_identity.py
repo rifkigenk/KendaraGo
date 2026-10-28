@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. MIGRASI IDENTITAS PENYEWA
+# Menambahkan jenis dokumen, nomor identitas, dan negara penerbit pada data penyewaan.
+# ==========================================================
+
 """Add booking identity snapshots without changing historical bookings."""
 
 from alembic import op

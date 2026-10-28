@@ -1,3 +1,8 @@
+# ==========================================================
+# 01. API LOKASI DAN PENGELOLAAN KANTOR
+# Mencari titik di Bali melalui penyedia geocoding dan menyediakan pengaturan kantor untuk admin.
+# ==========================================================
+
 """Authenticated geocoding proxy and admin-managed offices."""
 
 import json
@@ -24,17 +29,29 @@ from utils.decorators import roles_required
 bp = Blueprint("locations", __name__, url_prefix="/lokasi")
 
 
+# ==========================================================
+# 02. PEMERIKSAAN AKUN AKTIF
+# Menolak permintaan dari pengguna yang sudah login tetapi akunnya tidak aktif.
+# ==========================================================
 @bp.before_request
 def guard():
     if current_user.is_authenticated and not current_user.is_active:
         return jsonify(error="Akun tidak aktif."), 403
 
 
+# ==========================================================
+# 03. DAFTAR KANTOR UNTUK PEMESANAN
+# Mengembalikan kantor terkonfirmasi yang dapat dipilih pada formulir lokasi.
+# ==========================================================
 @bp.get("/kantor")
 def offices():
     return jsonify(offices=office_options())
 
 
+# ==========================================================
+# 04. PENCARIAN ALAMAT MELALUI GEOAPIFY
+# Memvalidasi kata pencarian atau koordinat dan beralih ke Photon jika kunci Geoapify belum diisi.
+# ==========================================================
 @bp.get("/cari")
 @limiter.limit("30 per minute")
 def search():
@@ -100,6 +117,10 @@ def search():
     )
 
 
+# ==========================================================
+# 05. CACHE HASIL PENCARIAN PHOTON
+# Mengambil hasil penyedia dan memakai parameter periode untuk membatasi masa cache.
+# ==========================================================
 @lru_cache(maxsize=256)
 def photon_results(query, reverse, cache_period):
     endpoint = "reverse" if reverse else "api"
@@ -111,6 +132,10 @@ def photon_results(query, reverse, cache_period):
         return json.load(response).get("features", [])
 
 
+# ==========================================================
+# 06. PENCARIAN ALTERNATIF MELALUI PHOTON
+# Memproses pencarian tempat atau koordinat dan menyaring hasil agar berada di Bali.
+# ==========================================================
 def photon_search():
     reverse = request.args.get("latitude") is not None
     if reverse:
@@ -166,12 +191,20 @@ def photon_search():
     )
 
 
+# ==========================================================
+# 07. HALAMAN PENGATURAN KANTOR
+# Menampilkan kantor utama kepada admin untuk pemeriksaan dan perubahan alamat.
+# ==========================================================
 @bp.get("/admin")
 @roles_required("admin")
 def manage():
     return render_template("admin/locations.html", office=primary_office())
 
 
+# ==========================================================
+# 08. MENYIMPAN KANTOR UTAMA
+# Memvalidasi alamat dan versi data, lalu menyimpan kantor serta pengaturan kantor utama.
+# ==========================================================
 @bp.post("/admin")
 @roles_required("admin")
 def save_office():

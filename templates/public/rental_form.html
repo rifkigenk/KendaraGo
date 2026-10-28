@@ -1,2 +1,6 @@
+{# ==========================================================
+   01. PENGANTAR PEMESANAN KENDARAAN
+   Menyediakan tautan untuk melanjutkan ke formulir pemesanan kendaraan yang dipilih.
+   ========================================================== #}
 {% extends 'base.html' %}
 {% block content %}<div class="container py-5"><h1>Pemesanan Bali</h1><p>Masuk ke akun penyewa untuk memilih lokasi dan menyimpan pesanan.</p><a class="btn btn-primary" href="{{ url_for('customer.book', vehicle_id=vehicle.id) }}">Lanjutkan pemesanan</a></div>{% endblock %}

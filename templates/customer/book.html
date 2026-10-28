@@ -64,7 +64,9 @@
               <label>Tanggal selesai</label><input class="form-control datepicker" name="end_date" required value="{{ form_data.get('end_date', '') }}" />
             </div>
             <div class="col-md-6">
-              <label>Waktu pengambilan</label><input type="time" class="form-control" name="pickup_time" required value="{{ form_data.get('pickup_time', '') }}" />
+              <label for="booking-pickup-time">Waktu pengambilan</label>
+              <input id="booking-pickup-time" type="time" class="form-control" name="pickup_time" required min="{{ pickup_open_time }}" max="{{ pickup_close_time }}" value="{{ form_data.get('pickup_time', '') }}" aria-describedby="pickup-time-help" />
+              <small id="pickup-time-help" class="text-muted">Jam operasional {{ pickup_open_time|replace(':', '.') }}–{{ pickup_close_time|replace(':', '.') }} (10 pagi–9 malam), waktu setempat.</small>
             </div>
             {% if not guest_booking %}<div class="col-md-6">
               <label>Kode promo</label><input class="form-control" name="promo_code" placeholder="Opsional" value="{{ form_data.get('promo_code', '') }}" />
@@ -111,6 +113,16 @@
   <script src="{{ url_for('static', filename='js/booking-identity.js', v='20261027') }}"></script>
 
   <script nonce="{{ csp_nonce }}">
+      const pickupTime = document.getElementById("booking-pickup-time");
+      function validatePickupTime() {
+          pickupTime.setCustomValidity("");
+          if (pickupTime.validity.rangeUnderflow || pickupTime.validity.rangeOverflow) {
+              pickupTime.setCustomValidity("Pilih waktu pengambilan antara pukul 10.00 dan 21.00 sesuai jam operasional.");
+          }
+      }
+      pickupTime.addEventListener("input", validatePickupTime);
+      pickupTime.addEventListener("change", validatePickupTime);
+      validatePickupTime();
       document
           .getElementById("withDriver")
           .addEventListener(
